@@ -18,8 +18,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
-import Lottie from "react-lottie-player";
 import { Card } from "@/components/ui/card";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 // Validation schema
 const ProfileSchema = Yup.object().shape({
