@@ -26,9 +26,11 @@ import { usePlacesWidget } from "react-google-autocomplete";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { AxiosError } from "axios";
 import Link from "next/link";
-import Lottie from "react-lottie-player";
+
 import { MdLocationSearching } from "react-icons/md";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const validationSchema = Yup.object().shape({
   firstName: Yup.string().required("First name is required"),
