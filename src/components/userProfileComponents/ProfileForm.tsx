@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { usePlacesWidget } from "react-google-autocomplete";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
 import Lottie from "react-lottie-player";
@@ -84,29 +83,6 @@ export function ProfileForm() {
   const [loader, setLoader] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formikRef = useRef<FormikProps<ProfileFormValues>>(null);
-  const { ref: addressRef } = usePlacesWidget<HTMLInputElement>({
-    apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    onPlaceSelected: (place) => {
-      if (place.formatted_address && formikRef.current) {
-        const formattedAddress = place.formatted_address;
-        const cityComponent = place?.address_components?.find(
-          (component) =>
-            component.types.includes("locality") ||
-            component.types.includes("administrative_area_level_2")
-        );
-        const cityName = cityComponent ? cityComponent.long_name : null;
-
-        const state =
-          place?.address_components?.find((component) =>
-            component.types.includes("administrative_area_level_1")
-          )?.long_name || "";
-        formikRef.current.setFieldValue("address", formattedAddress);
-        formikRef.current.setFieldValue("state", state);
-        formikRef.current.setFieldValue("city", cityName);
-      }
-    },
-    options: { types: ["address"] },
-  });
 
   const [initialValues, setInitialValues] = useState<ProfileFormValues>({
     firstName: "",
@@ -418,30 +394,6 @@ export function ProfileForm() {
                   className="text-sm text-red-500"
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="address" className="text-sm font-medium">
-                Address
-              </label>
-              <Field name="address">
-                {({ field }: any) => (
-                  <Input
-                    {...field}
-                    ref={addressRef}
-                    id="address"
-                    type="text"
-                    placeholder="Search for area, Street name.."
-                    className="border border-[#D1D5DB]"
-                    value={values.address}
-                  />
-                )}
-              </Field>
-              <ErrorMessage
-                name="address"
-                component="div"
-                className="text-sm text-red-500"
-              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

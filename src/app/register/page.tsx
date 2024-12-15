@@ -11,7 +11,6 @@ import {
   Field,
   ErrorMessage,
   FormikProps,
-  FieldInputProps,
   FormikHelpers,
 } from "formik";
 import * as Yup from "yup";
@@ -22,12 +21,10 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { usePlacesWidget } from "react-google-autocomplete";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { AxiosError } from "axios";
 import Link from "next/link";
 import Lottie from "react-lottie-player";
-import { MdLocationSearching } from "react-icons/md";
 import { useRouter } from "next/navigation";
 
 const validationSchema = Yup.object().shape({
@@ -45,12 +42,6 @@ const validationSchema = Yup.object().shape({
   address: Yup.string().required("Address is required"),
 });
 
-interface LocationTypes {
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-}
 interface FormValues {
   firstName: string;
   lastName: string;
@@ -61,55 +52,18 @@ interface FormValues {
   address: string;
 }
 export default function SignUpForm() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
   const [loader, setLoader] = useState(false);
-  const [locationValues, setLocationValues] = useState<LocationTypes>({
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-  });
+
   const router = useRouter();
 
   const { toast } = useToast();
 
   const formikRef = useRef<FormikProps<FormValues>>(null);
-
-  const { ref: addressRef } = usePlacesWidget<HTMLInputElement>({
-    apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    onPlaceSelected: (place) => {
-      if (place.formatted_address && formikRef.current) {
-        const formattedAddress = place.formatted_address;
-        const cityComponent = place?.address_components?.find(
-          (component) =>
-            component.types.includes("locality") ||
-            component.types.includes("administrative_area_level_2")
-        );
-        const cityName = cityComponent ? cityComponent.long_name : null;
-        const postalCodeComponent = place?.address_components?.find(
-          (component) => component.types.includes("postal_code")
-        );
-        const postalCode = postalCodeComponent
-          ? postalCodeComponent.long_name
-          : null;
-        const state =
-          place?.address_components?.find((component) =>
-            component.types.includes("administrative_area_level_1")
-          )?.long_name || "";
-        setLocationValues({
-          address: formattedAddress,
-          city: cityName || "",
-          state: state,
-          pincode: postalCode || "",
-        });
-        formikRef.current.setFieldValue("address", formattedAddress);
-      }
-    },
-    options: { types: ["address"] },
-  });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -133,10 +87,7 @@ export default function SignUpForm() {
     formData.append("email", values.email);
     formData.append("phone", values.phoneNumber);
     formData.append("password", values.password);
-    formData.append("address_line_1", values.address);
-    formData.append("pincode", locationValues.pincode);
-    formData.append("city", locationValues.city);
-    formData.append("state", locationValues.state);
+
     try {
       const response = await axiosInstance.post("/customer/register", formData);
       if (response.status === 201) {
@@ -192,69 +143,6 @@ export default function SignUpForm() {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleGetCurrentLocation = async () => {
-    if (location && formikRef.current)
-      try {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.latitude},${location.longitude}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-        );
-
-        if (!response.ok) throw new Error("Network response was not ok");
-
-        const data = await response.json();
-
-        if (data.results.length > 0) {
-          const result = data.results[0];
-          const formattedAddress = result.formatted_address;
-          if (formikRef.current) {
-            const cityComponent:
-              | google.maps.GeocoderAddressComponent
-              | undefined = result?.address_components?.find(
-              // eslint-disable-next-line indent
-              (component: google.maps.GeocoderAddressComponent) =>
-                // eslint-disable-next-line indent
-                component.types.includes("locality") ||
-                component.types.includes("administrative_area_level_2")
-              // eslint-disable-next-line indent
-            );
-            const cityName = cityComponent ? cityComponent.long_name : null;
-            const postalCodeComponent = result?.address_components?.find(
-              (component: google.maps.GeocoderAddressComponent) =>
-                component.types.includes("postal_code")
-            );
-            const postalCode = postalCodeComponent
-              ? postalCodeComponent.long_name
-              : null;
-            const state =
-              result?.address_components?.find(
-                (component: google.maps.GeocoderAddressComponent) =>
-                  component.types.includes("administrative_area_level_1")
-              )?.long_name || "";
-            setLocationValues({
-              address: formattedAddress,
-              city: cityName || "",
-              state: state,
-              pincode: postalCode || "",
-            });
-            formikRef.current.setFieldValue("address", formattedAddress);
-          }
-          // eslint-disable-next-line brace-style
-        } else
-          toast({
-            variant: "destructive",
-            description: "No address found for the given coordinates.",
-          });
-        // eslint-disable-next-line brace-style
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("location", error);
-        toast({
-          variant: "destructive",
-          description: "Error fetching address",
-        });
-      }
-  };
 
   return (
     <>
@@ -409,42 +297,7 @@ export default function SignUpForm() {
                   className="text-red-500 text-sm"
                 />
               </div>
-              <div>
-                <Label htmlFor="address" className="font-medium text-sm">
-                  Address
-                </Label>
-                <Field name="address">
-                  {({ field }: { field: FieldInputProps<string> }) => (
-                    <Input
-                      {...field}
-                      ref={addressRef}
-                      className="border border-[#D1D5DB] h-12 placeholder:text-[#7A7977] placeholder:font-normal text-[#1F2937] font-normal"
-                      placeholder="Search for area, Street name.."
-                    />
-                  )}
-                </Field>
-                <ErrorMessage
-                  name="address"
-                  component="div"
-                  className="text-red-500 text-sm"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="mt-2 w-full p-8 shadow-md h-14 flex flex-col items-start"
-                  onClick={handleGetCurrentLocation}
-                >
-                  <div className="flex items-center">
-                    <MdLocationSearching className="w-4 h-4 mr-2" />
-                    <p className="font-normal text-base text-[#202124]">
-                      Get Current location
-                    </p>
-                  </div>
-                  <p className="font-normal text-sm text-[#7A7977]">
-                    Using GPS
-                  </p>
-                </Button>
-              </div>
+
               <Button
                 type="submit"
                 className="w-full font-semibold text-base bg-[#ff851b] hover:bg-[#ff851b]/90 !mt-8 h-12"
