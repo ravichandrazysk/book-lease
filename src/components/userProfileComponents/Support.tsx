@@ -1,7 +1,8 @@
+/* eslint-disable no-extra-parens */
 /* eslint-disable camelcase */
 /* eslint-disable multiline-ternary */
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { SectionHeader } from "@/components/common/SectionHeader";
 import { Card } from "@/components/ui/card";
 import {
@@ -24,8 +25,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { axiosInstance } from "@/utils/AxiosConfig";
+import { toast } from "@/hooks/use-toast";
+import { isAxiosError } from "axios";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"));
 
 const Support = () => {
+  const [loading, setLoading] = useState(false);
   const initialValues = {
     firstName: "",
     lastName: "",
@@ -61,6 +67,7 @@ const Support = () => {
     { resetForm }: FormikHelpers<FormValues>
   ) => {
     try {
+      setLoading(true);
       const payload = {
         customer_name: values.firstName + " " + values.lastName,
         email: values.email,
@@ -72,15 +79,38 @@ const Support = () => {
       const res = await axiosInstance.post("/customer-support", payload);
 
       if (res.status === 200) {
-        // eslint-disable-next-line no-console
-        console.log("Form submitted successfully:", res.data);
+        toast({
+          variant: "success",
+          title: "Success",
+          description: res.data.message,
+        });
         resetForm();
+        setLoading(false);
         // eslint-disable-next-line brace-style
-      } else throw new Error("Unexpected API response");
+      }
       // eslint-disable-next-line brace-style
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Error submitting the form:", error);
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.response
+      ) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response.data.message,
+        });
+        setLoading(false);
+        // eslint-disable-next-line brace-style
+      } else
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Something went wrong",
+        });
+      setLoading(false);
     }
   };
 
@@ -229,7 +259,18 @@ const Support = () => {
                   type="submit"
                   className="bg-[#FF851B] text-lg font-semibold w-full sm:w-[257px] h-[53px] hover:bg-[#FF851B]"
                 >
-                  Submit Request
+                  {loading ? (
+                    <div className="flex justify-center items-center w-full max-h-5">
+                      <Lottie
+                        loop
+                        path="/lotties/button-loader.json"
+                        play
+                        style={{ width: "100%" }}
+                      />
+                    </div>
+                  ) : (
+                    "Submit Request"
+                  )}
                 </Button>
               </div>
             </Form>
