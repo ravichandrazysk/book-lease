@@ -13,10 +13,9 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { AxiosResponse, AxiosError } from "axios";
 import { signIn } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
-import dynamic from "next/dynamic";
+import Lottie from "react-lottie-player";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-const Lottie = dynamic(() => import("react-lottie-player"));
 
 interface FormValuesTypes {
   email: string;

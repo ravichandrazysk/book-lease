@@ -2,9 +2,7 @@
 
 import * as React from "react";
 import { addDays, format, differenceInDays } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -12,12 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+
+import { Select, SelectContent, SelectItem, SelectValue } from "../ui/select";
+import { SelectTrigger } from "@/components/ui/select";
 
 interface ExtendRentalDialogProps {
   open: boolean;
@@ -26,7 +21,7 @@ interface ExtendRentalDialogProps {
   onConfirm: () => void;
   currentDueDate?: Date | null;
   // eslint-disable-next-line no-unused-vars
-  extendDays?: (dueDate: number) => void;
+  extendDays?: (dueDate: string) => void;
 }
 
 export function ExtendRentalDialog({
@@ -62,45 +57,24 @@ export function ExtendRentalDialog({
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Choose New Due Date</p>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "MMM dd, yyyy") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(newDate) => {
-                    if (newDate && currentDueDate) {
-                      const dayDifference = differenceInDays(
-                        newDate,
-                        currentDueDate
-                      );
-                      if (extendDays) extendDays(dayDifference);
-                      setDate(newDate);
-                    }
-                  }}
-                  disabled={(date) =>
-                    date < new Date() ||
-                    (currentDueDate ? date <= currentDueDate : false) ||
-                    (currentDueDate
-                      ? date > addDays(currentDueDate, 21)
-                      : false)
-                  }
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <p className="text-sm text-muted-foreground">Extend by days</p>
+
+            <Select
+              onValueChange={(value) => {
+                if (extendDays) extendDays(value);
+                if (currentDueDate)
+                  setDate(addDays(currentDueDate, Number(value)));
+              }}
+            >
+              <SelectTrigger className="border border-[#D1D5DB]">
+                <SelectValue placeholder="Select extension duration..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">7</SelectItem>
+                <SelectItem value="14">14</SelectItem>
+                <SelectItem value="21">21</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center justify-between text-sm">

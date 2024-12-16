@@ -51,6 +51,7 @@ interface BookDetailsType {
   is_active: boolean;
   tags: string;
   is_requested: boolean;
+  request_id: string | null;
   is_leased: boolean;
   lease_details?: LeaseDetails;
   can_extend_lease: boolean;
@@ -81,6 +82,7 @@ export function BookDetails() {
     is_active: false,
     tags: "",
     is_requested: false,
+    request_id: null,
     is_leased: false,
     images: [],
     can_extend_lease: false,
@@ -88,7 +90,7 @@ export function BookDetails() {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isDescriptionLong, setIsDescriptionLong] = useState(false);
   const [isRequested, setIsRequested] = useState(false);
-  const [extendsionDuration, setExtensionDuration] = useState(0);
+  const [extendsionDuration, setExtensionDuration] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const handleGetBookDetails = async () => {
@@ -139,36 +141,6 @@ export function BookDetails() {
         setIsRequested(true);
       }
       // eslint-disable-next-line prettier/prettier, brace-style
-    } else if (bookDetails.is_leased) {
-      setShowExtendModal(true);
-      try {
-        const formData = new FormData();
-        formData.append("book_request_id", bookId as string);
-        formData.append("type", "4");
-        const response = await axiosInstance.post(
-          `/lease-date-extension`,
-          formData
-        );
-        if (response.status === 200) {
-          setButtonLoading(false);
-          toast({
-            duration: 5000,
-            className: "p-0 bg-transparent border-none",
-            action: (
-              <CustomToast
-                title={response.data.message}
-                description="You'll receive a notification once your request is accepted."
-              />
-            ),
-          });
-        }
-        // eslint-disable-next-line brace-style
-      } catch (error) {
-        setButtonLoading(false);
-        toast({ variant: "destructive", description: "Something went wrong" });
-        // eslint-disable-next-line no-console
-        console.log("Couldn't extend lease", error);
-      }
     }
   };
 
@@ -180,7 +152,7 @@ export function BookDetails() {
 
     try {
       const formData = new FormData();
-      formData.append("book_request_id", bookId as string);
+      formData.append("book_request_id", bookDetails.request_id as string);
       formData.append("days", extendsionDuration.toString());
       const response = await axiosInstance.post(
         `/lease-date-extension`,

@@ -13,7 +13,8 @@ interface NavigationTabs {
 const navigationTabs: NavigationTabs[] = [
   { title: "Profile", href: "/user/profile" },
   { title: "My Books", href: "/user/my-books" },
-  { title: "Enquires", href: "/user/enquiries" },
+  { title: "My Requests", href: "/user/my-requests" },
+  { title: "Received Requests", href: "/user/received-requests" },
   { title: "My Rentals", href: "/user/rentals" },
   { title: "Sold Books", href: "/user/sold-books" },
   { title: "Referral", href: "/user/referral" },
@@ -44,13 +45,15 @@ export function NavigationTabs() {
       </div>
 
       <div className=" border-t">
-        <Link
-          href="/login"
+        <p
           className={`block py-4 px-5 font-medium  transition-colors   text-red-500   text-xl ${pathname === "/logout" ? "text-blue-600 border-y-0 border-r-0 border border-l-4 border-l-[#0070C4] " : "hover:bg-gray-100"}`}
-          onClick={() => signOut()}
+          onClick={(e) => {
+            e.preventDefault();
+            signOut({ callbackUrl: "/login" });
+          }}
         >
           Log Out
-        </Link>
+        </p>
       </div>
     </nav>
   );

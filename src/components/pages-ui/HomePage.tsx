@@ -69,13 +69,19 @@ const HomePage = () => {
   // Const handleEamilVerify = () => {};
   return (
     <React.Fragment>
-      <div className="max-sm:max-w-[345px] max-w-sm sm:max-w-7xl mx-auto">
+      <div className="max-sm:max-w-[345px]  sm:max-w-7xl mx-auto">
         {/* <section id="email-verify-button" className="mt-2">
           <EmailVerifyCard onVerify={handleEamilVerify} />
         </section> */}
-        <section id="promotion-banner" className="sm:max-w-7xl mx-auto mt-2">
-          <CarouselSlider sliderData={topBannerAdds} width={100} height={100} />
-        </section>
+        {topBannerAdds && topBannerAdds.length > 0 && (
+          <section id="promotion-banner" className="sm:max-w-7xl mx-auto mt-2">
+            <CarouselSlider
+              sliderData={topBannerAdds}
+              width={100}
+              height={100}
+            />
+          </section>
+        )}
         <section id="categorised-books" className="mt-8">
           {loader ? (
             <BooksGridSkeleton count={5} />

@@ -268,7 +268,7 @@ export function ProfileForm() {
                   className="border border-[#D1D5DB] shadow-md"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  🔄 Replace Image
+                  🔄 Add or Replace Profile photo
                 </Button>
                 <Button
                   variant="outline"

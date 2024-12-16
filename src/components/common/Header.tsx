@@ -41,6 +41,7 @@ import {
 
 interface CustomUser extends User {
   coins?: number;
+  profile_photo?: string | null;
 }
 interface CustomSession extends Session {
   accessToken?: string;
@@ -76,11 +77,15 @@ export function Header() {
         <div className="w-full flex h-20 items-center justify-between max-w-7xl mx-auto">
           <div className=" cursor-pointer" onClick={() => router.push("/")}>
             <Image
-              src="/svgs/app-logo.svg"
+              src={
+                session?.user?.profile_photo
+                  ? session.user.profile_photo
+                  : "/svgs/app-logo.svg"
+              }
               alt="app-logo"
               width={250}
               height={250}
-              className="max-w-36 max-h-36 md:min-w-60 md:min-h-60 "
+              className="max-w-36  md:min-w-60 "
             />
           </div>
           <div className="flex items-center space-x-4">
@@ -96,7 +101,10 @@ export function Header() {
                 All Books
               </Button>
               {session && (
-                <Badge className="bg-gradient-to-r h-9 px-4 py-2 text-xl font-medium from-[#FDD55E] to-[#FF7A09] hover:bg-gradient-to-r hover:from-[#FF7A09] hover:to-[#FDD55E] w-24 items-center gap-2 justify-center text-white rounded-[760px] hidden md:flex ">
+                <Badge
+                  className="bg-gradient-to-r h-9 px-4 py-2 text-xl font-medium cursor-pointer from-[#FDD55E] to-[#FF7A09] hover:bg-gradient-to-r hover:from-[#FF7A09] hover:to-[#FDD55E] w-24 items-center gap-2 justify-center text-white rounded-[760px] hidden md:flex "
+                  onClick={() => router.push("/user/coins")}
+                >
                   <Image
                     src="/svgs/coin-badge-icon.svg"
                     alt="coin-icon"
@@ -104,7 +112,7 @@ export function Header() {
                     height={100}
                     className=" !max-h-8 !max-w-8 min-h-full "
                   />
-                  <p className="flex shrink-0">{session?.user?.coins}1200</p>
+                  <p className="flex shrink-0">{session?.user?.coins}</p>
                 </Badge>
               )}
               <div className="flex items-center gap-6 max-sm:gap-3">

@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable multiline-ternary */
 /* eslint-disable camelcase */
 "use client";
@@ -27,16 +28,10 @@ interface BookCardProps {
   variant: "rental" | "books" | "received" | "status" | "sold" | "sent";
   bookId?: number;
   title: string;
-  author: string;
+  author?: string;
   date?: string;
   imageUrl: string;
-  status?:
-    | "For Sale"
-    | "Accepted"
-    | "Cancelled"
-    | "Pending"
-    | "For Rent"
-    | "For Free";
+  status?: string;
   isAvailable?: boolean;
   imageError?: () => void;
   onEdit?: () => void;
@@ -157,14 +152,16 @@ export function StockDetailsCard({
                   {status}
                 </Badge>
                 <p className="text-base mt-1 text-[#7A7977] hidden">
-                  {status === "Cancelled" || status === "Pending"
-                    ? "Requested on"
-                    : "Accepted on"}
+                  {status === "Rejected"
+                    ? "Rejected on"
+                    : status === "Accepted"
+                      ? "Accepted on"
+                      : "Requested on"}
                   : <span className="font-medium text-black">{date}</span>
                 </p>
               </div>
 
-              {variant === "received" && (
+              {variant === "received" && status && status === "Pending" && (
                 <div className="items-end justify-between gap-2 hidden">
                   <Button variant="outline" onClick={onCancel} className="w-24">
                     Cancel
@@ -213,14 +210,16 @@ export function StockDetailsCard({
                   {status}
                 </Badge>
                 <p className="text-base mt-1 text-[#7A7977]">
-                  {status === "Cancelled" || status === "Pending"
-                    ? "Requested on"
-                    : "Accepted on"}
+                  {status === "Rejected"
+                    ? "Rejected on"
+                    : status === "Accepted"
+                      ? "Accepted on"
+                      : "Requested on"}
                   : <span className="font-medium text-black">{date}</span>
                 </p>
               </div>
 
-              {variant === "received" && (
+              {variant === "received" && status && status === "Pending" && (
                 <div className="flex items-end gap-2 max-sm:hidden">
                   <Button variant="outline" onClick={onCancel}>
                     Cancel
@@ -323,14 +322,16 @@ export function StockDetailsCard({
                 {status}
               </Badge>
               <p className="text-base mt-1 text-[#7A7977] hidden">
-                {status === "Cancelled" || status === "Pending"
-                  ? "Requested on"
-                  : "Accepted on"}
+                {status === "Rejected"
+                  ? "Rejected on"
+                  : status === "Accepted"
+                    ? "Accepted on"
+                    : "Requested on"}
                 : <span className="font-medium text-black">{date}</span>
               </p>
             </div>
 
-            {variant === "received" && (
+            {variant === "received" && status && status === "Pending" && (
               <div className="flex items-end justify-evenly gap-2 sm:hidden">
                 <Button variant="outline" onClick={onCancel} className="w-24">
                   Cancel
