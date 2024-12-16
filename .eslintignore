@@ -1,0 +1,11 @@
+.next/
+node_modules/
+coverage/
+__snapshots__/
+package-lock.json
+next.config.js
+next-env.d.ts
+tailwind.config.js
+postcss.config.js
+commitlint.config.js
+.github
