@@ -27,7 +27,7 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { isAxiosError } from "axios";
 import { toast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
-const Lottie = dynamic(() => import("react-lottie-player"));
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const FILE_SIZE = 5 * 1024 * 1024;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
