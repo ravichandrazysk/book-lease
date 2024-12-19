@@ -1,3 +1,5 @@
+/* eslint-disable no-extra-parens */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable multiline-ternary */
 "use client";
@@ -24,76 +26,84 @@ import { Card } from "@/components/ui/card";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { isAxiosError } from "axios";
 import { toast } from "@/hooks/use-toast";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"));
 
 const FILE_SIZE = 5 * 1024 * 1024;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
 
-const validationSchema = Yup.object().shape({
-  coverImage: Yup.mixed()
-    .required("Cover image is required")
-    .test(
-      "fileFormat",
-      "Unsupported Format",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (value: any) => {
-        return value && SUPPORTED_FORMATS.includes(value?.type);
-      }
-    )
-    .test("fileSize", "File too large", (value: any) => {
-      return value && value?.size <= FILE_SIZE;
+const validationSchema = (isEditing: boolean) =>
+  Yup.object().shape({
+    coverImage: Yup.mixed()
+      .required("Cover image is required")
+      .test(
+        "fileFormat",
+        "Unsupported Format",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (value: any) => {
+          return value && SUPPORTED_FORMATS.includes(value?.type);
+        }
+      )
+      .test("fileSize", "File too large", (value: any) => {
+        return value && value?.size <= FILE_SIZE;
+      }),
+    title: Yup.string().required("Book title is required"),
+    author: Yup.string().required("Author name is required"),
+    description: Yup.string()
+      .max(650, "Description must be 650 characters or less")
+      .required("Book description is required"),
+    category: Yup.string().required("Category is required"),
+    tags: Yup.string().required("Tags are required"),
+    condition: Yup.string().required("Book condition is required"),
+    age: Yup.string().required("Age is required"),
+    availabilityType: Yup.string().required("Please select availability type"),
+    rentPrice: Yup.number().when("availabilityType", {
+      is: "rent",
+      then: (schema) =>
+        schema
+          .required("Rent price is required")
+          .min(0, "Price must be positive"),
+      otherwise: (schema) => schema.notRequired(),
     }),
-  title: Yup.string().required("Book title is required"),
-  author: Yup.string().required("Author name is required"),
-  description: Yup.string()
-    .max(650, "Description must be 650 characters or less")
-    .required("Book description is required"),
-  category: Yup.string().required("Category is required"),
-  tags: Yup.string().required("Tags are required"),
-  condition: Yup.string().required("Book condition is required"),
-  age: Yup.string().required("Age is required"),
-  availabilityType: Yup.string().required("Please select availability type"),
-  rentPrice: Yup.number().when("availabilityType", {
-    is: "rent",
-    then: (schema) =>
-      schema
-        .required("Rent price is required")
-        .min(0, "Price must be positive"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  sellPrice: Yup.number().when("availabilityType", {
-    is: "sell",
-    then: (schema) =>
-      schema
-        .required("Sell price is required")
-        .min(0, "Price must be positive"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  discountedSellPrice: Yup.number().when("availabilityType", {
-    is: "sell",
-    then: (schema) =>
-      schema
-        .min(0, "Price must be positive")
-        .max(
-          Yup.ref("sellPrice"),
-          "Discounted price must be less than sell price"
-        ),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  discountedRentPrice: Yup.number().when("availabilityType", {
-    is: "rent",
-    then: (schema) =>
-      schema
-        .min(0, "Price must be positive")
-        .max(
-          Yup.ref("rentPrice"),
-          "Discounted price must be less than rent price"
-        ),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  editingReason: Yup.string()
-    .max(650, "Editing reason must be 650 characters or less")
-    .required("Editing reason is required"),
-});
+    sellPrice: Yup.number().when("availabilityType", {
+      is: "sell",
+      then: (schema) =>
+        schema
+          .required("Sell price is required")
+          .min(0, "Price must be positive"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    discountedSellPrice: Yup.number().when("availabilityType", {
+      is: "sell",
+      then: (schema) =>
+        schema
+          .min(0, "Price must be positive")
+          .max(
+            Yup.ref("sellPrice"),
+            "Discounted price must be less than sell price"
+          ),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    discountedRentPrice: Yup.number().when("availabilityType", {
+      is: "rent",
+      then: (schema) =>
+        schema
+          .min(0, "Price must be positive")
+          .max(
+            Yup.ref("rentPrice"),
+            "Discounted price must be less than rent price"
+          ),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    editingReason: Yup.string().when([], {
+      is: () => isEditing,
+      then: (schema) =>
+        schema
+          .max(650, "Editing reason must be 650 characters or less")
+          .required("Editing reason is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+  });
 
 interface FormValues {
   coverImage: File | null;
@@ -147,6 +157,7 @@ export function BookCreateForm({
 }) {
   const [categories, setCategories] = useState<CategoryTypes[]>([]);
   const [tags, setTags] = useState<TagsTypes[]>([]);
+  const [loading, setLoading] = useState(false);
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   const [initialValues, setInitialValues] = useState<FormValues>({
     coverImage: null,
@@ -203,59 +214,62 @@ export function BookCreateForm({
   // Handle edit or create book
   const handleSubmit = async (values: FormValues) => {
     const formData = new FormData();
+    if (values.coverImage instanceof File)
+      formData.append("cover_image", values.coverImage as File);
+    formData.append("name", values.title);
+    formData.append("author", values.author);
+    formData.append("description", values.description);
+    formData.append("category_id", values.category);
+    formData.append("tag_id", values.tags);
+    formData.append("condition", values.condition);
+    formData.append("age", values.age);
+    formData.append("availability_type", values.availabilityType);
+    formData.append("is_free", values.availabilityType === "free" ? "1" : "0");
+    formData.append(
+      "price",
+      values.availabilityType === "rent"
+        ? values.rentPrice || ""
+        : values.sellPrice || ""
+    );
+    formData.append(
+      "discounted_price",
+      values.availabilityType === "rent"
+        ? values.discountedRentPrice || ""
+        : values.discountedSellPrice || ""
+    );
     try {
-      if (values.coverImage instanceof File)
-        formData.append("cover_image", values.coverImage as File);
-      formData.append("name", values.title);
-      formData.append("author", values.author);
-      formData.append("description", values.description);
-      formData.append("category_id", values.category);
-      formData.append("tag_id", values.tags);
-      formData.append("condition", values.condition);
-      formData.append("age", values.age);
-      formData.append("availability_type", values.availabilityType);
-      formData.append(
-        "is_free",
-        values.availabilityType === "free" ? "1" : "0"
-      );
-      formData.append(
-        "price",
-        values.availabilityType === "rent"
-          ? values.rentPrice || ""
-          : values.sellPrice || ""
-      );
-      formData.append(
-        "discounted_price",
-        values.availabilityType === "rent"
-          ? values.discountedRentPrice || ""
-          : values.discountedSellPrice || ""
-      );
+      setLoading(true);
       if (isEditing && existingBookDetails?.id) {
         formData.append("update_reason", values.editingReason || "");
         const response = await axiosInstance.post(
           `/book-update/${existingBookDetails.id}`,
           formData
         );
-        if (response.status === 200)
+        if (response.status === 200) {
           toast({
             variant: "success",
             title: "Success",
             description: response.data.message,
           });
+          setLoading(false);
+        }
         // eslint-disable-next-line brace-style
       } else {
         const response = await axiosInstance.post(`/books`, formData);
-        if (response.status === 200)
+        if (response.status === 200) {
           toast({
             variant: "success",
             title: "Success",
             description: response.data.message,
           });
+          setLoading(false);
+        }
       }
       onAction();
       refetchBooks();
       // eslint-disable-next-line brace-style
     } catch (error) {
+      setLoading(false);
       if (
         isAxiosError(error) &&
         error.status &&
@@ -310,7 +324,7 @@ export function BookCreateForm({
         enableReinitialize
         innerRef={formikRef}
         initialValues={initialValues}
-        validationSchema={validationSchema}
+        validationSchema={validationSchema(isEditing)}
         onSubmit={handleSubmit}
       >
         {({ setFieldValue, values }) => {
@@ -737,9 +751,22 @@ export function BookCreateForm({
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-orange-500 hover:bg-orange-600 max-sm:w-36"
+                  className="bg-orange-500 hover:bg-orange-600 max-w-32 max-sm:w-36"
                 >
-                  {isEditing ? "Update Book" : "Add Book"}
+                  {loading ? (
+                    <div className="flex justify-center items-center  max-h-5">
+                      <Lottie
+                        loop
+                        path="/lotties/button-loader.json"
+                        play
+                        style={{ width: "70%" }}
+                      />
+                    </div>
+                  ) : isEditing ? (
+                    "Update Book"
+                  ) : (
+                    "Add Book"
+                  )}
                 </Button>
               </div>
             </Form>
