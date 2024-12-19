@@ -29,7 +29,7 @@ import Link from "next/link";
 import { MdLocationSearching } from "react-icons/md";
 
 import dynamic from "next/dynamic";
-const Lottie = dynamic(() => import("react-lottie-player"));
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const validationSchema = Yup.object().shape({
   firstName: Yup.string().required("First name is required"),

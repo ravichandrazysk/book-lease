@@ -4,8 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-const Lottie = dynamic(() => import("react-lottie-player"));
-const EmailVerified = () => {
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
+const Page = () => {
   const router = useRouter();
   return (
     <React.Fragment>
@@ -33,4 +33,4 @@ const EmailVerified = () => {
   );
 };
 
-export default EmailVerified;
+export default Page;

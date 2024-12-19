@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import dynamic from "next/dynamic";
-const Lottie = dynamic(() => import("react-lottie-player"));
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 interface FormValuesTypes {
   email: string;
