@@ -3,53 +3,25 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRouter } from "next/navigation";
 
-interface Notification {
-  id: string;
+interface NotificationTypes {
+  id: number;
+  type: string;
   title: string;
-  description: string;
-  isUnread: boolean;
+  body: string;
+  read_at: string | null;
+  active: boolean;
 }
 
-const notifications: Notification[] = [
-  {
-    id: "1",
-    title: "The Picy Mouse Story",
-    description:
-      "A user wants to lease The Great Gatsby. Review their request now.",
-    isUnread: true,
-  },
-  {
-    id: "2",
-    title: "Request Accepted",
-    description:
-      "Your lease request for The Catcher in the Rye has been approved! Contact the owner.",
-    isUnread: true,
-  },
-  {
-    id: "3",
-    title: "Request Declined",
-    description:
-      "The owner declined your request for 1984. Browse similar listings.",
-    isUnread: true,
-  },
-  {
-    id: "4",
-    title: "New Query",
-    description: "New query on Moby Dick: 'Can you confirm its condition?'",
-    isUnread: true,
-  },
-  {
-    id: "5",
-    title: "The Picy Mouse Story",
-    description:
-      "A user wants to lease The Great Gatsby. Review their request now.",
-    isUnread: false,
-  },
-];
-
-export function NotificationPanel() {
-  const unreadCount = notifications.filter((n) => n.isUnread).length;
+export function NotificationPanel({
+  notifications,
+  // eslint-disable-next-line object-curly-newline
+}: {
+  notifications: NotificationTypes[];
+}) {
+  const router = useRouter();
+  const unreadCount = notifications.filter((n) => n.read_at === null).length;
 
   return (
     <div className="bg-white rounded-lg">
@@ -69,8 +41,8 @@ export function NotificationPanel() {
             >
               Unread
               {unreadCount > 0 && (
-                <Badge className="bg-[#FF851B] flex justify-center text-md items-center hover:bg-[#FF851B] rounded-full w-6 h-6">
-                  {unreadCount}
+                <Badge className="bg-[#FF851B] flex justify-center text-xs items-center hover:bg-[#FF851B] rounded-full max-w-6 max-h-6">
+                  {unreadCount > 99 ? "99+" : unreadCount}
                 </Badge>
               )}
             </TabsTrigger>
@@ -81,12 +53,18 @@ export function NotificationPanel() {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className="flex gap-3 items-center"
+                    className={`flex gap-3 items-center ${notification.read_at ? "" : "cursor-pointer"}`}
+                    onClick={() => {
+                      if (!notification.read_at)
+                        router.push("/user/received-requests");
+                    }}
                   >
                     <div className="flex-shrink-0 mt-1">
                       <div
                         className={`w-2 h-2 rounded-full ${
-                          notification.isUnread ? "bg-blue-500" : "bg-gray-300"
+                          notification.read_at === null
+                            ? "bg-blue-500"
+                            : "bg-gray-300"
                         }`}
                       />
                     </div>
@@ -95,7 +73,7 @@ export function NotificationPanel() {
                         {notification.title}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        {notification.description}
+                        {notification.body}
                       </p>
                     </div>
                   </div>
@@ -105,11 +83,12 @@ export function NotificationPanel() {
             <TabsContent value="unread" className="mt-4">
               <div className="space-y-4">
                 {notifications
-                  .filter((notification) => notification.isUnread)
+                  .filter((notification) => notification.read_at === null)
                   .map((notification) => (
                     <div
                       key={notification.id}
-                      className="flex gap-3 items-center"
+                      className="flex gap-3 items-center cursor-pointer"
+                      onClick={() => router.push("/user/received-requests")}
                     >
                       <div className="flex-shrink-0 mt-1">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
@@ -119,7 +98,7 @@ export function NotificationPanel() {
                           {notification.title}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          {notification.description}
+                          {notification.body}
                         </p>
                       </div>
                     </div>

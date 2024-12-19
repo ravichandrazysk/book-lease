@@ -16,6 +16,7 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "Citi Books",
   description: "Citi Books",
+  icons: ["/pngs/citibook-favicon.png"],
 };
 
 export default function RootLayout({

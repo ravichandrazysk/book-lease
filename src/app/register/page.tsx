@@ -27,7 +27,7 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { AxiosError } from "axios";
 import Link from "next/link";
 import { MdLocationSearching } from "react-icons/md";
-import { useRouter } from "next/navigation";
+
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("react-lottie-player"));
 
@@ -73,7 +73,6 @@ export default function SignUpForm() {
     state: "",
     pincode: "",
   });
-  const router = useRouter();
 
   const { toast } = useToast();
 
@@ -147,7 +146,6 @@ export default function SignUpForm() {
           description: response.data.message,
         });
         resetForm();
-        router.push("/login");
       }
       setLoader(false);
       // eslint-disable-next-line brace-style
@@ -155,7 +153,12 @@ export default function SignUpForm() {
       setLoader(false);
 
       if (error instanceof AxiosError)
-        if (error?.status === 422)
+        if (
+          error.status &&
+          error?.status >= 400 &&
+          error?.status < 500 &&
+          error?.response
+        )
           toast({
             variant: "destructive",
             title: "Error",

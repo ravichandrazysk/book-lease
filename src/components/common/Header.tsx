@@ -77,11 +77,7 @@ export function Header() {
         <div className="w-full flex h-20 items-center justify-between max-w-7xl mx-auto">
           <div className=" cursor-pointer" onClick={() => router.push("/")}>
             <Image
-              src={
-                session?.user?.profile_photo
-                  ? session.user.profile_photo
-                  : "/svgs/app-logo.svg"
-              }
+              src={"/svgs/app-logo.svg"}
               alt="app-logo"
               width={250}
               height={250}

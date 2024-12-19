@@ -19,8 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { usePlacesWidget } from "react-google-autocomplete";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
-import dynamic from "next/dynamic";
 import { Card } from "@/components/ui/card";
+import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("react-lottie-player"));
 
 // Validation schema

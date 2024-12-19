@@ -47,13 +47,13 @@ export function CarouselSlider({
         <CarouselItem>
           <div className="p-1">
             <Card>
-              <CardContent className=" p-0 aspect-3/4 ">
+              <CardContent className=" p-0 aspect-auto ">
                 <Image
                   src={DEFAULT_IMAGE}
                   alt="default-banner"
                   width={width}
                   height={height}
-                  className="w-full max-h-[464px] rounded-lg object-contain"
+                  className=" rounded-lg object-contain"
                 />
               </CardContent>
             </Card>

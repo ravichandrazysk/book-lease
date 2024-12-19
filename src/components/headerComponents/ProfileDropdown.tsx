@@ -10,16 +10,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { User } from "next-auth";
+import { Session } from "next-auth";
 
+interface CustomUser extends User {
+  coins?: number;
+  profile_photo?: string | null;
+}
+interface CustomSession extends Session {
+  accessToken?: string;
+  user?: CustomUser;
+}
 export function ProfileDropdown() {
+  const { data: session } = useSession() as { data: CustomSession };
   const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="h-8 w-8 md:h-10 md:w-10 cursor-pointer">
-          <AvatarImage src="/svgs/profile-img.svg" alt="User" />
+        <Avatar className="h-8 w-8 md:h-10 md:w-10 cursor-pointer border-2">
+          <AvatarImage
+            src={
+              session?.user?.profile_photo
+                ? session.user.profile_photo
+                : "/svgs/profile-img.svg"
+            }
+            alt="User"
+          />
           <AvatarFallback>U</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

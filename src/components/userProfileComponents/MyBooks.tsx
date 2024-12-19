@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable multiline-ternary */
 "use client";
@@ -15,8 +16,8 @@ interface MyBookTypes {
   id: number;
   name: string;
   author: string;
-  availability: "Sell" | "Lease";
-  price: number;
+  availability: string;
+  price: number | null;
   discounted_price: string;
   is_free: boolean;
   category: string;
@@ -28,6 +29,18 @@ const MyBooks = () => {
   const [myBooks, setMyBooks] = useState<MyBookTypes[]>([]);
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false);
+  const [updatedBooks, setUpdatedBooks] = useState(false);
+  const [editBoookDetails, setEditBookDetails] = useState<MyBookTypes>({
+    id: 0,
+    name: "",
+    author: "",
+    availability: "",
+    price: 0,
+    discounted_price: "",
+    is_free: false,
+    category: "",
+    images: [],
+  });
 
   useEffect(() => {
     const handleGetBooks = async () => {
@@ -64,13 +77,10 @@ const MyBooks = () => {
       }
     };
     handleGetBooks();
-  }, []);
+  }, [updatedBooks]);
 
   return (
-    <section
-      id="my-books"
-      className=" sm:w-11/12 md:mr-9 mx-auto max-md:w-[90%] my-5"
-    >
+    <section id="my-books" className=" sm:w-11/12  mx-auto  my-5">
       <header>
         <SectionHeader
           title={
@@ -97,6 +107,8 @@ const MyBooks = () => {
             setCreateNewBook(false);
             setEditBook(false);
           }}
+          existingBookDetails={editBoookDetails}
+          refetchBooks={() => setUpdatedBooks(!updatedBooks)}
         />
       ) : myBooks && myBooks.length > 0 ? (
         <>
@@ -104,12 +116,15 @@ const MyBooks = () => {
             <StockDetailsCard
               key={index}
               variant="books"
-              title="My Books"
+              title={item.name}
               author={item.author}
               imageUrl={item.images[0].image_path}
               isAvailable={item.availability === "Sell"}
               status={item.availability === "Sell" ? "For Sale" : "For Rent"}
-              onEdit={() => setEditBook(true)}
+              onEdit={() => {
+                setEditBook(true);
+                setEditBookDetails(item);
+              }}
             />
           ))}
         </>

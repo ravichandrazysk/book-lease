@@ -2,7 +2,7 @@
 /* eslint-disable multiline-ternary */
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
 import { useDropzone } from "react-dropzone";
 import * as Yup from "yup";
@@ -21,6 +21,9 @@ import {
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
+import { axiosInstance } from "@/utils/AxiosConfig";
+import { isAxiosError } from "axios";
+import { toast } from "@/hooks/use-toast";
 
 const FILE_SIZE = 5 * 1024 * 1024;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
@@ -29,17 +32,16 @@ const validationSchema = Yup.object().shape({
   coverImage: Yup.mixed()
     .required("Cover image is required")
     .test(
-      "fileSize",
-      "File too large",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (value: any) => value && value.size <= FILE_SIZE
-    )
-    .test(
       "fileFormat",
       "Unsupported Format",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (value: any) => value && SUPPORTED_FORMATS.includes(value.type)
-    ),
+      (value: any) => {
+        return value && SUPPORTED_FORMATS.includes(value?.type);
+      }
+    )
+    .test("fileSize", "File too large", (value: any) => {
+      return value && value?.size <= FILE_SIZE;
+    }),
   title: Yup.string().required("Book title is required"),
   author: Yup.string().required("Author name is required"),
   description: Yup.string()
@@ -48,7 +50,7 @@ const validationSchema = Yup.object().shape({
   category: Yup.string().required("Category is required"),
   tags: Yup.string().required("Tags are required"),
   condition: Yup.string().required("Book condition is required"),
-  age: Yup.string().required("Book age is required"),
+  age: Yup.string().required("Age is required"),
   availabilityType: Yup.string().required("Please select availability type"),
   rentPrice: Yup.number().when("availabilityType", {
     is: "rent",
@@ -56,6 +58,25 @@ const validationSchema = Yup.object().shape({
       schema
         .required("Rent price is required")
         .min(0, "Price must be positive"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  sellPrice: Yup.number().when("availabilityType", {
+    is: "sell",
+    then: (schema) =>
+      schema
+        .required("Sell price is required")
+        .min(0, "Price must be positive"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  discountedSellPrice: Yup.number().when("availabilityType", {
+    is: "sell",
+    then: (schema) =>
+      schema
+        .min(0, "Price must be positive")
+        .max(
+          Yup.ref("sellPrice"),
+          "Discounted price must be less than sell price"
+        ),
     otherwise: (schema) => schema.notRequired(),
   }),
   discountedRentPrice: Yup.number().when("availabilityType", {
@@ -69,6 +90,9 @@ const validationSchema = Yup.object().shape({
         ),
     otherwise: (schema) => schema.notRequired(),
   }),
+  editingReason: Yup.string()
+    .max(650, "Editing reason must be 650 characters or less")
+    .required("Editing reason is required"),
 });
 
 interface FormValues {
@@ -81,33 +105,50 @@ interface FormValues {
   condition: string;
   age: string;
   availabilityType: "sell" | "rent" | "free";
-  rentPrice: string;
-  discountedRentPrice: string;
+  rentPrice?: string;
+  sellPrice?: string;
+  discountedRentPrice?: string;
+  discountedSellPrice?: string;
   editingReason?: string;
 }
 
+interface CategoryTypes {
+  id: 1;
+  name: string;
+  min_age: number;
+  max_age: number;
+}
+interface TagsTypes {
+  id: number;
+  name: string;
+}
+
+interface MyBookTypes {
+  id: number;
+  name: string;
+  author: string;
+  availability: string;
+  price: number | null;
+  discounted_price: string;
+  is_free: boolean;
+  category: string;
+  images: { image_path: string }[];
+}
 export function BookCreateForm({
   onAction,
   isEditing,
+  existingBookDetails,
+  refetchBooks,
 }: {
   onAction: () => void;
   isEditing: boolean;
+  existingBookDetails?: MyBookTypes;
+  refetchBooks: () => void;
 }) {
-  const formikRef = useRef<FormikProps<FormValues>>(null);
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (formikRef.current)
-      formikRef.current.setFieldValue("coverImage", acceptedFiles[0]);
-  }, []);
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: {
-      "image/jpeg": [".jpg", ".jpeg"],
-      "image/png": [".png"],
-    },
-    maxFiles: 1,
-  });
-
-  const initialValues: FormValues = {
+  const [categories, setCategories] = useState<CategoryTypes[]>([]);
+  const [tags, setTags] = useState<TagsTypes[]>([]);
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  const [initialValues, setInitialValues] = useState<FormValues>({
     coverImage: null,
     title: "",
     author: "",
@@ -118,19 +159,155 @@ export function BookCreateForm({
     age: "",
     availabilityType: "rent",
     rentPrice: "",
+    sellPrice: "",
     discountedRentPrice: "",
+    discountedSellPrice: "",
     editingReason: "",
+  });
+
+  const formikRef = useRef<FormikProps<FormValues>>(null);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (formikRef.current)
+      formikRef.current.setFieldValue("coverImage", acceptedFiles[0]);
+  }, []);
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: {
+      "image/jpeg": [".jpg", ".jpeg"],
+      "image/png": [".png"],
+    },
+    multiple: false,
+    maxFiles: 1,
+    maxSize: FILE_SIZE,
+    validator: (file) => {
+      if (!SUPPORTED_FORMATS.includes(file.type))
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Unsupported Format",
+        });
+
+      if (file.size > FILE_SIZE)
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "File too large",
+        });
+
+      return null;
+    },
+  });
+
+  // Handle edit or create book
+  const handleSubmit = async (values: FormValues) => {
+    const formData = new FormData();
+    try {
+      if (values.coverImage instanceof File)
+        formData.append("cover_image", values.coverImage as File);
+      formData.append("name", values.title);
+      formData.append("author", values.author);
+      formData.append("description", values.description);
+      formData.append("category_id", values.category);
+      formData.append("tag_id", values.tags);
+      formData.append("condition", values.condition);
+      formData.append("age", values.age);
+      formData.append("availability_type", values.availabilityType);
+      formData.append(
+        "is_free",
+        values.availabilityType === "free" ? "1" : "0"
+      );
+      formData.append(
+        "price",
+        values.availabilityType === "rent"
+          ? values.rentPrice || ""
+          : values.sellPrice || ""
+      );
+      formData.append(
+        "discounted_price",
+        values.availabilityType === "rent"
+          ? values.discountedRentPrice || ""
+          : values.discountedSellPrice || ""
+      );
+      if (isEditing && existingBookDetails?.id) {
+        formData.append("update_reason", values.editingReason || "");
+        const response = await axiosInstance.post(
+          `/book-update/${existingBookDetails.id}`,
+          formData
+        );
+        if (response.status === 200)
+          toast({
+            variant: "success",
+            title: "Success",
+            description: response.data.message,
+          });
+        // eslint-disable-next-line brace-style
+      } else {
+        const response = await axiosInstance.post(`/books`, formData);
+        if (response.status === 200)
+          toast({
+            variant: "success",
+            title: "Success",
+            description: response.data.message,
+          });
+      }
+      onAction();
+      refetchBooks();
+      // eslint-disable-next-line brace-style
+    } catch (error) {
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.response
+      )
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response.data.message,
+        });
+      else
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Something went wrong",
+        });
+    }
   };
 
-  const handleSubmit = (values: FormValues) => {
-    alert(values);
-    onAction();
-    // Handle form submission
-  };
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosInstance.get("/categories");
+        if (response.status === 200) setCategories(response.data.data);
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log("categories fetch error", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await axiosInstance.get("/tags");
+        if (response.status === 200) setTags(response.data.data);
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log("categories fetch error", error);
+      }
+    };
+    fetchTags();
+  }, []);
 
   return (
     <Card className=" mx-auto mt-5">
       <Formik
+        enableReinitialize
         innerRef={formikRef}
         initialValues={initialValues}
         validationSchema={validationSchema}
@@ -147,23 +324,25 @@ export function BookCreateForm({
                 </p>
                 <div
                   {...getRootProps()}
-                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary"
+                  className="border-2 border-dashed rounded-lg min-h-28 p-8 text-center cursor-pointer hover:border-primary"
                 >
                   <input {...getInputProps()} />
                   {values.coverImage ? (
-                    <div className="relative">
-                      <Image
-                        src={URL.createObjectURL(values.coverImage)}
-                        alt="Preview"
-                        width={100}
-                        height={100}
-                        className="sm:max-h-[340px] min-w-max min-h-max mx-auto"
-                      />
+                    <div className="relative flex items-center justify-center">
+                      <div className="max-w-2xl max-h-72">
+                        <Image
+                          src={URL.createObjectURL(values.coverImage)}
+                          alt="Preview"
+                          width={100}
+                          height={100}
+                          className="sm:max-h-[340px] aspect-3/4 max-w-2xl min-h-max mx-auto"
+                        />
+                      </div>
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="absolute top-2 right-2"
+                        className="absolute top-0 right-2"
                         onClick={(e) => {
                           e.stopPropagation();
                           setFieldValue("coverImage", null);
@@ -212,7 +391,12 @@ export function BookCreateForm({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="author">Author</Label>
+                  <Label
+                    htmlFor="author"
+                    className="text-base font-normal text-[#202124]"
+                  >
+                    Author
+                  </Label>
                   <Field
                     as={Input}
                     id="author"
@@ -229,7 +413,12 @@ export function BookCreateForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Book Description</Label>
+                <Label
+                  htmlFor="description"
+                  className="text-base font-normal text-[#202124]"
+                >
+                  Book Description
+                </Label>
                 <Field
                   as={Textarea}
                   id="description"
@@ -246,7 +435,12 @@ export function BookCreateForm({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                  <Label
+                    htmlFor="category"
+                    className="text-base font-normal text-[#202124]"
+                  >
+                    Category
+                  </Label>
                   <Field name="category">
                     {({ field, form }: any) => (
                       <Select
@@ -262,12 +456,14 @@ export function BookCreateForm({
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="fiction">Fiction</SelectItem>
-                          <SelectItem value="non-fiction">
-                            Non-Fiction
-                          </SelectItem>
-                          <SelectItem value="science">Science</SelectItem>
-                          <SelectItem value="technology">Technology</SelectItem>
+                          {categories.map((category: CategoryTypes) => (
+                            <SelectItem
+                              key={category.id}
+                              value={category.id.toString()}
+                            >
+                              {category.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}
@@ -280,7 +476,12 @@ export function BookCreateForm({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tags">Tags</Label>
+                  <Label
+                    htmlFor="tags"
+                    className="text-base font-normal text-[#202124]"
+                  >
+                    Tags
+                  </Label>
                   <Field name="tags">
                     {({ field, form }: any) => (
                       <Select
@@ -290,12 +491,17 @@ export function BookCreateForm({
                         value={field.value}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select" />
+                          <SelectValue
+                            placeholder="Select"
+                            className="placeholder:text-[#6B7280] font-normal"
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="bestseller">Bestseller</SelectItem>
-                          <SelectItem value="classic">Classic</SelectItem>
-                          <SelectItem value="new">New</SelectItem>
+                          {tags.map((tag: TagsTypes) => (
+                            <SelectItem key={tag.id} value={tag.id.toString()}>
+                              {tag.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}
@@ -308,7 +514,12 @@ export function BookCreateForm({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="condition">Condition of the Book</Label>
+                  <Label
+                    htmlFor="condition"
+                    className="text-base font-normal text-[#202124]"
+                  >
+                    Condition of the Book
+                  </Label>
                   <Field name="condition">
                     {({ field, form }: any) => (
                       <Select
@@ -318,13 +529,16 @@ export function BookCreateForm({
                         value={field.value}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select" />
+                          <SelectValue
+                            placeholder="Select"
+                            className="placeholder:text-[#6B7280] font-normal"
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="new">New</SelectItem>
-                          <SelectItem value="like-new">Like New</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="fair">Fair</SelectItem>
+                          <SelectItem value="New">New</SelectItem>
+                          <SelectItem value="Like New">Like New</SelectItem>
+                          <SelectItem value="Good">Good</SelectItem>
+                          <SelectItem value="Fair">Fair</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -337,7 +551,12 @@ export function BookCreateForm({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="age">Age</Label>
+                  <Label
+                    htmlFor="age"
+                    className="text-base font-normal text-[#202124]"
+                  >
+                    Age
+                  </Label>
                   <Field name="age">
                     {({ field, form }: any) => (
                       <Select
@@ -347,13 +566,20 @@ export function BookCreateForm({
                         value={field.value}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select" />
+                          <SelectValue
+                            placeholder="Select"
+                            className="placeholder:text-[#6B7280] font-normal"
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="0-1">0-1 years</SelectItem>
-                          <SelectItem value="1-2">1-2 years</SelectItem>
-                          <SelectItem value="2-5">2-5 years</SelectItem>
-                          <SelectItem value="5+">5+ years</SelectItem>
+                          {categories.map((category: CategoryTypes) => (
+                            <SelectItem
+                              key={category.id}
+                              value={`${category.min_age.toString()} - ${category.max_age.toString()}`}
+                            >
+                              {category.min_age} - {category.max_age}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}
@@ -367,7 +593,9 @@ export function BookCreateForm({
               </div>
 
               <div className="space-y-2">
-                <Label>Choose Availability Type</Label>
+                <Label className="text-base font-normal text-[#202124]">
+                  Choose Availability Type
+                </Label>
                 <Field name="availabilityType">
                   {({ field, form }: any) => (
                     <RadioGroup
@@ -376,20 +604,22 @@ export function BookCreateForm({
                       onValueChange={(value) =>
                         form.setFieldValue("availabilityType", value)
                       }
-                      className="flex gap-2"
+                      className="flex gap-8"
                     >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="sell" id="sell" />
-                        <Label htmlFor="sell">Sell</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="rent" id="rent" />
-                        <Label htmlFor="rent">Rent</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="free" id="free" />
-                        <Label htmlFor="free">Free</Label>
-                      </div>
+                      {["Sell", "Rent", "Free"].map((type) => (
+                        <div key={type} className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value={type.toLowerCase()}
+                            id={type.toLowerCase()}
+                          />
+                          <Label
+                            htmlFor={type.toLowerCase()}
+                            className="text-base font-normal leading-none text-gray-900"
+                          >
+                            {type}
+                          </Label>
+                        </div>
+                      ))}
                     </RadioGroup>
                   )}
                 </Field>
@@ -400,37 +630,73 @@ export function BookCreateForm({
                 />
               </div>
 
-              {values.availabilityType === "rent" && (
+              {(values.availabilityType === "rent" ||
+                values.availabilityType === "sell") && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="rentPrice">Rent Price</Label>
+                    <Label
+                      htmlFor="rentPrice"
+                      className="text-base font-normal text-[#202124]"
+                    >
+                      {values.availabilityType === "rent" ? "Rent" : "Sell"}{" "}
+                      Price
+                    </Label>
                     <Field
                       as={Input}
-                      id="rentPrice"
-                      name="rentPrice"
+                      id={
+                        values.availabilityType === "rent"
+                          ? "rentPrice"
+                          : "sellPrice"
+                      }
+                      name={
+                        values.availabilityType === "rent"
+                          ? "rentPrice"
+                          : "sellPrice"
+                      }
                       type="number"
                       placeholder="Enter amount per day"
+                      className="placeholder:text-[#6B7280] font-normal"
                     />
                     <ErrorMessage
-                      name="rentPrice"
+                      name={
+                        values.availabilityType === "rent"
+                          ? "rentPrice"
+                          : "sellPrice"
+                      }
                       component="div"
                       className="text-sm text-red-500"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="discountedRentPrice">
+                    <Label
+                      htmlFor="discountedRentPrice"
+                      className="text-base font-normal text-[#202124]"
+                    >
                       Discounted Rent Price
                     </Label>
                     <Field
                       as={Input}
-                      id="discountedRentPrice"
-                      name="discountedRentPrice"
+                      id={
+                        values.availabilityType === "rent"
+                          ? "discountedRentPrice"
+                          : "discountedSellPrice"
+                      }
+                      name={
+                        values.availabilityType === "rent"
+                          ? "discountedRentPrice"
+                          : "discountedSellPrice"
+                      }
                       type="number"
                       placeholder="Enter discounted amount per day"
+                      className="placeholder:text-[#6B7280] font-normal"
                     />
                     <ErrorMessage
-                      name="discountedRentPrice"
+                      name={
+                        values.availabilityType === "rent"
+                          ? "discountedRentPrice"
+                          : "discountedSellPrice"
+                      }
                       component="div"
                       className="text-sm text-red-500"
                     />
@@ -439,7 +705,10 @@ export function BookCreateForm({
               )}
               {isEditing && (
                 <div className="space-y-2">
-                  <Label htmlFor="description">
+                  <Label
+                    htmlFor="description"
+                    className="text-base font-normal text-[#202124]"
+                  >
                     Why are you editing this information?
                   </Label>
                   <Field
@@ -447,6 +716,7 @@ export function BookCreateForm({
                     id="editingReason"
                     name="editingReason"
                     placeholder="Describe the reason for editing this book’s details"
+                    className="placeholder:text-[#6B7280] font-normal"
                   />
                   <ErrorMessage
                     name="editingReason"
@@ -469,7 +739,7 @@ export function BookCreateForm({
                   type="submit"
                   className="bg-orange-500 hover:bg-orange-600 max-sm:w-36"
                 >
-                  Add Book
+                  {isEditing ? "Update Book" : "Add Book"}
                 </Button>
               </div>
             </Form>

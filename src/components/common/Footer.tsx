@@ -72,7 +72,7 @@ export function Footer() {
             <ul className="space-y-4 text-sm">
               <li>
                 <Link
-                  href="/shops"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Shops
@@ -80,7 +80,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/authors"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Authors
@@ -88,7 +88,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/flash-deals"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Flash Deals
@@ -96,7 +96,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/coupon"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Coupon
@@ -111,7 +111,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/faq"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   FAQ & Helps
@@ -119,7 +119,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/vendor-refund"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Vendor Refund Policies
@@ -127,7 +127,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/customer-refund"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Customer Refund Policies
@@ -142,7 +142,7 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/manufacturers"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Manufacturers
@@ -150,7 +150,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/privacy"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Privacy policies
@@ -158,7 +158,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/terms"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Terms & conditions
@@ -166,7 +166,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/contact"
+                  href="#"
                   className="text-muted-foreground hover:text-primary"
                 >
                   Contact Us

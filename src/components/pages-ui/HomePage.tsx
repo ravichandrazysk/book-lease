@@ -69,7 +69,7 @@ const HomePage = () => {
   // Const handleEamilVerify = () => {};
   return (
     <React.Fragment>
-      <div className="max-sm:max-w-[345px]  sm:max-w-7xl mx-auto">
+      <div className=" max-w-xs sm:max-w-7xl mx-auto">
         {/* <section id="email-verify-button" className="mt-2">
           <EmailVerifyCard onVerify={handleEamilVerify} />
         </section> */}

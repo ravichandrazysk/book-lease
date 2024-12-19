@@ -16,7 +16,6 @@ interface OTPInputProps {
   length: number;
   // eslint-disable-next-line no-unused-vars
   onComplete: (otp: string) => void;
-  onCancel: () => void;
   onResend: () => void;
   email: string;
 }
@@ -24,7 +23,6 @@ interface OTPInputProps {
 export function OTPInput({
   length,
   onComplete,
-  onCancel,
   onResend,
   email,
 }: OTPInputProps) {
@@ -96,22 +94,19 @@ export function OTPInput({
             className="text-center font-normal text-sm mt-6 text-[#6B7280]"
             onClick={onResend}
           >
-            {"Don't have an account? "}
+            {"Didn't get code? "}
             <Link
               href="/signup"
               className="text-[#ff851b] font-medium text-base hover:text-[#ff851b]/90"
             >
-              Sign up
+              Click to resend
             </Link>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="grid grid-cols-2 gap-3">
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
+      <CardFooter className="w-full">
         <Button
-          className="bg-[#ff851b] hover:bg-[#ff851b]/90 text-white"
+          className="bg-[#ff851b] w-full hover:bg-[#ff851b]/90 text-white"
           onClick={() => onComplete(otp.join(""))}
         >
           Verify
