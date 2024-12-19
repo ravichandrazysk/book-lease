@@ -118,7 +118,11 @@ const MyBooks = () => {
               variant="books"
               title={item.name}
               author={item.author}
-              imageUrl={item.images[0].image_path}
+              imageUrl={
+                item.images?.length > 0
+                  ? item.images[0]?.image_path
+                  : "/pngs/Image-not-available.png"
+              }
               isAvailable={item.availability === "Sell"}
               status={item.availability === "Sell" ? "For Sale" : "For Rent"}
               onEdit={() => {
