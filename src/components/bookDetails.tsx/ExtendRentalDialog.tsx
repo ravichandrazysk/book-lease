@@ -42,7 +42,7 @@ export function ExtendRentalDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[425px]"
+        className="max-w-[325px] rounded-md sm:max-w-[425px]"
         aria-describedby="extend-rental-description"
       >
         <DialogHeader>

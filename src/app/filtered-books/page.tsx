@@ -29,6 +29,7 @@ interface BookArrayProps {
   discounted_price: string;
   is_free: boolean;
   category: string;
+  slug: string;
   images: { image_path: string }[];
 }
 
@@ -99,7 +100,7 @@ const Page = () => {
   return (
     <React.Fragment>
       <HeaderFooterLayout>
-        <div className="flex gap-9 max-sm:min-h-[650px] min-h-screen max-w-sm sm:max-w-7xl mx-auto">
+        <div className="flex gap-9 max-sm:min-h-[650px] min-h-screen max-w-sm sm:max-w-7xl px-3 xl:px-0 mx-auto">
           <>
             {/* Responsive filter section */}
             <div className="hidden md:block pt-4">

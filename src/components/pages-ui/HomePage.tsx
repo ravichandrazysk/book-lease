@@ -19,6 +19,7 @@ interface BookArrayProps {
   discounted_price: string;
   is_free: boolean;
   category: string;
+  slug: string;
   images: { image_path: string }[];
 }
 interface BookProps {
@@ -73,7 +74,7 @@ const HomePage = () => {
   // Const handleEamilVerify = () => {};
   return (
     <React.Fragment>
-      <div className=" max-w-xs sm:max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-3 xl:px-0">
         {/* <section id="email-verify-button" className="mt-2">
           <EmailVerifyCard onVerify={handleEamilVerify} />
         </section> */}

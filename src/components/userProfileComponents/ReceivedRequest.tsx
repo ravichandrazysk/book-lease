@@ -108,7 +108,7 @@ export const ReceivedRequests = () => {
     <React.Fragment>
       <section
         id="my-books"
-        className=" sm:w-11/12 md:mr-9 mx-auto max-md:w-[90%] my-5"
+        className=" sm:w-11/12 md:mr-9 mx-auto max-w-3xl my-5"
       >
         <header>
           <SectionHeader title={"Received Requests"} />

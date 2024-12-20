@@ -224,7 +224,7 @@ export function ProfileForm() {
   }, []);
 
   return (
-    <Card className=" my-5 md:mr-9 mx-auto max-md:w-[90%]">
+    <Card className=" my-5 md:mr-9 mx-auto max-w-3xl">
       <Formik
         innerRef={formikRef}
         initialValues={initialValues}
@@ -233,7 +233,7 @@ export function ProfileForm() {
         onSubmit={handleSubmit}
       >
         {({ setFieldValue, values, dirty }) => (
-          <Form className="     p-6 space-y-6">
+          <Form className="   p-3  md:p-6 space-y-6">
             <div className="flex flex-col items-center gap-4">
               <Avatar className="w-24 h-24">
                 <AvatarImage

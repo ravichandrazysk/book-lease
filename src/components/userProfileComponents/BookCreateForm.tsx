@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  Select,
+  Select as UiSelect,
   SelectContent,
   SelectItem,
   SelectTrigger,
@@ -28,6 +28,7 @@ import { isAxiosError } from "axios";
 import { toast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
+const Select = dynamic(() => import("react-select"), { ssr: false });
 
 const FILE_SIZE = 5 * 1024 * 1024;
 const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
@@ -120,6 +121,7 @@ interface FormValues {
   discountedRentPrice?: string;
   discountedSellPrice?: string;
   editingReason?: string;
+  languages: { label: string; value: string }[];
 }
 
 interface CategoryTypes {
@@ -143,6 +145,10 @@ interface MyBookTypes {
   category: string;
   images: { image_path: string }[];
 }
+interface LanguagesTypes {
+  id: number;
+  name: string;
+}
 export function BookCreateForm({
   onAction,
   isEditing,
@@ -157,6 +163,7 @@ export function BookCreateForm({
   const [categories, setCategories] = useState<CategoryTypes[]>([]);
   const [tags, setTags] = useState<TagsTypes[]>([]);
   const [loading, setLoading] = useState(false);
+  const [languages, setLanguages] = useState<LanguagesTypes[]>([]);
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   const [initialValues, setInitialValues] = useState<FormValues>({
     coverImage: null,
@@ -173,6 +180,7 @@ export function BookCreateForm({
     discountedRentPrice: "",
     discountedSellPrice: "",
     editingReason: "",
+    languages: [],
   });
 
   const formikRef = useRef<FormikProps<FormValues>>(null);
@@ -236,6 +244,9 @@ export function BookCreateForm({
         ? values.discountedRentPrice || ""
         : values.discountedSellPrice || ""
     );
+    values.languages.forEach((item) => {
+      formData.append("languages_id[]", item.value);
+    });
     try {
       setLoading(true);
       if (isEditing && existingBookDetails?.id) {
@@ -316,6 +327,53 @@ export function BookCreateForm({
     };
     fetchTags();
   }, []);
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        const response = await axiosInstance.get("/languages");
+        if (response.status === 200) setLanguages(response.data.data);
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log("categories fetch error", error);
+      }
+    };
+    fetchLanguages();
+  }, []);
+
+  const customStyles = {
+    control: (provided: any) => ({
+      ...provided,
+      borderRadius: "0.375rem",
+      borderColor: "#D1D5DB",
+      "&:hover": { borderColor: "#D1D5DB" },
+    }),
+    multiValue: (provided: any) => ({
+      ...provided,
+      backgroundColor: "#E5E7EB",
+    }),
+    multiValueLabel: (provided: any) => ({
+      ...provided,
+      color: "#374151",
+    }),
+    multiValueRemove: (provided: any) => ({
+      ...provided,
+      color: "#374151",
+      "&:hover": {
+        backgroundColor: "#FF851B",
+        color: "#111827",
+      },
+    }),
+    indicatorSeparator: () => ({ display: "none" }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor:
+        state.isFocused || state.isSelected
+          ? "#FAFAFA"
+          : provided.backgroundColor,
+      color: state.isFocused || state.isSelected ? "#111827" : provided.color,
+    }),
+  };
 
   return (
     <Card className=" mx-auto mt-5">
@@ -462,7 +520,7 @@ export function BookCreateForm({
                   </Label>
                   <Field name="category">
                     {({ field, form }: any) => (
-                      <Select
+                      <UiSelect
                         onValueChange={(value) =>
                           form.setFieldValue("category", value)
                         }
@@ -490,7 +548,7 @@ export function BookCreateForm({
                             </div>
                           )}
                         </SelectContent>
-                      </Select>
+                      </UiSelect>
                     )}
                   </Field>
                   <ErrorMessage
@@ -510,7 +568,7 @@ export function BookCreateForm({
                   </Label>
                   <Field name="tags">
                     {({ field, form }: any) => (
-                      <Select
+                      <UiSelect
                         onValueChange={(value) =>
                           form.setFieldValue("tags", value)
                         }
@@ -538,7 +596,7 @@ export function BookCreateForm({
                             </div>
                           )}
                         </SelectContent>
-                      </Select>
+                      </UiSelect>
                     )}
                   </Field>
                   <ErrorMessage
@@ -558,7 +616,7 @@ export function BookCreateForm({
                   </Label>
                   <Field name="condition">
                     {({ field, form }: any) => (
-                      <Select
+                      <UiSelect
                         onValueChange={(value) =>
                           form.setFieldValue("condition", value)
                         }
@@ -576,7 +634,7 @@ export function BookCreateForm({
                           <SelectItem value="Good">Good</SelectItem>
                           <SelectItem value="Fair">Fair</SelectItem>
                         </SelectContent>
-                      </Select>
+                      </UiSelect>
                     )}
                   </Field>
                   <ErrorMessage
@@ -596,7 +654,7 @@ export function BookCreateForm({
                   </Label>
                   <Field name="age">
                     {({ field, form }: any) => (
-                      <Select
+                      <UiSelect
                         onValueChange={(value) =>
                           form.setFieldValue("age", value)
                         }
@@ -624,7 +682,7 @@ export function BookCreateForm({
                             </div>
                           )}
                         </SelectContent>
-                      </Select>
+                      </UiSelect>
                     )}
                   </Field>
                   <ErrorMessage
@@ -633,6 +691,38 @@ export function BookCreateForm({
                     className="text-sm text-red-500"
                   />
                 </div>
+                {!isEditing && (
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="languages"
+                      className="text-base font-normal text-[#202124]"
+                    >
+                      Languages&nbsp;
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Field name="languages">
+                      {({ field, form }: any) => (
+                        <Select
+                          isMulti
+                          styles={customStyles}
+                          options={languages.map((language) => ({
+                            label: language.name,
+                            value: language.id.toString(),
+                          }))}
+                          onChange={(newValue: any) =>
+                            form.setFieldValue("languages", newValue)
+                          }
+                          value={field.value}
+                        />
+                      )}
+                    </Field>
+                    <ErrorMessage
+                      name="languages"
+                      component="div"
+                      className="text-sm text-red-500"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">

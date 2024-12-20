@@ -146,7 +146,7 @@ const MyBooks = () => {
   };
 
   return (
-    <section id="my-books" className=" sm:w-11/12  mx-auto  my-5">
+    <section id="my-books" className=" sm:w-11/12  mx-auto max-w-3xl my-5">
       <header>
         <SectionHeader
           title={

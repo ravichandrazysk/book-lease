@@ -13,7 +13,7 @@ const MyEnquiries = () => {
     <React.Fragment>
       <Tabs
         defaultValue="my-request"
-        className="max-w-3xl mt-5 mx-auto max-md:w-[90%] md:mr-9"
+        className="mt-5 mx-auto max-w-3xl md:mr-9"
       >
         <TabsList className="w-full py-1">
           <TabsTrigger value="my-request" className="w-full">

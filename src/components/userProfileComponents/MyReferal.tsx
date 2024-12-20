@@ -103,7 +103,7 @@ const MyReferral = () => {
   return (
     <section
       id="referral"
-      className="flex flex-col gap-6 md:mr-9 2xl:max-w-5xl my-4 mx-auto max-md:w-[90%]"
+      className="flex flex-col gap-6 md:mr-9 2xl:max-w-5xl my-4 mx-auto max-w-3xl"
     >
       <Card>
         <CardHeader>

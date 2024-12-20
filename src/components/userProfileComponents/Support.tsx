@@ -2,7 +2,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable multiline-ternary */
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SectionHeader } from "@/components/common/SectionHeader";
 import { Card } from "@/components/ui/card";
 import {
@@ -32,6 +32,9 @@ const Lottie = dynamic(() => import("react-lottie-player"));
 
 const Support = () => {
   const [loading, setLoading] = useState(false);
+  const [reasonTypes, setReasonTypes] = useState<
+    { label: string; value: string }[]
+  >([]);
   const initialValues = {
     firstName: "",
     lastName: "",
@@ -58,8 +61,12 @@ const Support = () => {
       .required("Email is required"),
     phoneNumber: Yup.string()
       .matches(/^\d+$/, "Only numbers are allowed")
-      .required("Phone number is required"),
+      .required("Phone number is required")
+      .matches(/^[6-9]\d{9}$/, "Invalid phone number")
+      .min(10, "Phone number must be 10 digits")
+      .max(10, "Phone number must be 10 digits"),
     requestType: Yup.string().required("Request type is required"),
+    comments: Yup.string().required("Comments are required"),
   });
 
   const handleSubmit = async (
@@ -114,10 +121,37 @@ const Support = () => {
     }
   };
 
+  const getReasonTypes = async () => {
+    try {
+      const res = await axiosInstance.get("/customer-support/reason-types");
+      if (
+        res.status === 200 &&
+        res.data.reason_types &&
+        typeof res.data.reason_types === "object"
+      ) {
+        const reasonTypesArray = Object.entries(res.data.reason_types).map(
+          ([value, label]) => ({
+            label: label as string,
+            value,
+          })
+        );
+        setReasonTypes(reasonTypesArray);
+      }
+      // eslint-disable-next-line brace-style
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log("Error in getting reason types", error);
+    }
+  };
+
+  useEffect(() => {
+    getReasonTypes();
+  }, []);
+
   return (
     <section
       id="support"
-      className="  sm:w-11/12 my-5 flex flex-col gap-5 mx-auto max-md:w-[90%]"
+      className="  sm:w-11/12 my-5 flex flex-col gap-5 mx-auto max-w-3xl"
     >
       <header>
         <SectionHeader title="Submit a Request" />
@@ -133,7 +167,7 @@ const Support = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="firstName" className="block py-2">
-                    First Name
+                    First Name <span className="text-red-500">*</span>
                   </label>
                   <Field
                     id="firstName"
@@ -150,7 +184,7 @@ const Support = () => {
 
                 <div>
                   <label htmlFor="lastName" className="block py-2">
-                    Last Name
+                    Last Name <span className="text-red-500">*</span>
                   </label>
                   <Field
                     id="lastName"
@@ -167,7 +201,7 @@ const Support = () => {
 
                 <div>
                   <label htmlFor="email" className="block py-2">
-                    Email
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <Field
                     id="email"
@@ -185,7 +219,7 @@ const Support = () => {
 
                 <div>
                   <label htmlFor="phoneNumber" className="block py-2">
-                    Phone Number
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
                   <Field
                     id="phoneNumber"
@@ -203,7 +237,7 @@ const Support = () => {
 
               <div>
                 <label htmlFor="requestType" className="block py-2">
-                  Request Type
+                  Request Type <span className="text-red-500">*</span>
                 </label>
                 <Field name="requestType">
                   {({
@@ -221,15 +255,17 @@ const Support = () => {
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Optionreason 1">
-                          Optionreason 1
-                        </SelectItem>
-                        <SelectItem value="Optionreason 2">
-                          Optionreason 2
-                        </SelectItem>
-                        <SelectItem value="Optionreason 3">
-                          Optionreason 3
-                        </SelectItem>
+                        {reasonTypes && reasonTypes.length > 0 ? (
+                          reasonTypes.map((reason, index) => (
+                            <SelectItem key={index} value={reason.value}>
+                              {reason.label}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <div className="text-center text-gray-500">
+                            No reason types found
+                          </div>
+                        )}
                       </SelectContent>
                     </Select>
                   )}
@@ -243,7 +279,7 @@ const Support = () => {
 
               <div>
                 <label htmlFor="comments" className="block py-2">
-                  Comment
+                  Comment <span className="text-red-500">*</span>
                 </label>
                 <Field
                   id="comments"
@@ -252,6 +288,11 @@ const Support = () => {
                   rows={4}
                   placeholder="Comment some Additional Details"
                   className="w-full border-2 rounded px-2 py-1"
+                />
+                <ErrorMessage
+                  name="comments"
+                  component="p"
+                  className="text-red-500 text-sm"
                 />
               </div>
               <div className="flex sm:justify-end">

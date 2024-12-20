@@ -7,9 +7,10 @@ import {
   Coins,
   BookCheckIcon,
   Library,
-  Headset,
   Handshake,
   LogOut,
+  BookUp,
+  BookDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
@@ -58,8 +59,13 @@ export function Header() {
     { label: "Coins", icon: Coins, path: "/user/coins" },
     { label: "My Books", icon: BookCheckIcon, path: "/user/my-books" },
     { label: "All Books", icon: Library, path: "/filtered-books" },
+    { label: "My Requests", icon: BookUp, path: "/user/my-requests" },
+    {
+      label: "Recieved Requests",
+      icon: BookDown,
+      path: "/user/received-requests",
+    },
     { label: "Referral", icon: Handshake, path: "/user/referral" },
-    { label: "Enquiries", icon: Headset, path: "/user/enquiries" },
     {
       label: "Customer Support",
       icon: MdOutlineAttachEmail,

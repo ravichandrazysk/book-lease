@@ -58,7 +58,7 @@ const SoldBooks = () => {
   }, []);
   return (
     <React.Fragment>
-      <section id="sold" className=" sm:w-11/12  my-5 mx-auto max-md:w-[90%]">
+      <section id="sold" className=" sm:w-11/12  my-5 mx-auto max-w-3xl">
         <header>
           <SectionHeader title="Sold Books" />
         </header>

@@ -15,6 +15,7 @@ interface ComicCardProps {
   discounted_price: string;
   is_free: boolean;
   category: string;
+  slug: string;
   images: { image_path: string }[];
   className?: string;
 }
@@ -39,7 +40,7 @@ export function BookCard(props: ComicCardProps) {
       <div
         className="relative aspect-[2/3] shadow-md rounded-sm border cursor-pointer overflow-hidden"
         onClick={() => {
-          router.push(`/book-details/${props.id}`);
+          router.push(`/book-details/${props.slug}`);
         }}
       >
         <Image

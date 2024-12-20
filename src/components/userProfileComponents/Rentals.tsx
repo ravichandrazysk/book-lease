@@ -55,10 +55,7 @@ const MyRentals = () => {
   }, []);
   return (
     <React.Fragment>
-      <section
-        id="my-rentals"
-        className=" sm:w-11/12  my-5 mx-auto max-md:w-[90%]"
-      >
+      <section id="my-rentals" className=" sm:w-11/12  my-5 mx-auto max-w-3xl">
         <header>
           <SectionHeader title="My Rental Library" />
         </header>

@@ -13,6 +13,7 @@ interface BookArrayProps {
   discounted_price: string;
   is_free: boolean;
   category: string;
+  slug: string;
   images: { image_path: string }[];
 }
 interface BookProps {

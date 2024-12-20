@@ -21,6 +21,7 @@ interface BookArrayProps {
   discounted_price: string;
   is_free: boolean;
   category: string;
+  slug: string;
   images: { image_path: string }[];
 }
 
@@ -48,7 +49,7 @@ export function CategorySection({
 
   return (
     <div className="flex-1 sm:max-w-4xl mx-auto max-w-sm pt-4">
-      <div className="mb-1 flex items-center gap-4 mx-auto max-md:w-[90%]">
+      <div className="mb-1 flex items-center gap-4 mx-auto max-w-3xl">
         <Button
           variant="ghost"
           size="icon"
@@ -64,7 +65,7 @@ export function CategorySection({
         <h1 className="text-2xl font-bold">{title}</h1>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-2 mx-auto max-md:w-[90%]">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-2 mx-auto max-w-3xl px-3 md:px-0">
         {filteredBookData &&
           filteredBookData.map((comic, index) => (
             <BookCard key={index} {...comic} />

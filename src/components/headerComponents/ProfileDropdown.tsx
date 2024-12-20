@@ -61,9 +61,6 @@ export function ProfileDropdown() {
           >
             My Books
           </DropdownMenuItem>
-          <DropdownMenuItem className="py-3 cursor-pointer font-medium text-base">
-            Settings
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="py-3 cursor-pointer text-red-600 font-medium text-base"

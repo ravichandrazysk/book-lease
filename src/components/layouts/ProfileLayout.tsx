@@ -17,7 +17,7 @@ export default function ProfileLayout({
           <NavigationTabs />
         </section>
         <main className="flex-1  max-h-[calc(100vh-85px)] sm:overflow-y-auto">
-          <div className="max-w-4xl">{children}</div>
+          <div className="max-w-3xl px-3 md:px-0">{children}</div>
         </main>
       </div>
     </React.Fragment>
