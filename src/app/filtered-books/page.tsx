@@ -1,13 +1,24 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable multiline-ternary */
 "use client";
-import { FilterSection } from "@/components/common/BookFilters";
 import { CategorySection } from "@/components/common/CategorySection";
 import CategoryViewSkeleton from "@/components/common/loaders/CategoryViewSkeleton";
 import HeaderFooterLayout from "@/components/layouts/HeaderFooterLayout";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import { FilterContent } from "@/components/common/FilterContent";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Filter } from "lucide-react";
 
 interface BookArrayProps {
   id: number;
@@ -20,43 +31,58 @@ interface BookArrayProps {
   category: string;
   images: { image_path: string }[];
 }
-interface BookProps {
-  id: 1;
-  name: string;
-  max_books_count: number;
-  books: BookArrayProps[];
+
+interface BookMetaData {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
 }
 const Page = () => {
+  const [currentPage, setCurrentPage] = useState(1);
   const [loader, setLoader] = useState(false);
+  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
+  const [checkedTags, setCheckedTags] = useState<string[]>([]);
+  const [checkedAgeGroups, setCheckedAgeGroups] = useState<string[]>([]);
   const [filteredBookData, setFilteredBookData] = useState<BookArrayProps[]>(
     []
   );
-  const [category, setCategory] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined")
-      setCategory(localStorage.getItem("category"));
-  }, []);
+  const [bookMetaData, setBookMetaData] = useState<BookMetaData>({
+    current_page: 1,
+    last_page: 1,
+    per_page: 1,
+    total: 1,
+  });
 
   const handleGetBooks = async () => {
     setLoader(true);
     try {
-      const booksData = await axiosInstance.get("/book-groups");
-      if (booksData.status === 200 && category) {
-        if (category === "All Books") {
-          const allBooks = booksData.data.data.flatMap(
-            (item: BookProps) => item.books
-          );
-          setFilteredBookData(allBooks || []);
-          setLoader(false);
-          return;
-        }
-        const filtredBooks = booksData.data.data.filter(
-          (book: BookProps) => book.name === category
-        );
-        setFilteredBookData(filtredBooks[0]?.books || []);
+      const categoryQuery =
+        checkedCategories && checkedCategories.length > 0
+          ? `&${checkedCategories.map((item) => `categories[]=${item}`).join("&")}`
+          : "";
+      const tagQuery =
+        checkedTags.length > 0 && checkedCategories.length > 0
+          ? `&${checkedTags.map((item) => `tags[]=${item}`).join("&")}`
+          : checkedTags.length > 0
+            ? `&${checkedTags.map((item) => `tags[]=${item}`).join("&")}`
+            : "";
+      const ageQuery =
+        checkedTags.length === 0 &&
+        checkedCategories.length === 0 &&
+        checkedAgeGroups.length > 0
+          ? `&${checkedAgeGroups.map((item) => `age[]=${item}`).join("&")}`
+          : checkedAgeGroups.length > 0
+            ? `&${checkedAgeGroups.map((item) => `age[]=${item}`).join("&")}`
+            : "";
+      const booksData = await axiosInstance.get(
+        `/filtered-books?&paginate=9&page=${currentPage}${categoryQuery}${tagQuery}${ageQuery}`
+      );
+      if (booksData.status === 200) {
+        setFilteredBookData(booksData.data.data || []);
+        setBookMetaData(booksData.data.meta);
+        setLoader(false);
       }
-      setLoader(false);
       // eslint-disable-next-line brace-style
     } catch (error) {
       setLoader(false);
@@ -66,37 +92,80 @@ const Page = () => {
   };
 
   useEffect(() => {
-    if (category) handleGetBooks();
+    handleGetBooks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category]);
+  }, [checkedCategories, checkedTags, currentPage, checkedAgeGroups]);
 
   return (
     <React.Fragment>
       <HeaderFooterLayout>
         <div className="flex gap-9 max-sm:min-h-[650px] min-h-screen max-w-sm sm:max-w-7xl mx-auto">
+          <>
+            {/* Responsive filter section */}
+            <div className="hidden md:block pt-4">
+              <FilterContent
+                onCategoryChange={setCheckedCategories}
+                onTagChange={setCheckedTags}
+                onAgeGroupChange={setCheckedAgeGroups}
+                checkedCategories={checkedCategories}
+                checkedTags={checkedTags}
+                checkedAgeGroups={checkedAgeGroups}
+              />
+            </div>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="md:hidden z-50 fixed bottom-10 right-4 w-fit h-fit flex items-center justify-end rounded-full p-3  bg-white !shadow-md"
+                >
+                  <Filter className="!h-9 !w-9" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="left"
+                className="w-[300px] sm:w-[400px] min-h-screen"
+              >
+                <SheetHeader>
+                  <SheetTitle className="hidden"></SheetTitle>
+                  <SheetDescription className="hidden"></SheetDescription>
+                </SheetHeader>
+                <FilterContent
+                  onCategoryChange={setCheckedCategories}
+                  onTagChange={setCheckedTags}
+                  onAgeGroupChange={setCheckedAgeGroups}
+                  checkedCategories={checkedCategories}
+                  checkedTags={checkedTags}
+                  checkedAgeGroups={checkedAgeGroups}
+                />
+              </SheetContent>
+            </Sheet>
+          </>
+
+          {/* Filtered Books */}
           {loader ? (
             <CategoryViewSkeleton />
           ) : filteredBookData.length > 0 ? (
-            <>
-              <FilterSection />
-              <CategorySection
-                filteredBookData={filteredBookData}
-                title={category || ""}
-              />
-            </>
+            <CategorySection
+              paginationData={bookMetaData}
+              filteredBookData={filteredBookData}
+              onPageChange={setCurrentPage}
+            />
           ) : (
-            <div className="w-full mx-auto my-auto">
-              <Image
-                src="/pngs/books-not-found.png"
-                alt="books-not-found"
-                width={700}
-                height={700}
-                className=" mx-auto max-h-96 "
-              />
-              <p className="text-3xl text-center text-red-500 font-medium">
-                No books found!
-              </p>
-            </div>
+            <>
+              <div className="w-full mx-auto my-auto">
+                <Image
+                  src="/pngs/books-not-found.png"
+                  alt="books-not-found"
+                  width={700}
+                  height={700}
+                  className=" mx-auto max-h-96 "
+                />
+                <p className="text-3xl text-center text-red-500 font-medium">
+                  No books found!
+                </p>
+              </div>
+            </>
           )}
         </div>
       </HeaderFooterLayout>

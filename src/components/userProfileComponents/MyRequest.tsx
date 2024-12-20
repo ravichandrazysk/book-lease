@@ -71,7 +71,7 @@ const MyRequest = () => {
             <StockDetailsCard
               key={item.id}
               variant="sent"
-              title="My Requests"
+              title={item.book_name}
               imageUrl={item.images[0]}
               status={item.status}
               date={item.requested_at}

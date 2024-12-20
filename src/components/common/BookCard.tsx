@@ -22,7 +22,7 @@ interface ComicCardProps {
 export function BookCard(props: ComicCardProps) {
   const router = useRouter();
   const [imgSrc, setImgSrc] = useState(
-    props.images?.length > 0
+    props.images && props.images.length > 0
       ? props.images[0]?.image_path
       : "/pngs/Image-not-available.png"
   );

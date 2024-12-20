@@ -22,12 +22,11 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { usePlacesWidget } from "react-google-autocomplete";
+import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { AxiosError } from "axios";
 import Link from "next/link";
 import { MdLocationSearching } from "react-icons/md";
-
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
@@ -78,10 +77,22 @@ export default function SignUpForm() {
 
   const formikRef = useRef<FormikProps<FormValues>>(null);
 
-  const { ref: addressRef } = usePlacesWidget<HTMLInputElement>({
-    apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    onPlaceSelected: (place) => {
-      if (place.formatted_address && formikRef.current) {
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    libraries: ["places"],
+  });
+
+  const [autocomplete, setAutocomplete] =
+    useState<google.maps.places.Autocomplete | null>(null);
+
+  const onLoad = (autoC: google.maps.places.Autocomplete) => {
+    setAutocomplete(autoC);
+  };
+
+  const onPlaceChanged = () => {
+    if (autocomplete && formikRef.current) {
+      const place = autocomplete.getPlace();
+      if (place.formatted_address) {
         const formattedAddress = place.formatted_address;
         const cityComponent = place?.address_components?.find(
           (component) =>
@@ -105,11 +116,12 @@ export default function SignUpForm() {
           state: state,
           pincode: postalCode || "",
         });
-        formikRef.current.setFieldValue("address", formattedAddress);
+        if (formikRef.current)
+          if (formikRef.current)
+            formikRef.current.setFieldValue("address", formattedAddress);
       }
-    },
-    options: { types: ["address"] },
-  });
+    }
+  };
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -200,40 +212,30 @@ export default function SignUpForm() {
   const handleGetCurrentLocation = async () => {
     if (location && formikRef.current)
       try {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.latitude},${location.longitude}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-        );
-
-        if (!response.ok) throw new Error("Network response was not ok");
-
-        const data = await response.json();
-
-        if (data.results.length > 0) {
-          const result = data.results[0];
-          const formattedAddress = result.formatted_address;
-          if (formikRef.current) {
-            const cityComponent:
-              | google.maps.GeocoderAddressComponent
-              | undefined = result?.address_components?.find(
-              // eslint-disable-next-line indent
-              (component: google.maps.GeocoderAddressComponent) =>
-                // eslint-disable-next-line indent
+        const geocoder = new google.maps.Geocoder();
+        const latlng = {
+          lat: location.latitude,
+          lng: location.longitude,
+        };
+        geocoder.geocode({ location: latlng }, (results, status) => {
+          if (status === "OK" && results && results[0]) {
+            const result = results[0];
+            const formattedAddress = result.formatted_address;
+            const cityComponent = result.address_components.find(
+              (component) =>
                 component.types.includes("locality") ||
                 component.types.includes("administrative_area_level_2")
-              // eslint-disable-next-line indent
             );
             const cityName = cityComponent ? cityComponent.long_name : null;
-            const postalCodeComponent = result?.address_components?.find(
-              (component: google.maps.GeocoderAddressComponent) =>
-                component.types.includes("postal_code")
+            const postalCodeComponent = result.address_components.find(
+              (component) => component.types.includes("postal_code")
             );
             const postalCode = postalCodeComponent
               ? postalCodeComponent.long_name
               : null;
             const state =
-              result?.address_components?.find(
-                (component: google.maps.GeocoderAddressComponent) =>
-                  component.types.includes("administrative_area_level_1")
+              result.address_components.find((component) =>
+                component.types.includes("administrative_area_level_1")
               )?.long_name || "";
             setLocationValues({
               address: formattedAddress,
@@ -241,18 +243,19 @@ export default function SignUpForm() {
               state: state,
               pincode: postalCode || "",
             });
-            formikRef.current.setFieldValue("address", formattedAddress);
-          }
-          // eslint-disable-next-line brace-style
-        } else
-          toast({
-            variant: "destructive",
-            description: "No address found for the given coordinates.",
-          });
+            if (formikRef.current)
+              formikRef.current.setFieldValue("address", formattedAddress);
+            // eslint-disable-next-line brace-style
+          } else
+            toast({
+              variant: "destructive",
+              description: "No address found for the given coordinates.",
+            });
+        });
         // eslint-disable-next-line brace-style
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error("location", error);
+        console.log("location", error);
         toast({
           variant: "destructive",
           description: "Error fetching address",
@@ -296,7 +299,8 @@ export default function SignUpForm() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="firstName" className="font-medium text-sm">
-                    First Name
+                    First Name&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field
                     name="firstName"
@@ -312,7 +316,8 @@ export default function SignUpForm() {
                 </div>
                 <div>
                   <Label htmlFor="lastName" className="font-medium text-sm">
-                    Last Name
+                    Last Name&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field
                     name="lastName"
@@ -329,7 +334,8 @@ export default function SignUpForm() {
               </div>
               <div>
                 <Label htmlFor="phoneNumber" className="font-medium text-sm">
-                  Phone Number
+                  Phone Number&nbsp;
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Field
                   name="phoneNumber"
@@ -345,7 +351,8 @@ export default function SignUpForm() {
               </div>
               <div>
                 <Label htmlFor="email" className="font-medium text-sm">
-                  Email
+                  Email&nbsp;
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Field
                   name="email"
@@ -362,7 +369,8 @@ export default function SignUpForm() {
               </div>
               <div>
                 <Label htmlFor="password" className="font-medium text-sm">
-                  Password
+                  Password&nbsp;
+                  <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <Field
@@ -390,7 +398,8 @@ export default function SignUpForm() {
                   htmlFor="confirmPassword"
                   className="font-medium text-sm"
                 >
-                  Confirm Password
+                  Confirm Password&nbsp;
+                  <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <Field
@@ -415,18 +424,22 @@ export default function SignUpForm() {
               </div>
               <div>
                 <Label htmlFor="address" className="font-medium text-sm">
-                  Address
+                  Address&nbsp;
+                  <span className="text-red-500">*</span>
                 </Label>
-                <Field name="address">
-                  {({ field }: { field: FieldInputProps<string> }) => (
-                    <Input
-                      {...field}
-                      ref={addressRef}
-                      className="border border-[#D1D5DB] h-12 placeholder:text-[#7A7977] placeholder:font-normal text-[#1F2937] font-normal"
-                      placeholder="Search for area, Street name.."
-                    />
-                  )}
-                </Field>
+                {isLoaded && (
+                  <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                    <Field name="address">
+                      {({ field }: { field: FieldInputProps<string> }) => (
+                        <Input
+                          {...field}
+                          className="border border-[#D1D5DB] h-12 placeholder:text-[#7A7977] placeholder:font-normal text-[#1F2937] font-normal"
+                          placeholder="Search for area, Street name.."
+                        />
+                      )}
+                    </Field>
+                  </Autocomplete>
+                )}
                 <ErrorMessage
                   name="address"
                   component="div"

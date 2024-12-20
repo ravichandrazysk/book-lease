@@ -311,11 +311,15 @@ export function BookDetails() {
               </div>
             ) : !session ? (
               "Login to request book"
+            ) : bookDetails.availability === "Sell" &&
+              bookDetails.is_requested ? (
+              "Sold out"
             ) : !bookDetails.can_extend_lease &&
               !bookDetails.is_requested &&
               bookDetails.is_leased ? (
               "Leased"
-            ) : bookDetails.is_leased &&
+            ) : bookDetails.availability !== "Sell" &&
+              bookDetails.is_leased &&
               !bookDetails.is_requested &&
               bookDetails.can_extend_lease ? (
               "Extend Request"

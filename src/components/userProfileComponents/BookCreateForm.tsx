@@ -125,8 +125,7 @@ interface FormValues {
 interface CategoryTypes {
   id: 1;
   name: string;
-  min_age: number;
-  max_age: number;
+  age: string;
 }
 interface TagsTypes {
   id: number;
@@ -331,7 +330,9 @@ export function BookCreateForm({
           return (
             <Form className="space-y-6 p-6 ">
               <div className="space-y-2">
-                <Label className="text-base font-normal">Cover Image</Label>
+                <Label className="text-base font-normal">
+                  Cover Image <span className="text-red-500">*</span>
+                </Label>
                 <p className="text-sm font-normal text-[#6B7280]">
                   Upload your book cover image from here. Dimensions should be
                   960 x 340 px.
@@ -388,7 +389,8 @@ export function BookCreateForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="title" className="text-base font-normal">
-                    Book Title
+                    Book Title&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field
                     as={Input}
@@ -409,7 +411,8 @@ export function BookCreateForm({
                     htmlFor="author"
                     className="text-base font-normal text-[#202124]"
                   >
-                    Author
+                    Author&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field
                     as={Input}
@@ -431,7 +434,8 @@ export function BookCreateForm({
                   htmlFor="description"
                   className="text-base font-normal text-[#202124]"
                 >
-                  Book Description
+                  Book Description&nbsp;
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Field
                   as={Textarea}
@@ -453,7 +457,8 @@ export function BookCreateForm({
                     htmlFor="category"
                     className="text-base font-normal text-[#202124]"
                   >
-                    Category
+                    Category&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field name="category">
                     {({ field, form }: any) => (
@@ -470,14 +475,20 @@ export function BookCreateForm({
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories.map((category: CategoryTypes) => (
-                            <SelectItem
-                              key={category.id}
-                              value={category.id.toString()}
-                            >
-                              {category.name}
-                            </SelectItem>
-                          ))}
+                          {categories && categories.length > 0 ? (
+                            categories.map((category: CategoryTypes) => (
+                              <SelectItem
+                                key={category.id}
+                                value={category.id.toString()}
+                              >
+                                {category.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="text-gray-500 text-center">
+                              No categories found
+                            </div>
+                          )}
                         </SelectContent>
                       </Select>
                     )}
@@ -494,7 +505,8 @@ export function BookCreateForm({
                     htmlFor="tags"
                     className="text-base font-normal text-[#202124]"
                   >
-                    Tags
+                    Tags&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field name="tags">
                     {({ field, form }: any) => (
@@ -511,11 +523,20 @@ export function BookCreateForm({
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          {tags.map((tag: TagsTypes) => (
-                            <SelectItem key={tag.id} value={tag.id.toString()}>
-                              {tag.name}
-                            </SelectItem>
-                          ))}
+                          {tags && tags.length > 0 ? (
+                            tags.map((tag: TagsTypes) => (
+                              <SelectItem
+                                key={tag.id}
+                                value={tag.id.toString()}
+                              >
+                                {tag.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="text-gray-500 text-center">
+                              No tags found
+                            </div>
+                          )}
                         </SelectContent>
                       </Select>
                     )}
@@ -532,7 +553,8 @@ export function BookCreateForm({
                     htmlFor="condition"
                     className="text-base font-normal text-[#202124]"
                   >
-                    Condition of the Book
+                    Condition of the Book&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field name="condition">
                     {({ field, form }: any) => (
@@ -569,7 +591,8 @@ export function BookCreateForm({
                     htmlFor="age"
                     className="text-base font-normal text-[#202124]"
                   >
-                    Age
+                    Age&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field name="age">
                     {({ field, form }: any) => (
@@ -586,14 +609,20 @@ export function BookCreateForm({
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories.map((category: CategoryTypes) => (
-                            <SelectItem
-                              key={category.id}
-                              value={`${category.min_age.toString()} - ${category.max_age.toString()}`}
-                            >
-                              {category.min_age} - {category.max_age}
-                            </SelectItem>
-                          ))}
+                          {categories && categories.length > 0 ? (
+                            categories.map((category: CategoryTypes) => (
+                              <SelectItem
+                                key={category.id}
+                                value={category.age}
+                              >
+                                {category.age}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="text-gray-500 text-center">
+                              No age ranges found
+                            </div>
+                          )}
                         </SelectContent>
                       </Select>
                     )}
@@ -608,7 +637,8 @@ export function BookCreateForm({
 
               <div className="space-y-2">
                 <Label className="text-base font-normal text-[#202124]">
-                  Choose Availability Type
+                  Choose Availability Type&nbsp;
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Field name="availabilityType">
                   {({ field, form }: any) => (
@@ -653,7 +683,8 @@ export function BookCreateForm({
                       className="text-base font-normal text-[#202124]"
                     >
                       {values.availabilityType === "rent" ? "Rent" : "Sell"}{" "}
-                      Price
+                      Price&nbsp;
+                      <span className="text-red-500">*</span>
                     </Label>
                     <Field
                       as={Input}
@@ -723,7 +754,8 @@ export function BookCreateForm({
                     htmlFor="description"
                     className="text-base font-normal text-[#202124]"
                   >
-                    Why are you editing this information?
+                    Why are you editing this information?&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field
                     as={Textarea}

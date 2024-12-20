@@ -111,7 +111,7 @@ export const ReceivedRequests = () => {
         className=" sm:w-11/12 md:mr-9 mx-auto max-md:w-[90%] my-5"
       >
         <header>
-          <SectionHeader title={"My Request"} />
+          <SectionHeader title={"Received Requests"} />
         </header>
 
         {loading ? (
@@ -125,7 +125,7 @@ export const ReceivedRequests = () => {
             <StockDetailsCard
               key={item.id}
               variant="received"
-              title="Received Requests"
+              title={item.book_name}
               author={item.requester}
               imageUrl={item.images[0]}
               status={item.status}

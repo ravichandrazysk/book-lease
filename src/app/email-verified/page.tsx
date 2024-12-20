@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
+
 const Page = () => {
   const router = useRouter();
   return (

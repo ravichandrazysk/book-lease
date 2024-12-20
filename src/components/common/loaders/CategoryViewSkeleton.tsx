@@ -6,7 +6,7 @@ import { BooksGridSkeleton } from "./BooksGridSkeleton";
 const CategoryViewSkeleton = () => {
   return (
     <div className="flex gap-5 w-full mt-8">
-      <Skeleton className="min-h-[500px] min-w-80 max-sm:hidden" />
+      {/* <Skeleton className="min-h-[500px] min-w-80 max-sm:hidden" /> */}
       <div className="w-full">
         <Skeleton className="min-h-5  min-w-96 rounded-lg w-16 " />
         <BooksGridSkeleton

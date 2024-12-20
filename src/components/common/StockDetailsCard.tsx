@@ -36,7 +36,7 @@ interface BookCardProps {
   imageError?: () => void;
   onEdit?: () => void;
   // eslint-disable-next-line no-unused-vars
-  onToggle?: (value: boolean) => void;
+  onToggle?: () => void;
   onAccept?: () => void;
   onCancel?: () => void;
 }
@@ -75,6 +75,7 @@ export function StockDetailsCard({
     profile_photo: null,
   });
   const [loading, setLoading] = useState(true);
+  const [availabilityToggle, setAvailabilityToggle] = useState(isAvailable);
 
   useEffect(() => {
     const getOwnerDetails = async () => {
@@ -192,8 +193,11 @@ export function StockDetailsCard({
               <div className="flex items-center gap-2">
                 <span className="text-sm text-blue-500">Available</span>
                 <Switch
-                  checked={isAvailable}
-                  onCheckedChange={onToggle}
+                  checked={availabilityToggle}
+                  onCheckedChange={() => {
+                    setAvailabilityToggle(!availabilityToggle);
+                    if (onToggle) onToggle();
+                  }}
                   className="data-[state=checked]:bg-[#FF7A09] "
                 />
               </div>

@@ -105,7 +105,8 @@ export default function LoginPage() {
               <Form>
                 <div className="">
                   <Label htmlFor="email" className="font-medium">
-                    Email or Phone number
+                    Email or Phone number&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <Field
                     name="email"
@@ -123,7 +124,8 @@ export default function LoginPage() {
                 </div>
                 <div className="min-h-16 mt-6">
                   <Label htmlFor="password" className="font-medium">
-                    Password
+                    Password&nbsp;
+                    <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
                     <Field

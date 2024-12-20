@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { usePlacesWidget } from "react-google-autocomplete";
+import { LoadScript, Autocomplete } from "@react-google-maps/api";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
@@ -65,7 +65,7 @@ const ProfileSchema = Yup.object().shape({
   address: Yup.string().required("Address is required"),
   state: Yup.string().required("State is required"),
   city: Yup.string().required("City is required"),
-  profileImage: Yup.mixed().required("Profile image is required"),
+  profileImage: Yup.mixed(),
 });
 
 interface ProfileFormValues {
@@ -85,29 +85,7 @@ export function ProfileForm() {
   const [loader, setLoader] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formikRef = useRef<FormikProps<ProfileFormValues>>(null);
-  const { ref: addressRef } = usePlacesWidget<HTMLInputElement>({
-    apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-    onPlaceSelected: (place) => {
-      if (place.formatted_address && formikRef.current) {
-        const formattedAddress = place.formatted_address;
-        const cityComponent = place?.address_components?.find(
-          (component) =>
-            component.types.includes("locality") ||
-            component.types.includes("administrative_area_level_2")
-        );
-        const cityName = cityComponent ? cityComponent.long_name : null;
-
-        const state =
-          place?.address_components?.find((component) =>
-            component.types.includes("administrative_area_level_1")
-          )?.long_name || "";
-        formikRef.current.setFieldValue("address", formattedAddress);
-        formikRef.current.setFieldValue("state", state);
-        formikRef.current.setFieldValue("city", cityName);
-      }
-    },
-    options: { types: ["address"] },
-  });
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const [initialValues, setInitialValues] = useState<ProfileFormValues>({
     firstName: "",
@@ -128,6 +106,27 @@ export function ProfileForm() {
     if (initialValues.profileImage)
       setProfileImageUrl(initialValues.profileImage);
   }, [initialValues.profileImage]);
+
+  const handlePlaceChanged = () => {
+    const place = autocompleteRef.current?.getPlace();
+    if (place && place.formatted_address && formikRef.current) {
+      const formattedAddress = place.formatted_address;
+      const cityComponent = place?.address_components?.find(
+        (component) =>
+          component.types.includes("locality") ||
+          component.types.includes("administrative_area_level_2")
+      );
+      const cityName = cityComponent ? cityComponent.long_name : null;
+
+      const state =
+        place?.address_components?.find((component) =>
+          component.types.includes("administrative_area_level_1")
+        )?.long_name || "";
+      formikRef.current.setFieldValue("address", formattedAddress);
+      formikRef.current.setFieldValue("state", state);
+      formikRef.current.setFieldValue("city", cityName);
+    }
+  };
 
   const handleSubmit = async (values: ProfileFormValues) => {
     setLoader(true);
@@ -287,7 +286,8 @@ export function ProfileForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label htmlFor="firstName" className="text-sm font-medium">
-                  First Name
+                  First Name&nbsp;
+                  <span className="text-red-500">*</span>
                 </label>
                 <Field
                   as={Input}
@@ -307,7 +307,8 @@ export function ProfileForm() {
 
               <div className="space-y-2">
                 <label htmlFor="lastName" className="text-sm font-medium">
-                  Last Name
+                  Last Name&nbsp;
+                  <span className="text-red-500">*</span>
                 </label>
                 <Field
                   as={Input}
@@ -327,7 +328,8 @@ export function ProfileForm() {
 
               <div className="space-y-2">
                 <label htmlFor="phoneNumber" className="text-sm font-medium">
-                  Phone Number
+                  Phone Number&nbsp;
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <Field
@@ -339,9 +341,13 @@ export function ProfileForm() {
                     className="border border-[#D1D5DB]"
                     value={values.phoneNumber}
                   />
-                  {/* <Button variant="outline" type="button">
-                  Verify
-                </Button> */}
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="bg-orange-500 text-white dark:text-white font-medium"
+                  >
+                    Verify
+                  </Button>
                 </div>
                 <ErrorMessage
                   name="phoneNumber"
@@ -352,7 +358,8 @@ export function ProfileForm() {
 
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">
-                  Email
+                  Email&nbsp;
+                  <span className="text-red-500">*</span>
                 </label>
                 <Field
                   as={Input}
@@ -372,7 +379,8 @@ export function ProfileForm() {
 
               <div className="space-y-2">
                 <label htmlFor="age" className="text-sm font-medium">
-                  Age
+                  Age&nbsp;
+                  <span className="text-red-500">*</span>
                 </label>
                 <Field
                   as={Input}
@@ -392,7 +400,8 @@ export function ProfileForm() {
 
               <div className="space-y-2">
                 <label htmlFor="gender" className="text-sm font-medium">
-                  Gender
+                  Gender&nbsp;
+                  <span className="text-red-500">*</span>
                 </label>
                 <Field name="gender">
                   {({ field, form }: any) => (
@@ -423,21 +432,33 @@ export function ProfileForm() {
 
             <div className="space-y-2">
               <label htmlFor="address" className="text-sm font-medium">
-                Address
+                Address&nbsp;
+                <span className="text-red-500">*</span>
               </label>
-              <Field name="address">
-                {({ field }: any) => (
-                  <Input
-                    {...field}
-                    ref={addressRef}
-                    id="address"
-                    type="text"
-                    placeholder="Search for area, Street name.."
-                    className="border border-[#D1D5DB]"
-                    value={values.address}
-                  />
-                )}
-              </Field>
+              <LoadScript
+                googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+                libraries={["places"]}
+              >
+                <Field name="address">
+                  {({ field }: any) => (
+                    <Autocomplete
+                      onLoad={(autocomplete) =>
+                        (autocompleteRef.current = autocomplete)
+                      }
+                      onPlaceChanged={handlePlaceChanged}
+                    >
+                      <Input
+                        {...field}
+                        id="address"
+                        type="text"
+                        placeholder="Search for area, Street name.."
+                        className="border border-[#D1D5DB]"
+                        value={values.address}
+                      />
+                    </Autocomplete>
+                  )}
+                </Field>
+              </LoadScript>
               <ErrorMessage
                 name="address"
                 component="div"
@@ -448,7 +469,8 @@ export function ProfileForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label htmlFor="state" className="text-sm font-medium">
-                  State
+                  State&nbsp;
+                  <span className="text-red-500">*</span>
                 </label>
                 <Field
                   as={Input}
@@ -468,7 +490,8 @@ export function ProfileForm() {
 
               <div className="space-y-2">
                 <label htmlFor="city" className="text-sm font-medium">
-                  City
+                  City&nbsp;
+                  <span className="text-red-500">*</span>
                 </label>
                 <Field
                   as={Input}

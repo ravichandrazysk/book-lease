@@ -2,7 +2,6 @@
 import { SquareChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BookCard } from "@/components/common/BookCard";
-import { useState } from "react";
 import {
   Pagination,
   PaginationContent,
@@ -28,23 +27,24 @@ interface BookArrayProps {
 export function CategorySection({
   filteredBookData,
   title,
+  paginationData,
+  onPageChange,
 }: {
   filteredBookData: BookArrayProps[];
   title?: string;
+  paginationData: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  onPageChange: React.Dispatch<React.SetStateAction<number>>;
 }) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
-  const totalPages = Math.ceil(filteredBookData.length / itemsPerPage);
   const router = useRouter();
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    onPageChange(page);
   };
-
-  const paginatedData = filteredBookData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   return (
     <div className="flex-1 sm:max-w-4xl mx-auto max-w-sm pt-4">
@@ -65,26 +65,34 @@ export function CategorySection({
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-2 mx-auto max-md:w-[90%]">
-        {paginatedData.map((comic, index) => (
-          <BookCard key={index} {...comic} />
-        ))}
+        {filteredBookData &&
+          filteredBookData.map((comic, index) => (
+            <BookCard key={index} {...comic} />
+          ))}
       </div>
 
-      {totalPages > 1 && (
+      {paginationData.last_page > 1 && (
         <Pagination>
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
+                className={
+                  paginationData.current_page === 1
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer"
+                }
                 onClick={() =>
-                  currentPage > 1 && handlePageChange(currentPage - 1)
+                  paginationData.current_page > 1 &&
+                  handlePageChange(paginationData.current_page - 1)
                 }
               />
             </PaginationItem>
-            {[...Array(totalPages)].map((_, pageIndex) => (
+            {[...Array(paginationData.last_page)].map((_, pageIndex) => (
               <PaginationItem key={pageIndex}>
                 <PaginationLink
+                  className={`cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
                   onClick={() => handlePageChange(pageIndex + 1)}
-                  isActive={currentPage === pageIndex + 1}
+                  isActive={paginationData.current_page === pageIndex + 1}
                 >
                   {pageIndex + 1}
                 </PaginationLink>
@@ -92,8 +100,14 @@ export function CategorySection({
             ))}
             <PaginationItem>
               <PaginationNext
+                className={
+                  paginationData.current_page === paginationData.last_page
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer"
+                }
                 onClick={() =>
-                  currentPage < totalPages && handlePageChange(currentPage + 1)
+                  paginationData.current_page < paginationData.last_page &&
+                  handlePageChange(paginationData.current_page + 1)
                 }
               />
             </PaginationItem>

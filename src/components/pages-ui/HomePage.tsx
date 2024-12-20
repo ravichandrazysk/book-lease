@@ -50,9 +50,13 @@ const HomePage = () => {
         "/featured-contents?section=Home Page Top&type=Banner"
       );
       if (topBannerAdds.status === 200) {
-        const imgArr = topBannerAdds.data.data.map(
-          (item: { banner_image: string }) => item.banner_image
-        );
+        const imgArr =
+          topBannerAdds.data &&
+          topBannerAdds.data.data &&
+          topBannerAdds.data.data.length > 0 &&
+          topBannerAdds.data.data.map(
+            (item: { banner_image: string }) => item.banner_image
+          );
         setTopBannerAdds(imgArr);
       }
       // eslint-disable-next-line brace-style

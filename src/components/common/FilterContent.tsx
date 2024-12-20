@@ -1,58 +1,62 @@
+/* eslint-disable indent */
 "use client";
 
-import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../ui/accordion";
+} from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { axiosInstance } from "@/utils/AxiosConfig";
+import { FilteredSectionSekelton } from "./loaders/FilteredSectionSekelton";
 
-const categories = [
-  "Comic books",
-  "Science Fiction",
-  "Literature",
-  "Children's Literature",
-  "Horror Fiction",
-  "Novels",
-  "Romantic Poetry",
-  "Thriller",
-];
+interface CategoryTypes {
+  id: 1;
+  name: string;
+  age: string;
+}
 
-const tags = [
-  "First Edition",
-  "Fantasy",
-  "Latest Edition",
-  "Action",
-  "Suspense",
-  "Drama",
-];
+interface TagsTypes {
+  id: number;
+  name: string;
+}
 
-const ageGroups = [
-  "0-5 Years",
-  "5-10 Years",
-  "10-15 Years",
-  "15-20 Years",
-  "20-25 Years",
-  "25-30 Years",
-];
-export const FilterContent = () => {
-  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
-  const [checkedTags, setCheckedTags] = useState<string[]>([]);
-  const [checkedAgeGroups, setCheckedAgeGroups] = useState<string[]>([]);
+interface FilterContentProps {
+  onCategoryChange: React.Dispatch<React.SetStateAction<string[]>>;
+  onTagChange: React.Dispatch<React.SetStateAction<string[]>>;
+  onAgeGroupChange: React.Dispatch<React.SetStateAction<string[]>>;
+  checkedCategories: string[];
+  checkedTags: string[];
+  checkedAgeGroups: string[];
+}
+export const FilterContent = ({
+  onCategoryChange,
+  onTagChange,
+  onAgeGroupChange,
+  checkedCategories,
+  checkedTags,
+  checkedAgeGroups,
+}: FilterContentProps) => {
+  const [categories, setCategories] = useState<CategoryTypes[]>([]);
+  const [tags, setTags] = useState<TagsTypes[]>([]);
+  const [ageGroups, setAgeGroups] = useState<string[]>([]);
   const [openItems, setOpenItems] = useState<string[]>([
     "categories",
     "tags",
     "age-groups",
   ]);
+  const [loading, setLoading] = useState({
+    categoryLoading: false,
+    tagLoading: false,
+  });
 
   const handleClearAll = () => {
-    setCheckedCategories([]);
-    setCheckedTags([]);
-    setCheckedAgeGroups([]);
+    onCategoryChange([]);
+    onTagChange([]);
+    onAgeGroupChange([]);
   };
 
   const handleCheckboxChange = (
@@ -65,6 +69,44 @@ export const FilterContent = () => {
         : [...prev, value]
     );
   };
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading((prev) => ({ ...prev, categoryLoading: true }));
+        const response = await axiosInstance.get("/categories");
+        if (response.status === 200) {
+          setCategories(response.data.data);
+          const ages = response.data.data.map((category: CategoryTypes) => {
+            return category.age;
+          });
+          setAgeGroups(ages);
+          setLoading((prev) => ({ ...prev, categoryLoading: false }));
+        }
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        setLoading((prev) => ({ ...prev, categoryLoading: false }));
+        // eslint-disable-next-line no-console
+        console.log("categories fetch error", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        setLoading((prev) => ({ ...prev, tagLoading: true }));
+        const response = await axiosInstance.get("/tag-list");
+        if (response.status === 200) setTags(response.data.data);
+        setLoading((prev) => ({ ...prev, tagLoading: false }));
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        setLoading((prev) => ({ ...prev, tagLoading: false }));
+        // eslint-disable-next-line no-console
+        console.log("categories fetch error", error);
+      }
+    };
+    fetchTags();
+  }, []);
   return (
     <div className="min-w-[280px] space-y-6 p-4 sm:border min-h-screen sm:rounded-lg overflow-y-auto">
       <div className="flex items-center justify-between">
@@ -79,10 +121,6 @@ export const FilterContent = () => {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      </div>
-
       <Accordion
         type="multiple"
         value={openItems}
@@ -95,24 +133,38 @@ export const FilterContent = () => {
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
-              {categories.map((category) => (
-                <div key={category} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={category}
-                    checked={checkedCategories.includes(category)}
-                    onCheckedChange={() =>
-                      handleCheckboxChange(setCheckedCategories, category)
-                    }
-                    className="data-[state=checked]:bg-[#FF851B]"
-                  />
-                  <label
-                    htmlFor={category}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {category}
-                  </label>
-                </div>
-              ))}
+              {loading.categoryLoading
+                ? Array.from({ length: 3 }).map((_, index) => (
+                    <FilteredSectionSekelton key={index} />
+                  ))
+                : categories &&
+                  categories.length > 0 &&
+                  categories.map((category) => (
+                    <div
+                      key={category.id}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={`category-${category.id}`}
+                        checked={checkedCategories.includes(
+                          category.id.toString()
+                        )}
+                        onCheckedChange={() =>
+                          handleCheckboxChange(
+                            onCategoryChange,
+                            category.id.toString()
+                          )
+                        }
+                        className="data-[state=checked]:bg-[#FF851B]"
+                      />
+                      <label
+                        htmlFor={`category-${category.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {category.name}
+                      </label>
+                    </div>
+                  ))}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -123,24 +175,33 @@ export const FilterContent = () => {
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
-              {tags.map((tag) => (
-                <div key={tag} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={tag}
-                    checked={checkedTags.includes(tag)}
-                    onCheckedChange={() =>
-                      handleCheckboxChange(setCheckedTags, tag)
-                    }
-                    className="data-[state=checked]:bg-[#FF851B]"
-                  />
-                  <label
-                    htmlFor={tag}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {tag}
-                  </label>
-                </div>
-              ))}
+              {loading.tagLoading
+                ? Array.from({ length: 3 }).map((_, index) => (
+                    <FilteredSectionSekelton key={`tag-skeleton-${index}`} />
+                  ))
+                : tags &&
+                  tags.length > 0 &&
+                  tags.map((tag) => (
+                    <div
+                      key={`tag-${tag.id}`}
+                      className="flex items-center space-x-2"
+                    >
+                      <Checkbox
+                        id={`tag-${tag.id}`}
+                        checked={checkedTags.includes(tag.id.toString())}
+                        onCheckedChange={() =>
+                          handleCheckboxChange(onTagChange, tag.id.toString())
+                        }
+                        className="data-[state=checked]:bg-[#FF851B]"
+                      />
+                      <label
+                        htmlFor={`tag-${tag.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {tag.name}
+                      </label>
+                    </div>
+                  ))}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -151,24 +212,30 @@ export const FilterContent = () => {
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-2">
-              {ageGroups.map((age) => (
-                <div key={age} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={age}
-                    checked={checkedAgeGroups.includes(age)}
-                    onCheckedChange={() =>
-                      handleCheckboxChange(setCheckedAgeGroups, age)
-                    }
-                    className=" data-[state=checked]:bg-[#FF851B]"
-                  />
-                  <label
-                    htmlFor={age}
-                    className="text-sm font-medium text-[#1F2937] leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {age}
-                  </label>
-                </div>
-              ))}
+              {loading.categoryLoading
+                ? Array.from({ length: 3 }).map((_, index) => (
+                    <FilteredSectionSekelton key={index} />
+                  ))
+                : ageGroups &&
+                  ageGroups.length > 0 &&
+                  ageGroups.map((age) => (
+                    <div key={age} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={age}
+                        checked={checkedAgeGroups.includes(age)}
+                        onCheckedChange={() =>
+                          handleCheckboxChange(onAgeGroupChange, age)
+                        }
+                        className=" data-[state=checked]:bg-[#FF851B]"
+                      />
+                      <label
+                        htmlFor={age}
+                        className="text-sm font-medium text-[#1F2937] leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        {age}
+                      </label>
+                    </div>
+                  ))}
             </div>
           </AccordionContent>
         </AccordionItem>

@@ -1,9 +1,12 @@
+/* eslint-disable no-extra-parens */
+/* eslint-disable multiline-ternary */
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface NotificationTypes {
   id: number;
@@ -50,48 +53,24 @@ export function NotificationPanel({
           <ScrollArea className="h-[300px] overflow-y-auto">
             <TabsContent value="all" className="mt-4">
               <div className="space-y-4">
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`flex gap-3 items-center ${notification.read_at ? "" : "cursor-pointer"}`}
-                    onClick={() => {
-                      if (!notification.read_at)
-                        router.push("/user/received-requests");
-                    }}
-                  >
-                    <div className="flex-shrink-0 mt-1">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          notification.read_at === null
-                            ? "bg-blue-500"
-                            : "bg-gray-300"
-                        }`}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {notification.title}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {notification.body}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
-            <TabsContent value="unread" className="mt-4">
-              <div className="space-y-4">
-                {notifications
-                  .filter((notification) => notification.read_at === null)
-                  .map((notification) => (
+                {notifications && notifications.length > 0 ? (
+                  notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className="flex gap-3 items-center cursor-pointer"
-                      onClick={() => router.push("/user/received-requests")}
+                      className={`flex gap-3 items-center ${notification.read_at ? "" : "cursor-pointer"}`}
+                      onClick={() => {
+                        if (!notification.read_at)
+                          router.push("/user/received-requests");
+                      }}
                     >
                       <div className="flex-shrink-0 mt-1">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            notification.read_at === null
+                              ? "bg-blue-500"
+                              : "bg-gray-300"
+                          }`}
+                        />
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">
@@ -102,7 +81,69 @@ export function NotificationPanel({
                         </p>
                       </div>
                     </div>
-                  ))}
+                  ))
+                ) : (
+                  <>
+                    <section
+                      id="no-notification"
+                      className="flex flex-col items-center justify-center"
+                    >
+                      <Image
+                        src="/svgs/no-notifications.svg"
+                        alt="No notifications"
+                        width={300}
+                        height={400}
+                        className="max-w-max"
+                      />
+                      <p className="text-xl font-semibold text-red-500">
+                        No notifications found!
+                      </p>
+                    </section>
+                  </>
+                )}
+              </div>
+            </TabsContent>
+            <TabsContent value="unread" className="mt-4">
+              <div className="space-y-4">
+                {notifications && notifications.length > 0 ? (
+                  notifications
+                    .filter((notification) => notification.read_at === null)
+                    .map((notification) => (
+                      <div
+                        key={notification.id}
+                        className="flex gap-3 items-center cursor-pointer"
+                        onClick={() => router.push("/user/received-requests")}
+                      >
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">
+                            {notification.title}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {notification.body}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                ) : (
+                  <section
+                    id="no-notification"
+                    className="flex flex-col items-center justify-center"
+                  >
+                    <Image
+                      src="/svgs/no-notifications.svg"
+                      alt="No notifications"
+                      width={300}
+                      height={400}
+                      className="max-w-max"
+                    />
+                    <p className="text-xl font-semibold text-red-500">
+                      No notifications found!
+                    </p>
+                  </section>
+                )}
               </div>
             </TabsContent>
           </ScrollArea>

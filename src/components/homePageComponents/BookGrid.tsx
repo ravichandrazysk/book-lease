@@ -25,8 +25,7 @@ interface BookProps {
 export default function BookGrid({ categoryName, books }: BookProps) {
   const router = useRouter();
   const handleViewMore = () => {
-    localStorage.setItem("category", categoryName);
-    router.push(`/filtered-books/`);
+    router.push(`/filtered-books`);
   };
   return (
     <div className="space-y-4 mt-12 ">
@@ -43,10 +42,12 @@ export default function BookGrid({ categoryName, books }: BookProps) {
         )}
       </div>
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        {books.map((comic, index) => {
-          if (index > 9) return;
-          else return <BookCard key={index} {...comic} />;
-        })}
+        {books &&
+          books.length > 0 &&
+          books.map((comic, index) => {
+            if (index > 9) return;
+            else return <BookCard key={index} {...comic} />;
+          })}
       </div>
     </div>
   );

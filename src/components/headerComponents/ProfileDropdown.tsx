@@ -38,7 +38,7 @@ export function ProfileDropdown() {
             }
             alt="User"
           />
-          <AvatarFallback>U</AvatarFallback>
+          <AvatarFallback>&#9888;</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 p-0 mt-2" align="end">
@@ -60,12 +60,6 @@ export function ProfileDropdown() {
             onClick={() => router.push("/user/my-books")}
           >
             My Books
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="py-3 cursor-pointer font-medium text-base"
-            onClick={() => router.push("/user/enquiries")}
-          >
-            Enquires
           </DropdownMenuItem>
           <DropdownMenuItem className="py-3 cursor-pointer font-medium text-base">
             Settings
