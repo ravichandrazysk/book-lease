@@ -97,9 +97,9 @@ export function StockDetailsCard({
         <Image
           src={imageUrl}
           alt={`Cover of ${title}`}
-          className={`${variant === "received" ? "max-sm:h-36 max-sm:w-24 w-20 h-28" : "w-20 h-28"} object-cover rounded-sm`}
-          width={200}
-          height={200}
+          className="aspect-[2/3] object-cover rounded-sm"
+          width={80}
+          height={120}
           onError={imageError}
         />
       </section>
@@ -154,7 +154,7 @@ export function StockDetailsCard({
           )}
         </div>
 
-        <div className="flex justify-between my-5 items-center gap-4">
+        <div className="flex justify-between mt-5 items-center gap-4">
           {variant === "books" && (
             <>
               {status && (
@@ -214,10 +214,12 @@ export function StockDetailsCard({
             </>
           )}
 
-          {variant === "rental" && date && (
+          {variant === "rental" && (
             <p className="text-sm font-normal text-[#7A7977] mt-1">
               Due Date:{" "}
-              <span className="font-semibold text-[#202124]">{date}</span>
+              <span className="font-semibold text-[#202124]">
+                {date ? date : "NA"}
+              </span>
             </p>
           )}
 

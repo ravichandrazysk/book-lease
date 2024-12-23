@@ -1,3 +1,5 @@
+/* eslint-disable no-extra-parens */
+/* eslint-disable multiline-ternary */
 "use client";
 
 import React, { useState, useRef, KeyboardEvent, ChangeEvent } from "react";
@@ -11,18 +13,20 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 export function OTPInput({
   length,
   onComplete,
   onResend,
-  email,
+  loader,
 }: {
   length: number;
   // eslint-disable-next-line no-unused-vars
   onComplete: (otp: string) => void;
   onResend: () => void;
-  email: string;
+  loader: boolean;
 }) {
   const [otp, setOtp] = useState<string[]>(new Array(length).fill(""));
   // eslint-disable-next-line no-extra-parens
@@ -37,9 +41,6 @@ export function OTPInput({
 
     // Move to next input if current field is filled
     if (value && index < length - 1) inputRefs.current[index + 1]?.focus();
-
-    // Call onComplete if all fields are filled
-    if (newOtp.every((v) => v !== "")) onComplete(newOtp.join(""));
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -67,7 +68,7 @@ export function OTPInput({
         <h2 className="text-2xl  font-medium ">Enter verification code</h2>
         <p className="text-sm font-normal text-[#6B7280]">
           We have sent a code to{" "}
-          <span className="font-medium text-[#202124]">{email}</span>
+          <span className="font-medium text-[#202124]">Phone</span>
         </p>
       </CardHeader>
       <CardContent>
@@ -107,7 +108,18 @@ export function OTPInput({
           className="bg-[#ff851b] w-full hover:bg-[#ff851b]/90 text-white"
           onClick={() => onComplete(otp.join(""))}
         >
-          Verify
+          {loader ? (
+            <div className="flex justify-center items-center w-full max-h-5">
+              <Lottie
+                loop
+                path="/lotties/button-loader.json"
+                play
+                style={{ width: "100%" }}
+              />
+            </div>
+          ) : (
+            "Verify"
+          )}
         </Button>
       </CardFooter>
     </Card>

@@ -13,6 +13,7 @@ export interface AxiosErrorTypes extends AxiosError {
 }
 
 export interface CustomUser extends User {
+  id?: number;
   coins?: number;
   profile_photo?: string | null;
 }

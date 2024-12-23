@@ -22,7 +22,11 @@ import { toast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import dynamic from "next/dynamic";
 import { ProfileFormValues } from "@/types/common-types";
-const Lottie = dynamic(() => import("react-lottie-player"));
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { CustomSession } from "@/types/next-auth";
+import { isAxiosError } from "axios";
 
 // Validation schema
 const ProfileSchema = Yup.object().shape({
@@ -74,6 +78,9 @@ export function ProfileForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formikRef = useRef<FormikProps<ProfileFormValues>>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const route = useRouter();
+  const { data: session } = useSession() as { data: CustomSession };
+  const [otpLoader, setOtpLoader] = useState(false);
 
   const [initialValues, setInitialValues] = useState<ProfileFormValues>({
     firstName: "",
@@ -113,6 +120,53 @@ export function ProfileForm() {
       formikRef.current.setFieldValue("address", formattedAddress);
       formikRef.current.setFieldValue("state", state);
       formikRef.current.setFieldValue("city", cityName);
+    }
+  };
+
+  const handleOtpVerification = async () => {
+    if (session && session.user?.id) {
+      setOtpLoader(true);
+      try {
+        // eslint-disable-next-line object-curly-newline
+        const formData = new FormData();
+        formData.append("customer_id", session.user?.id?.toString() || "");
+        formData.append("otp_type", "phone");
+        const response = await axiosInstance.post(
+          "/customer/generate-otp",
+          formData
+        );
+
+        if (response.status === 200) {
+          toast({
+            description: response.data.message,
+            title: "Success",
+            variant: "success",
+          });
+          route.push("/verify-otp");
+          setOtpLoader(false);
+        }
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        setOtpLoader(false);
+        if (
+          isAxiosError(error) &&
+          error.status &&
+          error.status >= 400 &&
+          error.status < 500 &&
+          error.response
+        )
+          toast({
+            title: "Error",
+            variant: "destructive",
+            description: error.response.data.message,
+          });
+        else
+          toast({
+            title: "Error",
+            variant: "destructive",
+            description: "Something went wrong",
+          });
+      }
     }
   };
 
@@ -171,14 +225,25 @@ export function ProfileForm() {
       // eslint-disable-next-line brace-style
     } catch (error) {
       setLoader(false);
-      toast({
-        variant: "destructive",
-        description: "Failed to update profile",
-      });
-      // eslint-disable-next-line no-console
-      console.log("Error whille updating profile:", error);
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.response
+      )
+        toast({
+          title: "Error",
+          variant: "destructive",
+          description: error.response.data.message,
+        });
+      else
+        toast({
+          title: "Error",
+          variant: "destructive",
+          description: "Something went wrong",
+        });
     }
-    setLoader(false);
   };
 
   useEffect(() => {
@@ -332,9 +397,21 @@ export function ProfileForm() {
                   <Button
                     variant="outline"
                     type="button"
-                    className="bg-orange-500 text-white dark:text-white font-medium"
+                    className="bg-orange-500 text-white font-medium hover:text-white hover:bg-orange-600"
+                    onClick={handleOtpVerification}
                   >
-                    Verify
+                    {otpLoader ? (
+                      <div className="flex justify-center items-center w-full max-h-5">
+                        <Lottie
+                          loop
+                          path="/lotties/button-loader.json"
+                          play
+                          style={{ width: "100%" }}
+                        />
+                      </div>
+                    ) : (
+                      "Verify"
+                    )}
                   </Button>
                 </div>
                 <ErrorMessage

@@ -45,15 +45,15 @@ export function CarouselSlider({
     if (imgArr.length === 0)
       return (
         <CarouselItem>
-          <div className="p-1">
+          <div>
             <Card>
-              <CardContent className=" p-0 aspect-auto ">
+              <CardContent className="p-0">
                 <Image
                   src={DEFAULT_IMAGE}
                   alt="default-banner"
                   width={width}
                   height={height}
-                  className=" rounded-lg object-contain"
+                  className=" rounded-lg object-cover aspect-[2/3]"
                 />
               </CardContent>
             </Card>
@@ -63,15 +63,15 @@ export function CarouselSlider({
 
     return imgArr.map((item, index) => (
       <CarouselItem key={index}>
-        <div className="p-1">
+        <div>
           <Card>
-            <CardContent className=" p-0 aspect-auto ">
+            <CardContent className="p-0">
               <Image
                 src={item}
                 alt="promotional-banner"
                 width={width}
                 height={height}
-                className="w-full max-h-[464px] rounded-lg object-fill"
+                className="w-full  rounded-lg object-cover aspect-[2/3]"
                 onError={() => handleImageError(index)}
               />
             </CardContent>

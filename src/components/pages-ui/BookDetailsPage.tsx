@@ -127,7 +127,7 @@ export function BookDetails() {
 
     try {
       const formData = new FormData();
-      formData.append("book_request_id", bookDetails.id.toString());
+      formData.append("book_request_id", bookDetails.request_id as string);
       formData.append("days", extendsionDuration.toString());
       const response = await axiosInstance.post(
         `/lease-date-extension`,
@@ -179,8 +179,8 @@ export function BookDetails() {
   ) : (
     <div className="container mx-auto px-4 py-6">
       <div className="grid gap-5 md:grid-cols-2">
-        <div className="max-w-xs sm:max-w-xl w-full mx-auto">
-          <CarouselSlider sliderData={bookImages} width={400} height={400} />
+        <div className="max-w-xs w-full mx-auto">
+          <CarouselSlider sliderData={bookImages} width={300} height={450} />
         </div>
         <div className="space-y-5">
           <Badge
