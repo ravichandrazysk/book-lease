@@ -12,17 +12,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { User } from "next-auth";
-import { Session } from "next-auth";
+import { CustomSession } from "@/types/next-auth";
 
-interface CustomUser extends User {
-  coins?: number;
-  profile_photo?: string | null;
-}
-interface CustomSession extends Session {
-  accessToken?: string;
-  user?: CustomUser;
-}
 export function ProfileDropdown() {
   const { data: session } = useSession() as { data: CustomSession };
   const router = useRouter();

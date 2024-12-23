@@ -13,16 +13,7 @@ import {
 
 import { Select, SelectContent, SelectItem, SelectValue } from "../ui/select";
 import { SelectTrigger } from "@/components/ui/select";
-
-interface ExtendRentalDialogProps {
-  open: boolean;
-  // eslint-disable-next-line no-unused-vars
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  currentDueDate?: Date | null;
-  // eslint-disable-next-line no-unused-vars
-  extendDays?: (dueDate: string) => void;
-}
+import { ExtendRentalDialogProps } from "@/types/common-types";
 
 export function ExtendRentalDialog({
   open,

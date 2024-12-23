@@ -19,13 +19,10 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
 import { isAxiosError } from "axios";
 
-interface ReferralTypes {
-  id: 1;
-  invitee_email: string;
-  status: string;
-}
 const MyReferral = () => {
-  const [refferrals, setReferrals] = useState<ReferralTypes[]>([]);
+  const [refferrals, setReferrals] = useState<
+    { id: 1; invitee_email: string; status: string }[]
+  >([]);
   const [referralSent, setReferralSent] = useState<boolean>(false);
   const initialValues = { email: "" };
 

@@ -19,44 +19,7 @@ import { convertDate } from "@/utils/Utilities";
 
 import BookDetailSkeleton from "@/components/common/loaders/BookDetailSkeleton";
 import Lottie from "react-lottie-player";
-
-interface LeaseDetails {
-  id: number;
-  book_id: number;
-  requester_id: number;
-  owner_id: number;
-  type: string;
-  status: string;
-  requested_at: string;
-  responded_at: string;
-  lease_end_date: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface BookDetailsType {
-  id: number;
-  owner: string;
-  category: string;
-  name: string;
-  author: string;
-  description: string;
-  price: string;
-  discounted_price: string;
-  is_free: string;
-  availability: string;
-  status: string;
-  condition: string;
-  approved_at: string;
-  is_active: boolean;
-  tags: string;
-  is_requested: boolean;
-  request_id: string | null;
-  is_leased: boolean;
-  lease_details?: LeaseDetails;
-  can_extend_lease: boolean;
-  images: { image_path: string }[];
-}
+import { BookDetailsType } from "@/types/common-types";
 
 export function BookDetails() {
   const { bookId } = useParams();
@@ -76,6 +39,7 @@ export function BookDetails() {
     discounted_price: "",
     is_free: "",
     availability: "",
+    slug: "",
     status: "",
     condition: "",
     approved_at: "",
@@ -84,6 +48,7 @@ export function BookDetails() {
     is_requested: false,
     request_id: null,
     is_leased: false,
+    is_buy: false,
     images: [],
     can_extend_lease: false,
   });
@@ -121,11 +86,21 @@ export function BookDetails() {
       router.push("/login");
       return;
     }
-    if (!bookDetails.is_leased && !bookDetails.is_requested) {
+    if (
+      !bookDetails.is_leased &&
+      !bookDetails.is_requested &&
+      !bookDetails.is_buy
+    ) {
       const formData = new FormData();
-      formData.append("book_id", bookId as string);
-      formData.append("type", "Lease");
-      const response = await axiosInstance.post(`/request-book`, formData);
+
+      formData.append(
+        "type",
+        bookDetails.availability === "Sell" ? "Buy" : "Lease"
+      );
+      const response = await axiosInstance.post(
+        `/request-book/${bookId}`,
+        formData
+      );
       if (response.status === 201) {
         setButtonLoading(false);
         toast({
@@ -152,7 +127,7 @@ export function BookDetails() {
 
     try {
       const formData = new FormData();
-      formData.append("book_request_id", bookDetails.request_id as string);
+      formData.append("book_request_id", bookDetails.id.toString());
       formData.append("days", extendsionDuration.toString());
       const response = await axiosInstance.post(
         `/lease-date-extension`,
@@ -296,6 +271,7 @@ export function BookDetails() {
               (!bookDetails.can_extend_lease &&
                 !bookDetails.is_requested &&
                 bookDetails.is_leased) ||
+              bookDetails.is_buy ||
               // eslint-disable-next-line no-extra-parens
               isRequested
             }
@@ -311,8 +287,7 @@ export function BookDetails() {
               </div>
             ) : !session ? (
               "Login to request book"
-            ) : bookDetails.availability === "Sell" &&
-              bookDetails.is_requested ? (
+            ) : bookDetails.availability === "Sell" && bookDetails.is_buy ? (
               "Sold out"
             ) : !bookDetails.can_extend_lease &&
               !bookDetails.is_requested &&
@@ -333,17 +308,19 @@ export function BookDetails() {
             ) : (
               !bookDetails.is_requested &&
               !bookDetails.is_leased &&
+              !bookDetails.is_buy &&
               "Send Request"
             )}
           </Button>
-          {bookDetails?.lease_details?.lease_end_date && (
-            <p className="text-lg font-normal">
-              Lease Due Date:
-              <span className="font-medium">
-                {convertDate(bookDetails?.lease_details?.lease_end_date)}
-              </span>
-            </p>
-          )}
+          {bookDetails.is_leased &&
+            bookDetails?.lease_details?.lease_end_date && (
+              <p className="text-lg font-normal">
+                Lease Due Date:
+                <span className="font-medium">
+                  {convertDate(bookDetails?.lease_details?.lease_end_date)}
+                </span>
+              </p>
+            )}
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <h3 className="font-medium">Tags:</h3>
@@ -366,7 +343,7 @@ export function BookDetails() {
         onOpenChange={setShowExtendModal}
         extendDays={setExtensionDuration}
         currentDueDate={
-          bookDetails?.lease_details?.lease_end_date
+          bookDetails.is_leased && bookDetails?.lease_details?.lease_end_date
             ? new Date(bookDetails.lease_details.lease_end_date)
             : null
         }

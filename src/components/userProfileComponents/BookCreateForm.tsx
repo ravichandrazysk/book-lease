@@ -27,6 +27,13 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { isAxiosError } from "axios";
 import { toast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
+import {
+  BooCreateEditFormTypes,
+  CategoryTypes,
+  LanguagesTypes,
+  MyBookTypes,
+  TagsTypes,
+} from "@/types/common-types";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 const Select = dynamic(() => import("react-select"), { ssr: false });
 
@@ -106,49 +113,6 @@ const validationSchema = (isEditing: boolean) =>
     }),
   });
 
-interface FormValues {
-  coverImage: File | null;
-  title: string;
-  author: string;
-  description: string;
-  category: string;
-  tags: string;
-  condition: string;
-  age: string;
-  availabilityType: "sell" | "rent" | "free";
-  rentPrice?: string;
-  sellPrice?: string;
-  discountedRentPrice?: string;
-  discountedSellPrice?: string;
-  editingReason?: string;
-  languages: { label: string; value: string }[];
-}
-
-interface CategoryTypes {
-  id: 1;
-  name: string;
-  age: string;
-}
-interface TagsTypes {
-  id: number;
-  name: string;
-}
-
-interface MyBookTypes {
-  id: number;
-  name: string;
-  author: string;
-  availability: string;
-  price: number | null;
-  discounted_price: string;
-  is_free: boolean;
-  category: string;
-  images: { image_path: string }[];
-}
-interface LanguagesTypes {
-  id: number;
-  name: string;
-}
 export function BookCreateForm({
   onAction,
   isEditing,
@@ -165,7 +129,7 @@ export function BookCreateForm({
   const [loading, setLoading] = useState(false);
   const [languages, setLanguages] = useState<LanguagesTypes[]>([]);
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  const [initialValues, setInitialValues] = useState<FormValues>({
+  const [initialValues, setInitialValues] = useState<BooCreateEditFormTypes>({
     coverImage: null,
     title: "",
     author: "",
@@ -183,7 +147,7 @@ export function BookCreateForm({
     languages: [],
   });
 
-  const formikRef = useRef<FormikProps<FormValues>>(null);
+  const formikRef = useRef<FormikProps<BooCreateEditFormTypes>>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (formikRef.current)
@@ -219,7 +183,7 @@ export function BookCreateForm({
   });
 
   // Handle edit or create book
-  const handleSubmit = async (values: FormValues) => {
+  const handleSubmit = async (values: BooCreateEditFormTypes) => {
     const formData = new FormData();
     if (values.coverImage instanceof File)
       formData.append("cover_image", values.coverImage as File);
@@ -249,10 +213,10 @@ export function BookCreateForm({
     });
     try {
       setLoading(true);
-      if (isEditing && existingBookDetails?.id) {
+      if (isEditing && existingBookDetails?.slug) {
         formData.append("update_reason", values.editingReason || "");
         const response = await axiosInstance.post(
-          `/book-update/${existingBookDetails.id}`,
+          `/book-update/${existingBookDetails.slug}`,
           formData
         );
         if (response.status === 200) {

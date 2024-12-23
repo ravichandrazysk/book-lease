@@ -12,26 +12,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect, useState } from "react";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { FilteredSectionSekelton } from "./loaders/FilteredSectionSekelton";
+import {
+  CategoryTypes,
+  FilterContentProps,
+  TagsTypes,
+} from "@/types/common-types";
 
-interface CategoryTypes {
-  id: 1;
-  name: string;
-  age: string;
-}
-
-interface TagsTypes {
-  id: number;
-  name: string;
-}
-
-interface FilterContentProps {
-  onCategoryChange: React.Dispatch<React.SetStateAction<string[]>>;
-  onTagChange: React.Dispatch<React.SetStateAction<string[]>>;
-  onAgeGroupChange: React.Dispatch<React.SetStateAction<string[]>>;
-  checkedCategories: string[];
-  checkedTags: string[];
-  checkedAgeGroups: string[];
-}
 export const FilterContent = ({
   onCategoryChange,
   onTagChange,

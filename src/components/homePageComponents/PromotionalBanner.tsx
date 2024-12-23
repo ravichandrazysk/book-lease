@@ -3,13 +3,12 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
-interface PromotionalBannerProps {
-  offerDiscount: string;
-}
 export default function PromotionalBanner({
   offerDiscount,
   // eslint-disable-next-line object-curly-newline
-}: PromotionalBannerProps) {
+}: {
+  offerDiscount: string;
+}) {
   return (
     <div className="w-full overflow-hidden rounded-lg">
       <div className="relative flex min-h-[400px] w-full items-center bg-gradient-to-r from-blue-300 via-cyan-200 to-emerald-200 px-6 py-16 md:px-12">

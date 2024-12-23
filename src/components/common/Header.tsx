@@ -23,7 +23,6 @@ import { useState } from "react";
 import { SearchHeader } from "../homePageComponents/SearchHeader";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Session, User } from "next-auth";
 import {
   Sheet,
   SheetContent,
@@ -39,15 +38,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CustomSession } from "@/types/next-auth";
 
-interface CustomUser extends User {
-  coins?: number;
-  profile_photo?: string | null;
-}
-interface CustomSession extends Session {
-  accessToken?: string;
-  user?: CustomUser;
-}
 export function Header() {
   const { data: session } = useSession() as { data: CustomSession };
   const router = useRouter();

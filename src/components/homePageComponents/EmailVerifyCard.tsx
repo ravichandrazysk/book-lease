@@ -3,12 +3,13 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface VerifyNowCardProps {
+export function EmailVerifyCard({
+  className,
+  onVerify,
+}: {
   className?: string;
   onVerify?: () => void;
-}
-
-export function EmailVerifyCard({ className, onVerify }: VerifyNowCardProps) {
+}) {
   return (
     <Card className={`bg-white shadow-lg ${className} max-w-xl bg-[#fff7e1]`}>
       <CardContent className="flex items-center gap-5 justify-between p-3">

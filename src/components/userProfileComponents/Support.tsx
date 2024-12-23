@@ -28,6 +28,7 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
 import { isAxiosError } from "axios";
 import dynamic from "next/dynamic";
+import { SupportFormValues } from "@/types/common-types";
 const Lottie = dynamic(() => import("react-lottie-player"));
 
 const Support = () => {
@@ -42,15 +43,6 @@ const Support = () => {
     phoneNumber: "",
     requestType: "",
     comments: "",
-  };
-
-  type FormValues = {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
-    requestType: string;
-    comments: string;
   };
 
   const validationSchema = Yup.object({
@@ -70,8 +62,8 @@ const Support = () => {
   });
 
   const handleSubmit = async (
-    values: FormValues,
-    { resetForm }: FormikHelpers<FormValues>
+    values: SupportFormValues,
+    { resetForm }: FormikHelpers<SupportFormValues>
   ) => {
     try {
       setLoading(true);
@@ -243,7 +235,7 @@ const Support = () => {
                   {({
                     field,
                     form,
-                  }: FieldProps & { form: FormikProps<FormValues> }) => (
+                  }: FieldProps & { form: FormikProps<SupportFormValues> }) => (
                     <Select
                       {...field}
                       onValueChange={(value) =>

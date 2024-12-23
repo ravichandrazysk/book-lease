@@ -2,15 +2,13 @@
 import { BookCardSkeleton } from "@/components/common/loaders/BookCardSkeleton";
 import { cn } from "@/lib/utils";
 
-interface BooksGridSkeletonProps {
-  count?: number;
-  className?: string;
-}
-
 export function BooksGridSkeleton({
   count = 5,
   className,
-}: BooksGridSkeletonProps) {
+}: {
+  count?: number;
+  className?: string;
+}) {
   return (
     <div
       className={cn(

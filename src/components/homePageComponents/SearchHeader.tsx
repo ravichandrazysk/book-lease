@@ -8,13 +8,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-interface SearchResult {
-  id: string;
-  title: string;
-  image: string;
-}
-
-const mockResults: SearchResult[] = [
+const mockResults: { id: string; title: string; image: string }[] = [
   {
     id: "1",
     title: "Combo banner one",
@@ -37,11 +31,7 @@ const mockResults: SearchResult[] = [
   },
 ];
 
-interface SearchHeaderProps {
-  onClose: () => void;
-}
-
-export function SearchHeader({ onClose }: SearchHeaderProps) {
+export function SearchHeader({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
 

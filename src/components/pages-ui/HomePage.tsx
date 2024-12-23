@@ -9,25 +9,7 @@ import Image from "next/image";
 import { BooksGridSkeleton } from "@/components/common/loaders/BooksGridSkeleton";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { CarouselSlider } from "@/components/common/CarousalSlider";
-
-interface BookArrayProps {
-  id: number;
-  name: string;
-  author: string;
-  availability: string;
-  price: string;
-  discounted_price: string;
-  is_free: boolean;
-  category: string;
-  slug: string;
-  images: { image_path: string }[];
-}
-interface BookProps {
-  id: 1;
-  name: string;
-  max_books_count: number;
-  books: BookArrayProps[];
-}
+import { BookGroupProps } from "@/types/common-types";
 
 const HomePage = () => {
   const [loader, setLoader] = useState(true);
@@ -91,15 +73,10 @@ const HomePage = () => {
           {loader ? (
             <BooksGridSkeleton count={5} />
           ) : bookData && bookData.length > 0 ? (
-            bookData.map((category: BookProps, index) => (
+            bookData.map((category: BookGroupProps, index) => (
               <React.Fragment key={index}>
                 {category.books && category.books.length > 0 && (
-                  <BookGrid
-                    id={category.id}
-                    categoryName={category.name}
-                    books={category.books}
-                    maxBookCount={category.max_books_count}
-                  />
+                  <BookGrid {...category} />
                 )}
               </React.Fragment>
             ))

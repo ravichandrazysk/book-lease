@@ -3,27 +3,9 @@ import { ChevronRight } from "lucide-react";
 import { BookCard } from "@/components/common/BookCard";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { BookGroupProps } from "@/types/common-types";
 
-interface BookArrayProps {
-  id: number;
-  name: string;
-  author: string;
-  availability: string;
-  price: string;
-  discounted_price: string;
-  is_free: boolean;
-  category: string;
-  slug: string;
-  images: { image_path: string }[];
-}
-interface BookProps {
-  id: 1;
-  categoryName: string;
-  maxBookCount?: number;
-  books: BookArrayProps[];
-}
-
-export default function BookGrid({ categoryName, books }: BookProps) {
+export default function BookGrid({ books }: BookGroupProps) {
   const router = useRouter();
   const handleViewMore = () => {
     router.push(`/filtered-books`);
@@ -31,7 +13,7 @@ export default function BookGrid({ categoryName, books }: BookProps) {
   return (
     <div className="space-y-4 mt-12 ">
       <div className="flex items-center justify-between">
-        <h2 className="text-[28px] font-medium text-black">{categoryName}</h2>
+        <h2 className="text-[28px] font-medium text-black">All Books</h2>
         {books && books.length > 10 && (
           <Button
             variant="link"

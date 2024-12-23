@@ -11,16 +11,8 @@ import Image from "next/image";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { useSession } from "next-auth/react";
-import { Session } from "next-auth";
-import { User } from "next-auth";
+import { CustomSession } from "@/types/next-auth";
 
-interface CustomUser extends User {
-  coins?: number;
-}
-interface CustomSession extends Session {
-  accessToken?: string;
-  user?: CustomUser;
-}
 const Coins = () => {
   const { data: session } = useSession() as { data: CustomSession };
   return (

@@ -5,12 +5,7 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-interface NavigationTabs {
-  title: string;
-  href: string;
-}
-
-const navigationTabs: NavigationTabs[] = [
+const navigationTabs: { title: string; href: string }[] = [
   { title: "Profile", href: "/user/profile" },
   { title: "My Books", href: "/user/my-books" },
   { title: "My Requests", href: "/user/my-requests" },

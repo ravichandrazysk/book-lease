@@ -2,17 +2,15 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-interface SectionHeaderProps {
-  title: string;
-  showListButton?: boolean;
-  onListClick?: () => void;
-}
-
 export function SectionHeader({
   title,
   showListButton = false,
   onListClick,
-}: SectionHeaderProps) {
+}: {
+  title: string;
+  showListButton?: boolean;
+  onListClick?: () => void;
+}) {
   return (
     <div className="flex items-center sm:justify-between py-4 border shadow-lg rounded-md">
       <div className="flex items-center border justify-between px-3 w-full border-l-blue-600 border-r-0 border-y-0 border-l-4 border-l-">

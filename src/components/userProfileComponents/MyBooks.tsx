@@ -19,25 +19,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { MyBookTypes, PaginationDataTypes } from "@/types/common-types";
 
-interface MyBookTypes {
-  id: number;
-  name: string;
-  author: string;
-  availability: string;
-  price: number | null;
-  discounted_price: string;
-  is_free: boolean;
-  active: boolean;
-  category: string;
-  images: { image_path: string }[];
-}
-interface PaginationDataTypes {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-}
 const MyBooks = () => {
   const [createNewBook, setCreateNewBook] = useState(false);
   const [editBook, setEditBook] = useState(false);
@@ -62,6 +45,7 @@ const MyBooks = () => {
     is_free: false,
     active: false,
     category: "",
+    slug: "",
     images: [],
   });
   const handlePageChange = (page: number) => {
@@ -109,10 +93,13 @@ const MyBooks = () => {
     handleGetBooks();
   }, [updatedBooks, currentPage]);
 
-  const handleAvailibility = async (availability: boolean, bookId: number) => {
+  const handleAvailibility = async (
+    availability: boolean,
+    bookSlug: string
+  ) => {
     try {
       const response = await axiosInstance.patch(
-        `/update-book-available-status/${bookId}?is_active=${availability ? 1 : 0}`
+        `/update-book-available-status/${bookSlug}?is_active=${availability ? 1 : 0}`
       );
       if (response.status === 200) {
         toast({
@@ -198,7 +185,7 @@ const MyBooks = () => {
                 setEditBook(true);
                 setEditBookDetails(item);
               }}
-              onToggle={() => handleAvailibility(!item.active, item.id)}
+              onToggle={() => handleAvailibility(!item.active, item.slug)}
             />
           ))}
         </>

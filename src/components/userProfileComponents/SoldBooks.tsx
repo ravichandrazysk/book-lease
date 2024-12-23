@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-extra-parens */
 /* eslint-disable multiline-ternary */
@@ -10,32 +11,40 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { isAxiosError } from "axios";
 import { toast } from "@/hooks/use-toast";
 import Image from "next/image";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../ui/pagination";
+import { PaginationDataTypes, SoldBookProps } from "@/types/common-types";
 
-interface SoldBookProps {
-  id: number;
-  name: string;
-  author: string;
-  availability: string;
-  price: string;
-  discounted_price: string;
-  is_free: boolean;
-  category: string;
-  images: string[];
-}
 const SoldBooks = () => {
   const [soldBooks, setSoldBooks] = useState<SoldBookProps[]>([]);
   const [loading, setLoading] = useState(false);
   const [imgSrc, setImgSrc] = useState("/pngs/Image-not-available.png");
+  const [paginationData, setPaginationData] = useState<PaginationDataTypes>({
+    current_page: 1,
+    last_page: 1,
+    per_page: 1,
+    total: 1,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const getSoldBooks = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get("/sold-books");
+        const response = await axiosInstance.get(
+          `/sold-books?paginate=10&page=${currentPage}`
+        );
         if (response.status === 200 && response.data.data) {
           setSoldBooks(response.data.data);
           if (response.data.data[0].images.length > 0)
             setImgSrc(response.data.data[0].images[0]);
+          setPaginationData(response.data?.meta);
           setLoading(false);
         }
         // eslint-disable-next-line brace-style
@@ -55,7 +64,7 @@ const SoldBooks = () => {
       }
     };
     getSoldBooks();
-  }, []);
+  }, [currentPage]);
   return (
     <React.Fragment>
       <section id="sold" className=" sm:w-11/12  my-5 mx-auto max-w-3xl">
@@ -94,6 +103,50 @@ const SoldBooks = () => {
                 No sold books found!
               </p>
             </div>
+          )}
+          {paginationData.last_page > 1 && (
+            <Pagination className="mt-2">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    className={
+                      paginationData.current_page === 1
+                        ? "cursor-not-allowed"
+                        : "cursor-pointer"
+                    }
+                    aria-disabled={paginationData.current_page === 1}
+                    onClick={() =>
+                      paginationData.current_page > 1 &&
+                      setCurrentPage(paginationData.current_page - 1)
+                    }
+                  />
+                </PaginationItem>
+                {[...Array(paginationData.last_page)].map((_, pageIndex) => (
+                  <PaginationItem key={pageIndex}>
+                    <PaginationLink
+                      className={`cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+                      onClick={() => setCurrentPage(pageIndex + 1)}
+                      isActive={paginationData.current_page === pageIndex + 1}
+                    >
+                      {pageIndex + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    className={
+                      paginationData.current_page === paginationData.last_page
+                        ? "cursor-not-allowed"
+                        : "cursor-pointer"
+                    }
+                    onClick={() =>
+                      paginationData.current_page < paginationData.last_page &&
+                      setCurrentPage(currentPage + 1)
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           )}
         </>
       </section>

@@ -11,19 +11,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
-
-interface BookArrayProps {
-  id: number;
-  name: string;
-  author: string;
-  availability: string;
-  price: string;
-  discounted_price: string;
-  is_free: boolean;
-  category: string;
-  slug: string;
-  images: { image_path: string }[];
-}
+import { ComicCardProps, PaginationDataTypes } from "@/types/common-types";
 
 export function CategorySection({
   filteredBookData,
@@ -31,14 +19,9 @@ export function CategorySection({
   paginationData,
   onPageChange,
 }: {
-  filteredBookData: BookArrayProps[];
+  filteredBookData: ComicCardProps[];
   title?: string;
-  paginationData: {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-  };
+  paginationData: PaginationDataTypes;
   onPageChange: React.Dispatch<React.SetStateAction<number>>;
 }) {
   const router = useRouter();

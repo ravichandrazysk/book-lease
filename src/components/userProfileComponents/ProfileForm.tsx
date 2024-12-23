@@ -21,6 +21,7 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import dynamic from "next/dynamic";
+import { ProfileFormValues } from "@/types/common-types";
 const Lottie = dynamic(() => import("react-lottie-player"));
 
 // Validation schema
@@ -67,19 +68,6 @@ const ProfileSchema = Yup.object().shape({
   city: Yup.string().required("City is required"),
   profileImage: Yup.mixed(),
 });
-
-interface ProfileFormValues {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-  age: string;
-  gender: string;
-  address: string;
-  state: string;
-  city: string;
-  profileImage: string | null;
-}
 
 export function ProfileForm() {
   const [loader, setLoader] = useState<boolean>(false);

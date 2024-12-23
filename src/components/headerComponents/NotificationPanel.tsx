@@ -7,15 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-
-interface NotificationTypes {
-  id: number;
-  type: string;
-  title: string;
-  body: string;
-  read_at: string | null;
-  active: boolean;
-}
+import { NotificationTypes } from "@/types/common-types";
 
 export function NotificationPanel({
   notifications,

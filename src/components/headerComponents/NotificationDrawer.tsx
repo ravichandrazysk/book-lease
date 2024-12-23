@@ -11,15 +11,8 @@ import { NotificationPanel } from "@/components/headerComponents/NotificationPan
 import { useEffect, useState } from "react";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { isAxiosError } from "axios";
+import { NotificationTypes } from "@/types/common-types";
 
-interface NotificationTypes {
-  id: number;
-  type: string;
-  title: string;
-  body: string;
-  read_at: string | null;
-  active: boolean;
-}
 export function NotificationDropdown() {
   const [notifications, setNotifications] = useState<NotificationTypes[]>([]);
   useEffect(() => {

@@ -5,20 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-interface ComicCardProps {
-  id: number;
-  name: string;
-  author: string;
-  availability: string;
-  price: string;
-  discounted_price: string;
-  is_free: boolean;
-  category: string;
-  slug: string;
-  images: { image_path: string }[];
-  className?: string;
-}
+import { ComicCardProps } from "@/types/common-types";
 
 export function BookCard(props: ComicCardProps) {
   const router = useRouter();

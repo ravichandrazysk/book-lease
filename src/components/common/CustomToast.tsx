@@ -8,12 +8,7 @@ import {
   ToastTitle,
 } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-
-interface CustomToastProps {
-  title: string;
-  description?: string;
-  className?: string;
-}
+import { CustomToastProps } from "@/types/common-types";
 
 export function CustomToast({
   title,

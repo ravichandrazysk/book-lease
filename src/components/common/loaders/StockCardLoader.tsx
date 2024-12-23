@@ -3,10 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import React from "react";
 
-interface StockCardLoaderProps {
+const StockCardLoader = ({
+  variant,
+  // eslint-disable-next-line object-curly-newline
+}: {
   variant: "books" | "received" | "sent" | "rental" | "sold" | "status";
-}
-const StockCardLoader = ({ variant }: StockCardLoaderProps) => {
+}) => {
   return (
     <Card className="flex p-4 items-center gap-4 w-full  mt-4">
       <section id="book-image" className="flex-shrink-0">

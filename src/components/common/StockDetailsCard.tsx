@@ -23,32 +23,7 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import OwnerDetailsSkeleton from "@/components/common/loaders/OwnerDetailsSkeleton";
 import { toast } from "@/hooks/use-toast";
 import { isAxiosError } from "axios";
-
-interface BookCardProps {
-  variant: "rental" | "books" | "received" | "status" | "sold" | "sent";
-  bookId?: number;
-  title: string;
-  author?: string;
-  date?: string;
-  imageUrl: string;
-  status?: string;
-  isAvailable?: boolean;
-  imageError?: () => void;
-  onEdit?: () => void;
-  // eslint-disable-next-line no-unused-vars
-  onToggle?: () => void;
-  onAccept?: () => void;
-  onCancel?: () => void;
-}
-
-interface OwnerDetailsTypes {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  profile_photo: string | null;
-}
+import { OwnerDetailsTypes, StockCardProps } from "@/types/common-types";
 
 export function StockDetailsCard({
   bookId,
@@ -64,7 +39,7 @@ export function StockDetailsCard({
   onToggle,
   onAccept,
   onCancel,
-}: BookCardProps) {
+}: StockCardProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [ownnerDetails, setOwnerDetails] = useState<OwnerDetailsTypes>({
     first_name: "",

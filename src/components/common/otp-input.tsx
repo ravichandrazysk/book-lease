@@ -12,20 +12,18 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 
-interface OTPInputProps {
-  length: number;
-  // eslint-disable-next-line no-unused-vars
-  onComplete: (otp: string) => void;
-  onResend: () => void;
-  email: string;
-}
-
 export function OTPInput({
   length,
   onComplete,
   onResend,
   email,
-}: OTPInputProps) {
+}: {
+  length: number;
+  // eslint-disable-next-line no-unused-vars
+  onComplete: (otp: string) => void;
+  onResend: () => void;
+  email: string;
+}) {
   const [otp, setOtp] = useState<string[]>(new Array(length).fill(""));
   // eslint-disable-next-line no-extra-parens
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
