@@ -81,6 +81,7 @@ export function ProfileForm() {
   const route = useRouter();
   const { data: session } = useSession() as { data: CustomSession };
   const [otpLoader, setOtpLoader] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState<string | null>(null);
 
   const [initialValues, setInitialValues] = useState<ProfileFormValues>({
     firstName: "",
@@ -206,6 +207,7 @@ export function ProfileForm() {
         });
         setLoader(false);
         const profileData = response.data.data;
+        setPhoneVerified(profileData.phone_verified_at);
         setInitialValues((prev) => ({
           ...prev,
           firstName: profileData?.first_name || "",
@@ -397,6 +399,7 @@ export function ProfileForm() {
                   <Button
                     variant="outline"
                     type="button"
+                    disabled={otpLoader || (phoneVerified ? true : false)}
                     className="bg-orange-500 text-white font-medium hover:text-white hover:bg-orange-600"
                     onClick={handleOtpVerification}
                   >
