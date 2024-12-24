@@ -26,6 +26,7 @@ import {
 
 export const ReceivedRequests = () => {
   const [loading, setLoading] = useState(false);
+  const [loader, setLoader] = useState(false);
   const [receivedRequests, setReceivedRequests] = useState<
     ReceivedRequestTypes[]
   >([]);
@@ -42,6 +43,7 @@ export const ReceivedRequests = () => {
     actionStatus: string,
     requestId: number
   ) => {
+    setLoader(true);
     try {
       const formData = new FormData();
       formData.append("status", actionStatus);
@@ -56,9 +58,11 @@ export const ReceivedRequests = () => {
           description: response.data.message,
         });
         setRequestStatus(!requestStatus);
+        setLoader(false);
       }
       // eslint-disable-next-line brace-style
     } catch (error) {
+      setLoader(false);
       if (
         isAxiosError(error) &&
         error.status &&
@@ -146,6 +150,7 @@ export const ReceivedRequests = () => {
               date={item.requested_at}
               onAccept={() => handleRequestConfirmation("Accepted", item.id)}
               onCancel={() => handleRequestConfirmation("Rejected", item.id)}
+              loader={loader}
             />
           ))
         ) : (

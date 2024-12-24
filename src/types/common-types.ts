@@ -69,6 +69,7 @@ export interface StockCardProps {
   onToggle?: () => void;
   onAccept?: () => void;
   onCancel?: () => void;
+  loader?: boolean;
 }
 
 export interface OwnerDetailsTypes {

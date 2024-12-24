@@ -196,18 +196,20 @@ export function BookCreateForm({
     formData.append("age", values.age);
     formData.append("availability_type", values.availabilityType);
     formData.append("is_free", values.availabilityType === "free" ? "1" : "0");
-    formData.append(
-      "price",
-      values.availabilityType === "rent"
-        ? values.rentPrice || ""
-        : values.sellPrice || ""
-    );
-    formData.append(
-      "discounted_price",
-      values.availabilityType === "rent"
-        ? values.discountedRentPrice || ""
-        : values.discountedSellPrice || ""
-    );
+    if (values.availabilityType !== "free") {
+      formData.append(
+        "price",
+        values.availabilityType === "rent"
+          ? values.rentPrice || ""
+          : values.sellPrice || ""
+      );
+      formData.append(
+        "discounted_price",
+        values.availabilityType === "rent"
+          ? values.discountedRentPrice || ""
+          : values.discountedSellPrice || ""
+      );
+    }
     values.languages.forEach((item) => {
       formData.append("languages_id[]", item.value);
     });

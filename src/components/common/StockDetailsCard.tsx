@@ -1,3 +1,4 @@
+/* eslint-disable no-extra-parens */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable multiline-ternary */
 /* eslint-disable camelcase */
@@ -24,6 +25,8 @@ import OwnerDetailsSkeleton from "@/components/common/loaders/OwnerDetailsSkelet
 import { toast } from "@/hooks/use-toast";
 import { isAxiosError } from "axios";
 import { OwnerDetailsTypes, StockCardProps } from "@/types/common-types";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 export function StockDetailsCard({
   bookId,
@@ -39,6 +42,7 @@ export function StockDetailsCard({
   onToggle,
   onAccept,
   onCancel,
+  loader,
 }: StockCardProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [ownnerDetails, setOwnerDetails] = useState<OwnerDetailsTypes>({
@@ -137,19 +141,35 @@ export function StockDetailsCard({
                 </p>
               </div>
 
-              {variant === "received" && status && status === "Pending" && (
-                <div className="items-end justify-between gap-2 hidden">
-                  <Button variant="outline" onClick={onCancel} className="w-24">
-                    Cancel
-                  </Button>
-                  <Button
-                    className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
-                    onClick={onAccept}
-                  >
-                    Accept
-                  </Button>
-                </div>
-              )}
+              {variant === "received" &&
+                status &&
+                status === "Pending" &&
+                (loader ? (
+                  <div className="justify-center items-center max-w-28 hidden">
+                    <Lottie
+                      loop
+                      path="/lotties/loader.json"
+                      play
+                      style={{ width: "100%" }}
+                    />
+                  </div>
+                ) : (
+                  <div className="items-end justify-between gap-2 hidden">
+                    <Button
+                      variant="outline"
+                      onClick={onCancel}
+                      className="w-24"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
+                      onClick={onAccept}
+                    >
+                      Accept
+                    </Button>
+                  </div>
+                ))}
             </>
           )}
         </div>
@@ -198,19 +218,31 @@ export function StockDetailsCard({
                 </p>
               </div>
 
-              {variant === "received" && status && status === "Pending" && (
-                <div className="flex items-end gap-2 max-sm:hidden">
-                  <Button variant="outline" onClick={onCancel}>
-                    Cancel
-                  </Button>
-                  <Button
-                    className="bg-[#FF7A09] hover:bg-[#FF7A09]"
-                    onClick={onAccept}
-                  >
-                    Accept
-                  </Button>
-                </div>
-              )}
+              {variant === "received" &&
+                status &&
+                status === "Pending" &&
+                (loader ? (
+                  <div className="flex justify-center items-center max-w-28 max-sm:hidden">
+                    <Lottie
+                      loop
+                      path="/lotties/loader.json"
+                      play
+                      style={{ width: "100%" }}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-end gap-2 max-sm:hidden">
+                    <Button variant="outline" onClick={onCancel}>
+                      Cancel
+                    </Button>
+                    <Button
+                      className="bg-[#FF7A09] hover:bg-[#FF7A09]"
+                      onClick={onAccept}
+                    >
+                      Accept
+                    </Button>
+                  </div>
+                ))}
             </>
           )}
 
@@ -312,19 +344,31 @@ export function StockDetailsCard({
               </p>
             </div>
 
-            {variant === "received" && status && status === "Pending" && (
-              <div className="flex items-end justify-evenly gap-2 sm:hidden">
-                <Button variant="outline" onClick={onCancel} className="w-24">
-                  Cancel
-                </Button>
-                <Button
-                  className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
-                  onClick={onAccept}
-                >
-                  Accept
-                </Button>
-              </div>
-            )}
+            {variant === "received" &&
+              status &&
+              status === "Pending" &&
+              (loader ? (
+                <div className="flex justify-center items-center max-w-28 sm:hidden">
+                  <Lottie
+                    loop
+                    path="/lotties/loader.json"
+                    play
+                    style={{ width: "100%" }}
+                  />
+                </div>
+              ) : (
+                <div className="flex items-end justify-evenly gap-2 sm:hidden">
+                  <Button variant="outline" onClick={onCancel} className="w-24">
+                    Cancel
+                  </Button>
+                  <Button
+                    className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
+                    onClick={onAccept}
+                  >
+                    Accept
+                  </Button>
+                </div>
+              ))}
           </>
         )}
       </section>

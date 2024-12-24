@@ -1,3 +1,5 @@
+/* eslint-disable indent */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-extra-parens */
 /* eslint-disable multiline-ternary */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -254,7 +256,7 @@ export function ProfileForm() {
         const response = await axiosInstance.get("/customer/profile");
         if (response.status === 200) {
           const profileData = response.data.data;
-
+          setPhoneVerified(profileData.phone_verified_at);
           setInitialValues((prev) => ({
             ...prev,
             firstName: profileData?.first_name || "",
@@ -399,7 +401,15 @@ export function ProfileForm() {
                   <Button
                     variant="outline"
                     type="button"
-                    disabled={otpLoader || (phoneVerified ? true : false)}
+                    disabled={
+                      otpLoader ||
+                      (phoneVerified &&
+                      initialValues.phoneNumber === values.phoneNumber
+                        ? true
+                        : false ||
+                          values.phoneNumber.length !== 10 ||
+                          values.phoneNumber === "")
+                    }
                     className="bg-orange-500 text-white font-medium hover:text-white hover:bg-orange-600"
                     onClick={handleOtpVerification}
                   >
@@ -412,6 +422,9 @@ export function ProfileForm() {
                           style={{ width: "100%" }}
                         />
                       </div>
+                    ) : phoneVerified &&
+                      values.phoneNumber === initialValues.phoneNumber ? (
+                      "Verified"
                     ) : (
                       "Verify"
                     )}

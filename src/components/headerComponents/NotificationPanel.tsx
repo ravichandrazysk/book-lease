@@ -1,3 +1,6 @@
+/* eslint-disable indent */
+/* eslint-disable no-nested-ternary */
+/* eslint-disable camelcase */
 /* eslint-disable no-extra-parens */
 /* eslint-disable multiline-ternary */
 "use client";
@@ -5,17 +8,22 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { NotificationTypes } from "@/types/common-types";
-
+import React from "react";
+import NotificationSkeleton from "@/components/common/loaders/NotificationSkeleton";
 export function NotificationPanel({
   notifications,
+  onNotificationRead,
+  onNotificationClick,
+  loader,
   // eslint-disable-next-line object-curly-newline
 }: {
   notifications: NotificationTypes[];
+  onNotificationRead: React.Dispatch<React.SetStateAction<boolean>>;
+  onNotificationClick: React.Dispatch<React.SetStateAction<NotificationTypes>>;
+  loader?: boolean;
 }) {
-  const router = useRouter();
   const unreadCount = notifications.filter((n) => n.read_at === null).length;
 
   return (
@@ -45,14 +53,20 @@ export function NotificationPanel({
           <ScrollArea className="h-[300px] overflow-y-auto">
             <TabsContent value="all" className="mt-4">
               <div className="space-y-4">
-                {notifications && notifications.length > 0 ? (
+                {loader ? (
+                  Array.from({ length: 10 }).map((_, index) => (
+                    <NotificationSkeleton key={index} />
+                  ))
+                ) : notifications && notifications.length > 0 ? (
                   notifications.map((notification) => (
                     <div
                       key={notification.id}
                       className={`flex gap-3 items-center ${notification.read_at ? "" : "cursor-pointer"}`}
                       onClick={() => {
-                        if (!notification.read_at)
-                          router.push("/user/received-requests");
+                        if (!notification.read_at) {
+                          onNotificationRead(true);
+                          onNotificationClick(notification);
+                        }
                       }}
                     >
                       <div className="flex-shrink-0 mt-1">
@@ -65,7 +79,9 @@ export function NotificationPanel({
                         />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">
+                        <h3
+                          className={` ${!notification.read_at ? "font-semibold text-gray-900" : "text-gray-500"} `}
+                        >
                           {notification.title}
                         </h3>
                         <p className="text-sm text-gray-500">
@@ -97,28 +113,55 @@ export function NotificationPanel({
             </TabsContent>
             <TabsContent value="unread" className="mt-4">
               <div className="space-y-4">
-                {notifications && notifications.length > 0 ? (
-                  notifications
-                    .filter((notification) => notification.read_at === null)
-                    .map((notification) => (
-                      <div
-                        key={notification.id}
-                        className="flex gap-3 items-center cursor-pointer"
-                        onClick={() => router.push("/user/received-requests")}
-                      >
-                        <div className="flex-shrink-0 mt-1">
-                          <div className="w-2 h-2 rounded-full bg-blue-500" />
+                {loader ? (
+                  Array.from({ length: 10 }).map((_, index) => (
+                    <NotificationSkeleton key={index} />
+                  ))
+                ) : notifications && notifications.length > 0 ? (
+                  notifications.filter(
+                    (notification) => notification.read_at === null
+                  ).length > 0 ? (
+                    notifications
+                      .filter((notification) => notification.read_at === null)
+                      .map((notification) => (
+                        <div
+                          key={notification.id}
+                          className="flex gap-3 items-center cursor-pointer"
+                          onClick={() => {
+                            onNotificationRead(true);
+                            onNotificationClick(notification);
+                          }}
+                        >
+                          <div className="flex-shrink-0 mt-1">
+                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">
+                              {notification.title}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {notification.body}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            {notification.title}
-                          </h3>
-                          <p className="text-sm text-gray-500">
-                            {notification.body}
-                          </p>
-                        </div>
-                      </div>
-                    ))
+                      ))
+                  ) : (
+                    <section
+                      id="no-notification"
+                      className="flex flex-col items-center justify-center"
+                    >
+                      <Image
+                        src="/svgs/no-notifications.svg"
+                        alt="No notifications"
+                        width={300}
+                        height={400}
+                        className="max-w-max"
+                      />
+                      <p className="text-xl font-semibold text-red-500">
+                        No new notifications found!
+                      </p>
+                    </section>
+                  )
                 ) : (
                   <section
                     id="no-notification"

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CustomToast } from "@/components/common/CustomToast";
 import { useEffect, useState } from "react";
-import { ExtendRentalDialog } from "@/components/bookDetails.tsx/ExtendRentalDialog";
+import { ExtendRentalDialog } from "@/components/modals/ExtendRentalDialog";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { CarouselSlider } from "../common/CarousalSlider";
 import { useParams } from "next/navigation";
@@ -58,6 +58,7 @@ export function BookDetails() {
   const [extendsionDuration, setExtensionDuration] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
+
   const handleGetBookDetails = async () => {
     setLoading(true);
     try {

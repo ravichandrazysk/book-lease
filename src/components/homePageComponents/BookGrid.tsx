@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { BookGroupProps } from "@/types/common-types";
 
-export default function BookGrid({ books }: BookGroupProps) {
+export default function BookGrid({ books, name }: BookGroupProps) {
   const router = useRouter();
   const handleViewMore = () => {
     router.push(`/filtered-books`);
@@ -13,7 +13,7 @@ export default function BookGrid({ books }: BookGroupProps) {
   return (
     <div className="space-y-4 mt-12 ">
       <div className="flex items-center justify-between">
-        <h2 className="text-[28px] font-medium text-black">All Books</h2>
+        <h2 className="text-[28px] font-medium text-black">{name}</h2>
         {books && books.length > 10 && (
           <Button
             variant="link"

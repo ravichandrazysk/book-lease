@@ -61,8 +61,46 @@ export default function VerifyPage() {
     }
   };
 
-  const handleResend = () => {
-    // Here you would typically call your API to resend the OTP
+  const handleResend = async () => {
+    if (session && session.user?.id)
+      try {
+        // eslint-disable-next-line object-curly-newline
+        const formData = new FormData();
+        formData.append("customer_id", session.user?.id?.toString() || "");
+        formData.append("otp_type", "phone");
+        const response = await axiosInstance.post(
+          "/customer/resend-otp",
+          formData
+        );
+
+        if (response.status === 200)
+          toast({
+            description: response.data.message,
+            title: "Success",
+            variant: "success",
+          });
+
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        if (
+          isAxiosError(error) &&
+          error.status &&
+          error.status >= 400 &&
+          error.status < 500 &&
+          error.response
+        )
+          toast({
+            title: "Error",
+            variant: "destructive",
+            description: error.response.data.message,
+          });
+        else
+          toast({
+            title: "Error",
+            variant: "destructive",
+            description: "Something went wrong",
+          });
+      }
   };
 
   return (
