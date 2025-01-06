@@ -18,7 +18,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Avatar } from "../ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import OwnerDetailsSkeleton from "@/components/common/loaders/OwnerDetailsSkeleton";
@@ -26,12 +26,15 @@ import { toast } from "@/hooks/use-toast";
 import { isAxiosError } from "axios";
 import { OwnerDetailsTypes, StockCardProps } from "@/types/common-types";
 import dynamic from "next/dynamic";
+import ChatBox from "@/components/common/ChatBox";
+import { useRouter } from "next/navigation";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 export function StockDetailsCard({
   bookId,
   variant,
   title,
+  slug,
   author,
   date,
   imageUrl,
@@ -43,8 +46,10 @@ export function StockDetailsCard({
   onAccept,
   onCancel,
   loader,
+  ticketId,
 }: StockCardProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [ownnerDetails, setOwnerDetails] = useState<OwnerDetailsTypes>({
     first_name: "",
     last_name: "",
@@ -55,6 +60,7 @@ export function StockDetailsCard({
   });
   const [loading, setLoading] = useState(true);
   const [availabilityToggle, setAvailabilityToggle] = useState(isAvailable);
+  const router = useRouter();
 
   useEffect(() => {
     const getOwnerDetails = async () => {
@@ -105,6 +111,9 @@ export function StockDetailsCard({
           width={80}
           height={120}
           onError={imageError}
+          onClick={() => {
+            router.push(`/book-details/${slug}`);
+          }}
         />
       </section>
 
@@ -140,41 +149,11 @@ export function StockDetailsCard({
                   : <span className="font-medium text-black">{date}</span>
                 </p>
               </div>
-
-              {variant === "received" &&
-                status &&
-                status === "Pending" &&
-                (loader ? (
-                  <div className="justify-center items-center max-w-28 hidden">
-                    <Lottie
-                      loop
-                      path="/lotties/loader.json"
-                      play
-                      style={{ width: "100%" }}
-                    />
-                  </div>
-                ) : (
-                  <div className="items-end justify-between gap-2 hidden">
-                    <Button
-                      variant="outline"
-                      onClick={onCancel}
-                      className="w-24"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
-                      onClick={onAccept}
-                    >
-                      Accept
-                    </Button>
-                  </div>
-                ))}
             </>
           )}
         </div>
 
-        <div className="flex justify-between mt-5 items-center gap-4">
+        <div className="flex justify-between mt-4 mb-1 items-center gap-4">
           {variant === "books" && (
             <>
               {status && (
@@ -190,7 +169,7 @@ export function StockDetailsCard({
                 <Switch
                   checked={availabilityToggle}
                   onCheckedChange={() => {
-                    setAvailabilityToggle(!availabilityToggle);
+                    setAvailabilityToggle(availabilityToggle);
                     if (onToggle) onToggle();
                   }}
                   className="data-[state=checked]:bg-[#FF7A09] "
@@ -218,9 +197,7 @@ export function StockDetailsCard({
                 </p>
               </div>
 
-              {variant === "received" &&
-                status &&
-                status === "Pending" &&
+              {(variant === "received" || variant === "sent") &&
                 (loader ? (
                   <div className="flex justify-center items-center max-w-28 max-sm:hidden">
                     <Lottie
@@ -232,19 +209,49 @@ export function StockDetailsCard({
                   </div>
                 ) : (
                   <div className="flex items-end gap-2 max-sm:hidden">
-                    <Button variant="outline" onClick={onCancel}>
-                      Cancel
-                    </Button>
                     <Button
-                      className="bg-[#FF7A09] hover:bg-[#FF7A09]"
-                      onClick={onAccept}
+                      className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
+                      onClick={() => {
+                        setIsChatOpen(true);
+                      }}
                     >
-                      Accept
+                      View Chat
                     </Button>
                   </div>
                 ))}
             </>
           )}
+
+          <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
+            <SheetTrigger asChild>
+              <Button className="hidden">Open Sheet</Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:max-w-lg p-3 sm:p-6">
+              <SheetTitle className="border-gray-300 border-b-2 pb-3">
+                <div className="flex items-center justify-between pr-10 sm:pr-8">
+                  {author}
+                  {variant === "received" && status && status === "Pending" && (
+                    <div className="flex items-end gap-2">
+                      <Button variant="outline" onClick={onCancel}>
+                        Reject
+                      </Button>
+                      <Button
+                        className="bg-[#FF7A09] hover:bg-[#FF7A09]"
+                        onClick={onAccept}
+                      >
+                        Accept
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </SheetTitle>
+              <ChatBox
+                owner={author || ""}
+                ticketId={Number(ticketId)}
+                isOwner={variant === "received" ? true : false}
+              />
+            </SheetContent>
+          </Sheet>
 
           {variant === "rental" && (
             <p className="text-sm font-normal text-[#7A7977] mt-1">
@@ -344,9 +351,7 @@ export function StockDetailsCard({
               </p>
             </div>
 
-            {variant === "received" &&
-              status &&
-              status === "Pending" &&
+            {(variant === "received" || variant === "sent") &&
               (loader ? (
                 <div className="flex justify-center items-center max-w-28 sm:hidden">
                   <Lottie
@@ -357,15 +362,14 @@ export function StockDetailsCard({
                   />
                 </div>
               ) : (
-                <div className="flex items-end justify-evenly gap-2 sm:hidden">
-                  <Button variant="outline" onClick={onCancel} className="w-24">
-                    Cancel
-                  </Button>
+                <div className="flex items-end justify-end gap-2 sm:hidden">
                   <Button
                     className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
-                    onClick={onAccept}
+                    onClick={() => {
+                      setIsChatOpen(true);
+                    }}
                   >
-                    Accept
+                    View Chat
                   </Button>
                 </div>
               ))}

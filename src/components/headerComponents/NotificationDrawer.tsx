@@ -1,3 +1,4 @@
+/* eslint-disable brace-style */
 /* eslint-disable camelcase */
 "use client";
 
@@ -13,25 +14,16 @@ import { useEffect, useState } from "react";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { isAxiosError } from "axios";
 import { NotificationTypes } from "@/types/common-types";
-import { NotificationDetails } from "../modals/NotificationDetails";
 import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 export function NotificationDropdown() {
   const [notifications, setNotifications] = useState<NotificationTypes[]>([]);
-  const [readNotification, setReadNotification] = useState<boolean>(false);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [notificationReadStatus, setNoticationReadStatus] =
     useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [notificationDetails, setNotificationDetails] =
-    useState<NotificationTypes>({
-      id: 0,
-      type: "",
-      title: "",
-      body: "",
-      read_at: "",
-      active: false,
-    });
+  const router = useRouter();
 
   const handleNotificationRead = async (notificationId: number) => {
     try {
@@ -62,6 +54,39 @@ export function NotificationDropdown() {
         });
     }
   };
+
+  const handleNotificationClick = async (notification: NotificationTypes) => {
+    try {
+      await handleNotificationRead(notification.id);
+      sessionStorage.setItem("ticketId", notification.ticket_number);
+      sessionStorage.setItem("ownerName", notification.owner_name);
+      sessionStorage.setItem("itemId", notification.id.toString());
+      window.dispatchEvent(new Event("storage"));
+      if (notification.type === "book_request")
+        router.push(`/user/received-requests`);
+      else router.push(`/user/my-requests`);
+    } catch (error) {
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.response
+      )
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response.data.message,
+        });
+      else
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Something went wrong",
+        });
+    }
+  };
+
   useEffect(() => {
     const fetchNotifications = async () => {
       setLoading(true);
@@ -103,29 +128,19 @@ export function NotificationDropdown() {
             className="relative p-2 md:p-3 w-auto h-auto border border-[#D0CCCB] rounded-full"
           >
             <Bell className="h-4 w-4 md:h-5 md:w-5" />
-            <span className="absolute top-0 right-0 h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center">
               {notificationCount > 99 ? "99+" : notificationCount}
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="w-[375px] md:w-[500px] mt-2"
-          align="end"
-        >
+        <DropdownMenuContent className="w-screen md:w-[500px] mt-2" align="end">
           <NotificationPanel
             notifications={notifications}
-            onNotificationClick={setNotificationDetails}
-            onNotificationRead={setReadNotification}
+            onNotificationClick={handleNotificationClick}
             loader={loading}
           />
         </DropdownMenuContent>
       </DropdownMenu>
-      <NotificationDetails
-        open={readNotification}
-        onOpenChange={setReadNotification}
-        notificationDetails={notificationDetails}
-        onNotificatoinClose={handleNotificationRead}
-      />
     </>
   );
 }

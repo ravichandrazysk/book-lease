@@ -9,7 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 const validationSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string()
+    .email("Invalid email")
+    .required("Email is required")
+    .matches(
+      /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+      "Invalid email address"
+    ),
   // eslint-disable-next-line object-curly-newline
 });
 

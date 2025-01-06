@@ -70,8 +70,20 @@ export default function LoginPage() {
     password: "",
   };
   const loginValidationSchema = Yup.object().shape({
-    email: Yup.string().email("Invalid email").required("email is required"),
-    password: Yup.string().required("password is required"),
+    email: Yup.string()
+      .email("Invalid email")
+      .required("Email is required")
+      .matches(
+        /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+        "Invalid email address"
+      ),
+    password: Yup.string()
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .matches(/[0-9]/, "Password must contain at least one number")
+      .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .matches(/[^\w]/, "Password must contain at least one special character"),
   });
 
   const onSubmit = (values: FormValuesTypes) => {
@@ -182,6 +194,14 @@ export default function LoginPage() {
                     className="text-[#ff851b] font-semibold text-base hover:text-[#ff851b]/90"
                   >
                     Sign up
+                  </Link>
+                </div>
+                <div className="text-center font-normal text-sm mt-3">
+                  <Link
+                    href="/"
+                    className="text-[#ff851b] font-semibold text-base hover:text-[#ff851b]/90"
+                  >
+                    Return home
                   </Link>
                 </div>
               </Form>

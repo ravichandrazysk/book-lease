@@ -48,7 +48,7 @@ export function BookCard(props: ComicCardProps) {
               : props.is_free
                 ? categoryColors["For Free"]
                 : categoryColors["For Rent"]
-          } rounded-[8px] font-medium px-3 py-1 text-sm `}
+          } rounded-[8px] font-medium px-3 py-1 text-xs sm:text-sm `}
         >
           {props.availability === "Sell"
             ? "For Sale"
@@ -63,9 +63,11 @@ export function BookCard(props: ComicCardProps) {
               : props.is_free
                 ? categoryColors["For Free"]
                 : categoryColors["For Rent"]
-          } rounded-[8px] font-medium px-3 py-1 text-sm `}
+          } rounded-[8px] font-medium px-3 py-1 text-xs sm:text-sm `}
         >
-          {props.category && props.category}
+          {typeof props.category === "string"
+            ? props.category
+            : props.category?.name}
         </Badge>
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-2 p  px-0 t-0">

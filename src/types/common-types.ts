@@ -1,3 +1,20 @@
+export interface LocationTypes {
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+export interface RegisterFormValues {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  age: string;
+  gender: string;
+  address: string;
+}
 export interface ComicCardProps {
   id: number;
   name: string;
@@ -6,9 +23,18 @@ export interface ComicCardProps {
   price: string | number;
   discounted_price: string;
   is_free: boolean;
-  category: string;
+  category:
+    | {
+        id: number;
+        name: string;
+      }
+    | string;
   slug: string;
-  images: { image_path: string }[];
+  images: {
+    image_id: number;
+    image_path: string;
+    alt_text: string | null;
+  }[];
   className?: string;
 }
 export interface PaginationDataTypes {
@@ -58,6 +84,7 @@ export interface StockCardProps {
   variant: "rental" | "books" | "received" | "status" | "sold" | "sent";
   bookId?: number;
   title: string;
+  slug?: string;
   author?: string;
   date?: string;
   imageUrl: string;
@@ -70,6 +97,7 @@ export interface StockCardProps {
   onAccept?: () => void;
   onCancel?: () => void;
   loader?: boolean;
+  ticketId?: string;
 }
 
 export interface OwnerDetailsTypes {
@@ -88,12 +116,14 @@ export interface NotificationTypes {
   body: string;
   read_at: string | null;
   active: boolean;
+  ticket_number: string;
+  owner_name: string;
 }
 export interface BookGroupProps {
-  id: 1;
+  id: number;
   name: string;
   max_books_count: number;
-  books: ComicCardProps[];
+  books: BookDataType[];
 }
 
 export interface LeaseDetails {
@@ -134,10 +164,11 @@ export interface BookDetailsType {
   lease_details?: LeaseDetails;
   can_extend_lease: boolean;
   images: { image_path: string }[];
+  ticket_number: string;
 }
 
 export interface BooCreateEditFormTypes {
-  coverImage: File | null;
+  coverImage: File | string | null;
   title: string;
   author: string;
   description: string;
@@ -164,6 +195,11 @@ export interface TagsTypes {
   name: string;
 }
 
+export interface BookConditionTypes {
+  value: string;
+  label: string;
+}
+
 export interface LanguagesTypes {
   id: number;
   name: string;
@@ -174,21 +210,34 @@ export interface MyBookTypes {
   name: string;
   author: string;
   availability: string;
+  description: string;
+  condition: string;
+  category?: {
+    id: number;
+    name: string;
+  };
+  age_group?: "";
+  tags: {
+    id: number;
+    name: string;
+  }[];
   price: number | null;
   discounted_price: string;
   is_free: boolean;
   active: boolean;
   slug: string;
-  category: string;
   images: { image_path: string }[];
 }
 
 export interface MyRequestTypes {
   id: 4;
   book_name: string;
+  slug: string;
   requested_at: string;
   status: string;
   images: string[];
+  book_owner: string;
+  ticket_number: string;
 }
 
 export interface ProfileFormValues {
@@ -206,16 +255,19 @@ export interface ProfileFormValues {
 export interface ReceivedRequestTypes {
   id: 4;
   book_name: string;
+  slug: string;
   requester: string;
   requested_at: string;
   status: string;
   type: string;
   images: string[];
+  ticket_number: string;
 }
 
 export interface RentalBookProps {
   id: number;
   book: string;
+  slug: string;
   author: string;
   owner: string;
   lease_end_date: string;
@@ -225,6 +277,7 @@ export interface RentalBookProps {
 export interface SoldBookProps {
   id: number;
   name: string;
+  slug: string;
   author: string;
   availability: string;
   price: string;
@@ -241,4 +294,67 @@ export interface SupportFormValues {
   phoneNumber: string;
   requestType: string;
   comments: string;
+}
+
+export interface BookArrayProps {
+  id: number;
+  name: string;
+  author: string;
+  availability: string;
+  price: string;
+  discounted_price: string;
+  is_free: boolean;
+  category: {
+    id: number;
+    name: string;
+  };
+  slug: string;
+  images: {
+    image_id: number;
+    image_path: string;
+    alt_text: string | null;
+  }[];
+}
+
+export interface BookDataType {
+  id: number;
+  name: string;
+  slug: string;
+  author: string;
+  availability: string;
+  description: string | null;
+  condition: string;
+  price: string;
+  discounted_price: string;
+  sold_at?: string;
+  is_free: boolean;
+  category: {
+    id: number;
+    name: string;
+  };
+  age_group: string;
+  tags: {
+    id: number;
+    name: string;
+  }[];
+  active: boolean;
+  images: {
+    image_id: number;
+    image_path: string;
+    alt_text: string | null;
+  }[];
+}
+
+export interface Message {
+  id: number;
+  message: string;
+  user: string;
+  created_at: string;
+  role: string;
+}
+
+export interface ChatBoxProps {
+  owner: string;
+  ticketId: number;
+  isOwner: boolean;
 }

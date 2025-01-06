@@ -18,20 +18,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
-
-interface BookArrayProps {
-  id: number;
-  name: string;
-  author: string;
-  availability: string;
-  price: string;
-  discounted_price: string;
-  is_free: boolean;
-  category: string;
-  slug: string;
-  images: { image_path: string }[];
-}
+import { ListFilter } from "lucide-react";
+import { BookArrayProps } from "@/types/common-types";
 
 interface BookMetaData {
   current_page: number;
@@ -120,7 +108,7 @@ const Page = () => {
                   size="icon"
                   className="md:hidden z-50 fixed bottom-10 right-4 w-fit h-fit flex items-center justify-end rounded-full p-3  bg-white !shadow-md"
                 >
-                  <Filter className="!h-9 !w-9" />
+                  <ListFilter className="!h-7 !w-7" />
                 </Button>
               </SheetTrigger>
               <SheetContent

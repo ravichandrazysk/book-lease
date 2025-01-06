@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-extra-parens */
 /* eslint-disable multiline-ternary */
 "use client";
@@ -28,38 +29,46 @@ import { AxiosError } from "axios";
 import Link from "next/link";
 import { MdLocationSearching } from "react-icons/md";
 import dynamic from "next/dynamic";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
+import { LocationTypes, RegisterFormValues } from "@/types/common-types";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const validationSchema = Yup.object().shape({
   firstName: Yup.string().required("First name is required"),
   lastName: Yup.string().required("Last name is required"),
   phoneNumber: Yup.string().required("Phone number is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string()
+    .email("Invalid email")
+    .required("Email is required")
+    .matches(
+      /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+      "Invalid email address"
+    ),
   password: Yup.string()
     .min(8, "Password must be at least 8 characters")
+    .matches(/[0-9]/, "Password must contain at least one number")
+    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .matches(/[^\w]/, "Password must contain at least one special character")
     .required("Password is required"),
   confirmPassword: Yup.string()
     // eslint-disable-next-line no-undefined
     .oneOf([Yup.ref("password"), undefined], "Passwords must match")
     .required("Confirm password is required"),
+  age: Yup.number()
+    .min(1, "Age must be greater than 0")
+    .required("Age is required"),
+  gender: Yup.string().required("Gender is required"),
   address: Yup.string().required("Address is required"),
 });
 
-interface LocationTypes {
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-}
-interface FormValues {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  address: string;
-}
 export default function SignUpForm() {
   const [location, setLocation] = useState<{
     latitude: number;
@@ -73,9 +82,11 @@ export default function SignUpForm() {
     pincode: "",
   });
 
+  const router = useRouter();
+
   const { toast } = useToast();
 
-  const formikRef = useRef<FormikProps<FormValues>>(null);
+  const formikRef = useRef<FormikProps<RegisterFormValues>>(null);
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
@@ -116,10 +127,11 @@ export default function SignUpForm() {
           state: state,
           pincode: postalCode || "",
         });
-        if (formikRef.current)
-          if (formikRef.current)
-            formikRef.current.setFieldValue("address", formattedAddress);
-      }
+        formikRef.current.setFieldValue("address", formattedAddress);
+        formikRef.current.setFieldError("address", "");
+        // eslint-disable-next-line brace-style
+      } else
+        formikRef.current.setFieldError("address", "Select a valid address");
     }
   };
 
@@ -135,8 +147,8 @@ export default function SignUpForm() {
   };
 
   const onSubmit = async (
-    values: FormValues,
-    { resetForm }: FormikHelpers<FormValues>
+    values: RegisterFormValues,
+    { resetForm }: FormikHelpers<RegisterFormValues>
   ) => {
     setLoader(true);
     const formData = new FormData();
@@ -145,6 +157,8 @@ export default function SignUpForm() {
     formData.append("email", values.email);
     formData.append("phone", values.phoneNumber);
     formData.append("password", values.password);
+    formData.append("age", values.age);
+    formData.append("gender", values.gender);
     formData.append("address_line_1", values.address);
     formData.append("pincode", locationValues.pincode);
     formData.append("city", locationValues.city);
@@ -158,6 +172,7 @@ export default function SignUpForm() {
           description: response.data.message,
         });
         resetForm();
+        router.push("/login");
       }
       setLoader(false);
       // eslint-disable-next-line brace-style
@@ -243,8 +258,10 @@ export default function SignUpForm() {
               state: state,
               pincode: postalCode || "",
             });
-            if (formikRef.current)
+            if (formikRef.current) {
               formikRef.current.setFieldValue("address", formattedAddress);
+              formikRef.current.setFieldError("address", "");
+            }
             // eslint-disable-next-line brace-style
           } else
             toast({
@@ -290,6 +307,8 @@ export default function SignUpForm() {
               email: "",
               password: "",
               confirmPassword: "",
+              age: "",
+              gender: "",
               address: "",
             }}
             validationSchema={validationSchema}
@@ -422,6 +441,57 @@ export default function SignUpForm() {
                   className="text-red-500 text-sm"
                 />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="age" className="text-sm font-medium">
+                    Age&nbsp;
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <Field
+                    as={Input}
+                    id="age"
+                    name="age"
+                    type="text"
+                    placeholder="Enter your age"
+                    className="border border-[#D1D5DB]"
+                  />
+                  <ErrorMessage
+                    name="age"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="gender" className="text-sm font-medium">
+                    Gender&nbsp;
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <Field name="gender">
+                    {({ field, form }: any) => (
+                      <Select
+                        onValueChange={(value) =>
+                          form.setFieldValue("gender", value)
+                        }
+                        value={field.value}
+                      >
+                        <SelectTrigger className="border border-[#D1D5DB]">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                          <SelectItem value="Others">Others</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </Field>
+                  <ErrorMessage
+                    name="gender"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+              </div>
               <div>
                 <Label htmlFor="address" className="font-medium text-sm">
                   Address&nbsp;
@@ -430,11 +500,31 @@ export default function SignUpForm() {
                 {isLoaded && (
                   <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                     <Field name="address">
-                      {({ field }: { field: FieldInputProps<string> }) => (
+                      {({
+                        field,
+                        form,
+                      }: {
+                        field: FieldInputProps<string>;
+                        form: any;
+                      }) => (
                         <Input
                           {...field}
                           className="border border-[#D1D5DB] h-12 placeholder:text-[#7A7977] placeholder:font-normal text-[#1F2937] font-normal"
                           placeholder="Search for area, Street name.."
+                          onBlur={() => {
+                            if (!locationValues.address)
+                              form.setFieldError(
+                                "address",
+                                "Select a valid address"
+                              );
+                          }}
+                          onChange={(e) => {
+                            form.setFieldValue("address", e.target.value);
+                            setLocationValues({
+                              ...locationValues,
+                              address: "",
+                            });
+                          }}
                         />
                       )}
                     </Field>
@@ -490,6 +580,14 @@ export default function SignUpForm() {
               Login
             </Link>
           </p>
+          <div className="text-center font-normal text-sm mt-3">
+            <Link
+              href="/"
+              className="text-[#ff851b] font-semibold text-base hover:text-[#ff851b]/90"
+            >
+              Return home
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </>

@@ -26,7 +26,14 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
     url.pathname = redirectPath;
     return NextResponse.redirect(url);
   }
-
+  // Prevent redirection for /profile and /user-profile routes if the user is authenticated or has skipped setup
+  if (url.pathname.startsWith("/user")) {
+    if (!token) {
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
   // Allow access to public pages if unauthenticated
   if (!token && url.pathname in redirectMap) return NextResponse.next();
 

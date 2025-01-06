@@ -20,6 +20,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { MyBookTypes, PaginationDataTypes } from "@/types/common-types";
+import ConfirmationModal from "../modals/ConfirmationModel";
 
 const MyBooks = () => {
   const [createNewBook, setCreateNewBook] = useState(false);
@@ -40,14 +41,28 @@ const MyBooks = () => {
     name: "",
     author: "",
     availability: "",
+    description: "",
+    condition: "",
     price: 0,
     discounted_price: "",
     is_free: false,
     active: false,
-    category: "",
+    category: { id: 0, name: "" },
+    age_group: "",
+    tags: [
+      {
+        id: 0,
+        name: "",
+      },
+    ],
     slug: "",
     images: [],
   });
+  const [showModal, setShowModal] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<{
+    active: boolean;
+    slug: string;
+  }>({ active: false, slug: "" });
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -132,6 +147,25 @@ const MyBooks = () => {
     }
   };
 
+  const handleToggleConfirmation = (
+    availability: boolean,
+    bookSlug: string
+  ) => {
+    setSelectedBook({ active: availability, slug: bookSlug });
+    setShowModal(true);
+  };
+
+  const handleConfirmToggle = () => {
+    handleAvailibility(selectedBook.active, selectedBook.slug);
+    setShowModal(false);
+    setSelectedBook({ active: false, slug: "" });
+  };
+
+  const handleCancelToggle = () => {
+    setShowModal(false);
+    setSelectedBook({ active: false, slug: "" });
+  };
+
   return (
     <section id="my-books" className=" sm:w-11/12  mx-auto max-w-3xl my-5">
       <header>
@@ -173,6 +207,7 @@ const MyBooks = () => {
               key={index}
               variant="books"
               title={item.name}
+              slug={item.slug}
               author={item.author}
               imageUrl={
                 item.images && item.images.length > 0
@@ -185,9 +220,19 @@ const MyBooks = () => {
                 setEditBook(true);
                 setEditBookDetails(item);
               }}
-              onToggle={() => handleAvailibility(!item.active, item.slug)}
+              onToggle={() => handleToggleConfirmation(!item.active, item.slug)}
             />
           ))}
+          {showModal && (
+            <ConfirmationModal
+              isOpen={showModal}
+              onOpenChange={setShowModal}
+              onConfirm={handleConfirmToggle}
+              onCancel={handleCancelToggle}
+              title="Confirm Action"
+              body="Are you sure you want to change the availability of this book?"
+            />
+          )}
         </>
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center">

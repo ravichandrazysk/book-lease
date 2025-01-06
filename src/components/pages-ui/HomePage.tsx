@@ -8,8 +8,9 @@ import BookGrid from "@/components/homePageComponents/BookGrid";
 import Image from "next/image";
 import { BooksGridSkeleton } from "@/components/common/loaders/BooksGridSkeleton";
 import { axiosInstance } from "@/utils/AxiosConfig";
-import { CarouselSlider } from "@/components/common/CarousalSlider";
+import CarouselSlider from "@/components/common/CarousalSlider";
 import { BookGroupProps } from "@/types/common-types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const HomePage = () => {
   const [loader, setLoader] = useState(true);
@@ -61,19 +62,26 @@ const HomePage = () => {
           <EmailVerifyCard onVerify={handleEamilVerify} />
         </section> */}
         {topBannerAdds && topBannerAdds.length > 0 && (
-          <section id="promotion-banner" className="sm:max-w-7xl mx-auto mt-2">
+          <section
+            id="promotion-banner"
+            className="sm:max-w-7xl mx-auto sm:mx-12 mt-2"
+          >
             <CarouselSlider
               sliderData={topBannerAdds}
-              width={100}
-              height={100}
+              width={1440}
+              height={600}
+              isTopBanner={true}
             />
           </section>
         )}
         <section id="categorised-books" className="mt-8">
           {loader ? (
-            <BooksGridSkeleton count={5} />
-          ) : bookData && bookData.length > 0 ? (
-            bookData.map((category: BookGroupProps, index) => (
+            <div>
+              <Skeleton className="min-h-5 rounded-lg w-20 " />
+              <BooksGridSkeleton count={5} />
+            </div>
+          ) : bookData && bookData?.length > 0 ? (
+            bookData?.map((category: BookGroupProps, index) => (
               <React.Fragment key={index}>
                 {category.books && category.books.length > 0 && (
                   <BookGrid {...category} />

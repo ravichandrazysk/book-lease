@@ -18,11 +18,19 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "../ui/pagination";
+} from "@/components/ui/pagination";
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import {
   PaginationDataTypes,
   ReceivedRequestTypes,
 } from "@/types/common-types";
+import { Button } from "@/components/ui/button";
+import ChatBox from "@/components/common/ChatBox";
 
 export const ReceivedRequests = () => {
   const [loading, setLoading] = useState(false);
@@ -38,6 +46,15 @@ export const ReceivedRequests = () => {
     total: 1,
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isSessionStorage, setIsSessionStorage] = useState(false);
+
+  const ownerName =
+    typeof window !== "undefined" ? sessionStorage.getItem("ownerName") : null;
+  const ticketNumber =
+    typeof window !== "undefined" ? sessionStorage.getItem("ticketId") : null;
+  const itemId =
+    typeof window !== "undefined" ? sessionStorage.getItem("itemId") : null;
 
   const handleRequestConfirmation = async (
     actionStatus: string,
@@ -85,6 +102,7 @@ export const ReceivedRequests = () => {
 
   useEffect(() => {
     const receiveRequests = async () => {
+      setLoading(true);
       try {
         const response = await axiosInstance.get(
           `/received-requests?paginate=10&page=${currentPage}`
@@ -122,6 +140,30 @@ export const ReceivedRequests = () => {
     };
     receiveRequests();
   }, [requestStatus, currentPage]);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (typeof window !== "undefined") {
+        const ownerName = sessionStorage.getItem("ownerName");
+        const ticketId = sessionStorage.getItem("ticketId");
+        const itemId = sessionStorage.getItem("itemId");
+        setIsSessionStorage(Boolean(ownerName && ticketId && itemId));
+      }
+    };
+    handleStorageChange();
+    if (typeof window !== "undefined")
+      window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isSessionStorage) setIsChatOpen(true);
+  }, [isSessionStorage]);
+
   return (
     <React.Fragment>
       <section
@@ -135,7 +177,7 @@ export const ReceivedRequests = () => {
         {loading ? (
           <>
             {Array.from({ length: 10 }).map((_, index) => (
-              <StockCardLoader key={index} variant="sent" />
+              <StockCardLoader key={index} variant="rental" />
             ))}
           </>
         ) : receivedRequests && receivedRequests.length > 0 ? (
@@ -144,6 +186,7 @@ export const ReceivedRequests = () => {
               key={item.id}
               variant="received"
               title={item.book_name}
+              slug={item.slug}
               author={item.requester}
               imageUrl={item.images[0]}
               status={item.status}
@@ -151,6 +194,7 @@ export const ReceivedRequests = () => {
               onAccept={() => handleRequestConfirmation("Accepted", item.id)}
               onCancel={() => handleRequestConfirmation("Rejected", item.id)}
               loader={loader}
+              ticketId={item.ticket_number}
             />
           ))
         ) : (
@@ -163,7 +207,7 @@ export const ReceivedRequests = () => {
               className="!w-96 !h-96"
             />
             <p className="text-3xl text-center text-red-500 font-medium">
-              No Books found!
+              No requests found!
             </p>
           </div>
         )}
@@ -212,6 +256,48 @@ export const ReceivedRequests = () => {
           </Pagination>
         )}
       </section>
+      <Sheet
+        open={isChatOpen}
+        onOpenChange={(open) => {
+          setIsChatOpen(open);
+          setIsSessionStorage(false);
+          sessionStorage.clear();
+        }}
+      >
+        <SheetTrigger asChild>
+          <Button className="hidden">Open Sheet</Button>
+        </SheetTrigger>
+        <SheetContent className="w-full sm:max-w-lg p-3 sm:p-6">
+          <SheetTitle className="border-gray-300 border-b-2 pb-3">
+            <div className="flex items-center justify-between pr-10 sm:pr-8">
+              {ownerName}
+              <div className="flex items-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    handleRequestConfirmation("Rejected", Number(itemId))
+                  }
+                >
+                  Reject
+                </Button>
+                <Button
+                  className="bg-[#FF7A09] hover:bg-[#FF7A09]"
+                  onClick={() =>
+                    handleRequestConfirmation("Accepted", Number(itemId))
+                  }
+                >
+                  Accept
+                </Button>
+              </div>
+            </div>
+          </SheetTitle>
+          <ChatBox
+            owner={ownerName || ""}
+            ticketId={Number(ticketNumber)}
+            isOwner={true}
+          />
+        </SheetContent>
+      </Sheet>
     </React.Fragment>
   );
 };

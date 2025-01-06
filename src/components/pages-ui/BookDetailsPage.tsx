@@ -11,7 +11,7 @@ import { CustomToast } from "@/components/common/CustomToast";
 import { useEffect, useState } from "react";
 import { ExtendRentalDialog } from "@/components/modals/ExtendRentalDialog";
 import { axiosInstance } from "@/utils/AxiosConfig";
-import { CarouselSlider } from "../common/CarousalSlider";
+import CarouselSlider from "@/components/common/CarousalSlider";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,13 @@ import { convertDate } from "@/utils/Utilities";
 import BookDetailSkeleton from "@/components/common/loaders/BookDetailSkeleton";
 import Lottie from "react-lottie-player";
 import { BookDetailsType } from "@/types/common-types";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import ChatBox from "@/components/common/ChatBox";
 
 export function BookDetails() {
   const { bookId } = useParams();
@@ -51,6 +58,7 @@ export function BookDetails() {
     is_buy: false,
     images: [],
     can_extend_lease: false,
+    ticket_number: "",
   });
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isDescriptionLong, setIsDescriptionLong] = useState(false);
@@ -58,6 +66,8 @@ export function BookDetails() {
   const [extendsionDuration, setExtensionDuration] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [ticketId, setTicketId] = useState<number>(0);
 
   const handleGetBookDetails = async () => {
     setLoading(true);
@@ -70,6 +80,8 @@ export function BookDetails() {
         );
         setBookImages(imgArr);
         setLoading(false);
+        if (response.data.data.is_requested && !response.data.data.is_leased)
+          setIsRequested(true);
       }
       // eslint-disable-next-line brace-style
     } catch (error) {
@@ -104,17 +116,9 @@ export function BookDetails() {
       );
       if (response.status === 201) {
         setButtonLoading(false);
-        toast({
-          duration: 5000,
-          className: "p-0 bg-transparent border-none",
-          action: (
-            <CustomToast
-              title={response.data.message}
-              description="You'll receive a notification once your request is accepted."
-            />
-          ),
-        });
         setIsRequested(true);
+        setTicketId(response.data.ticket_number);
+        setIsSheetOpen(true);
       }
       // eslint-disable-next-line prettier/prettier, brace-style
     }
@@ -174,14 +178,19 @@ export function BookDetails() {
     "For Free": "bg-[#e6f8eb] text-[#34C759] hover:bg-[#e6f8eb]",
   };
   return loading ? (
-    <div className="max-w-6xl mx-auto ">
+    <div className="container mx-auto px-4 py-6">
       <BookDetailSkeleton />
     </div>
   ) : (
     <div className="container mx-auto px-4 py-6">
       <div className="grid gap-5 md:grid-cols-2">
         <div className="max-w-xs w-full mx-auto">
-          <CarouselSlider sliderData={bookImages} width={300} height={450} />
+          <CarouselSlider
+            sliderData={bookImages}
+            width={300}
+            height={450}
+            isTopBanner={false}
+          />
         </div>
         <div className="space-y-5">
           <Badge
@@ -258,6 +267,13 @@ export function BookDetails() {
                 handleRequest();
                 return;
               }
+              if (
+                (!bookDetails.is_requested && !bookDetails.is_leased) ||
+                isRequested
+              ) {
+                setIsSheetOpen(true);
+                return;
+              }
               if (bookDetails.is_leased && !bookDetails.is_requested) {
                 setShowExtendModal(true);
                 return;
@@ -265,16 +281,13 @@ export function BookDetails() {
             }}
             disabled={
               // eslint-disable-next-line no-extra-parens
-              (bookDetails.is_requested && !bookDetails.is_leased) ||
-              // eslint-disable-next-line no-extra-parens
               (bookDetails.is_requested && bookDetails.is_leased) ||
               // eslint-disable-next-line no-extra-parens
               (!bookDetails.can_extend_lease &&
                 !bookDetails.is_requested &&
                 bookDetails.is_leased) ||
               bookDetails.is_buy ||
-              // eslint-disable-next-line no-extra-parens
-              isRequested
+              bookDetails.status === "Sold"
             }
           >
             {buttonLoading ? (
@@ -287,7 +300,7 @@ export function BookDetails() {
                 />
               </div>
             ) : !session ? (
-              "Login to request book"
+              "Login to Talk to the Owner"
             ) : bookDetails.availability === "Sell" && bookDetails.is_buy ? (
               "Sold out"
             ) : !bookDetails.can_extend_lease &&
@@ -302,17 +315,34 @@ export function BookDetails() {
             ) : // eslint-disable-next-line no-extra-parens, indent
             (bookDetails.is_requested && !bookDetails.is_leased) ||
               // eslint-disable-next-line no-extra-parens
-              (bookDetails.is_requested && bookDetails.is_leased) ||
-              // eslint-disable-next-line no-extra-parens
               isRequested ? (
-              "Waiting for Approval"
+              "View Conversation"
             ) : (
               !bookDetails.is_requested &&
               !bookDetails.is_leased &&
               !bookDetails.is_buy &&
-              "Send Request"
+              "Talk to the Owner"
             )}
           </Button>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+              <Button className="hidden">Open Sheet</Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:max-w-lg p-3 sm:p-6">
+              <SheetTitle className="border-gray-300 border-b-2 pb-3">
+                {bookDetails.owner}
+              </SheetTitle>
+              <ChatBox
+                owner={bookDetails.owner}
+                ticketId={
+                  bookDetails.is_requested && !bookDetails.is_leased
+                    ? Number(bookDetails.ticket_number)
+                    : ticketId
+                }
+                isOwner={false}
+              />
+            </SheetContent>
+          </Sheet>
           {bookDetails.is_leased &&
             bookDetails?.lease_details?.lease_end_date && (
               <p className="text-lg font-normal">
@@ -325,9 +355,7 @@ export function BookDetails() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <h3 className="font-medium">Tags:</h3>
-              <p className="text-muted-foreground">
-                First Edition, Space, Fantasy
-              </p>
+              <p className="text-muted-foreground">{bookDetails.tags}</p>
             </div>
             {bookDetails.is_leased && (
               <div>

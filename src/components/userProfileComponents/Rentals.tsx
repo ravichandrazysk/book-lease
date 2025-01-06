@@ -82,6 +82,7 @@ const MyRentals = () => {
             rentalBooks.map((item) => (
               <StockDetailsCard
                 key={item.id}
+                slug={item.slug}
                 bookId={item.id}
                 variant="rental"
                 title={item.book}

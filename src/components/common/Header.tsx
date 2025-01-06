@@ -6,11 +6,13 @@ import {
   User as LucideUser,
   Coins,
   BookCheckIcon,
-  Library,
   Handshake,
   LogOut,
   BookUp,
   BookDown,
+  BookMarked,
+  BookUser,
+  LibraryBig,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
@@ -28,7 +30,6 @@ import {
   SheetContent,
   SheetDescription,
   SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
@@ -49,14 +50,16 @@ export function Header() {
   const menuItems = [
     { label: "Profile", icon: LucideUser, path: "/user/profile" },
     { label: "Coins", icon: Coins, path: "/user/coins" },
-    { label: "My Books", icon: BookCheckIcon, path: "/user/my-books" },
-    { label: "All Books", icon: Library, path: "/filtered-books" },
+    { label: "All Books", icon: LibraryBig, path: "/filtered-books" },
+    { label: "My Books", icon: BookUser, path: "/user/my-books" },
     { label: "My Requests", icon: BookUp, path: "/user/my-requests" },
     {
       label: "Recieved Requests",
       icon: BookDown,
       path: "/user/received-requests",
     },
+    { label: "My Rentals", icon: BookMarked, path: "/user/rentals" },
+    { label: "Sold Books", icon: BookCheckIcon, path: "/user/sold-books" },
     { label: "Referral", icon: Handshake, path: "/user/referral" },
     {
       label: "Customer Support",
@@ -140,14 +143,14 @@ export function Header() {
                   <>
                     <Button
                       variant="ghost"
-                      className="p-2 max-w-16 max-h-8 sm:max-w-24 sm:max-h-10 border text-white text-xs sm:text-lg bg-[#FF7A09] flex-shrink-0"
+                      className="p-2 max-w-16 max-h-8 sm:max-w-24 sm:max-h-10 border text-white text-xs sm:text-lg bg-[#FF7A09] hover:text-white hover:bg-[#ff851b]/90 flex-shrink-0"
                       onClick={() => router.push("/login")}
                     >
                       Login
                     </Button>
                     <Button
                       variant="ghost"
-                      className="p-2 max-w-16 max-h-8 sm:max-w-24 sm:max-h-10 border text-white text-xs sm:text-lg bg-[#FF7A09] rounded-md flex-shrink-0"
+                      className="p-2 max-w-16 max-h-8 sm:max-w-24 sm:max-h-10 border text-white text-xs sm:text-lg bg-[#FF7A09] hover:text-white hover:bg-[#ff851b]/90 rounded-md flex-shrink-0"
                       onClick={() => router.push("/register")}
                     >
                       Register
@@ -197,7 +200,6 @@ export function Header() {
                     className="w-[300px] sm:w-[400px] min-h-screen"
                   >
                     <SheetHeader>
-                      <SheetTitle>Menu</SheetTitle>
                       <SheetDescription className="hidden"></SheetDescription>
                     </SheetHeader>
                     <div className="flex flex-col space-y-4 p-4">
@@ -205,10 +207,8 @@ export function Header() {
                         <Button
                           key={item.label}
                           variant="ghost"
-                          className={`p-3 w-auto h-auto border rounded-full flex justify-start ${
-                            pathname === item.path
-                              ? "bg-[#FF7A09] text-white"
-                              : "border-[#D0CCCB]"
+                          className={`p-3 w-auto h-auto flex justify-start ${
+                            pathname === item.path ? "text-[#FF7A09]" : ""
                           }`}
                           onClick={() => router.push(item.path)}
                         >
@@ -219,7 +219,7 @@ export function Header() {
                       <Button
                         key="logout"
                         variant="ghost"
-                        className="p-3 w-auto h-auto border rounded-full flex justify-start text-red-600"
+                        className="p-3 w-auto h-auto flex justify-start text-red-600 mt-4"
                         onClick={() => signOut({ callbackUrl: "/login" })}
                       >
                         <LogOut className="!h-5 !w-5 mr-2" />

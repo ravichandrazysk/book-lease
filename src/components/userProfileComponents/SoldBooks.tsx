@@ -84,6 +84,7 @@ const SoldBooks = () => {
                 bookId={item.id}
                 variant="sold"
                 title={item.name}
+                slug={item.slug}
                 author={item.author}
                 imageUrl={imgSrc}
                 date="22-10-2024"

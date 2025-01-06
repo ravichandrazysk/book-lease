@@ -1,5 +1,5 @@
 "use client";
-import { SquareChevronLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BookCard } from "@/components/common/BookCard";
 import {
@@ -11,7 +11,26 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
-import { ComicCardProps, PaginationDataTypes } from "@/types/common-types";
+import {
+  BookArrayProps,
+  ComicCardProps,
+  PaginationDataTypes,
+} from "@/types/common-types";
+
+const transformToComicCard = (book: BookArrayProps): ComicCardProps => {
+  return {
+    ...book,
+    category: book.category.name,
+    images: book.images.map((img) => ({
+      // eslint-disable-next-line camelcase
+      image_id: img.image_id,
+      // eslint-disable-next-line camelcase
+      image_path: img.image_path,
+      // eslint-disable-next-line camelcase
+      alt_text: img.alt_text,
+    })),
+  };
+};
 
 export function CategorySection({
   filteredBookData,
@@ -19,7 +38,7 @@ export function CategorySection({
   paginationData,
   onPageChange,
 }: {
-  filteredBookData: ComicCardProps[];
+  filteredBookData: BookArrayProps[];
   title?: string;
   paginationData: PaginationDataTypes;
   onPageChange: React.Dispatch<React.SetStateAction<number>>;
@@ -39,19 +58,15 @@ export function CategorySection({
           className="justify-start"
           onClick={() => router.back()}
         >
-          <SquareChevronLeft
-            className="!h-9 !w-9"
-            color="#1F2937"
-            strokeWidth={1.8}
-          />
+          <ArrowLeft className="!h-7 !w-7" color="#1F2937" strokeWidth={1} />
         </Button>
         <h1 className="text-2xl font-bold">{title}</h1>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-2 mx-auto max-w-3xl px-3 md:px-0">
+      <div className="grid grid-cols-2 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-2 mx-auto max-w-3xl px-3 md:px-0">
         {filteredBookData &&
-          filteredBookData.map((comic, index) => (
-            <BookCard key={index} {...comic} />
+          filteredBookData.map((comic) => (
+            <BookCard key={comic.id} {...transformToComicCard(comic)} />
           ))}
       </div>
 

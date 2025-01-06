@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 /* eslint-disable no-extra-parens */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -29,6 +30,7 @@ import { toast } from "@/hooks/use-toast";
 import dynamic from "next/dynamic";
 import {
   BooCreateEditFormTypes,
+  BookConditionTypes,
   CategoryTypes,
   LanguagesTypes,
   MyBookTypes,
@@ -38,7 +40,12 @@ const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 const Select = dynamic(() => import("react-select"), { ssr: false });
 
 const FILE_SIZE = 5 * 1024 * 1024;
-const SUPPORTED_FORMATS = ["image/jpg", "image/jpeg", "image/png"];
+const SUPPORTED_FORMATS = [
+  "image/jpg",
+  "image/jpeg",
+  "image/png",
+  "image/jfif",
+];
 
 const validationSchema = (isEditing: boolean) =>
   Yup.object().shape({
@@ -49,17 +56,39 @@ const validationSchema = (isEditing: boolean) =>
         "Unsupported Format",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (value: any) => {
+          if (typeof value === "string") {
+            const urlPattern = /\.(jpg|jpeg|png|jfif)$/i;
+            return urlPattern.test(value);
+          }
           return value && SUPPORTED_FORMATS.includes(value?.type);
         }
       )
       .test("fileSize", "File too large", (value: any) => {
+        if (typeof value === "string") return true;
         return value && value?.size <= FILE_SIZE;
       }),
-    title: Yup.string().required("Book title is required"),
+    title: Yup.string()
+      .trim()
+      .min(1, "Title is required.")
+      .max(100, "Max 100 characters allowed.")
+      .matches(
+        /^[a-zA-Z0-9\s'-:,.!?]+$/,
+        "Invalid characters  are not allowed."
+      )
+      .matches(
+        /^(?![0-9]*$)(?![!@#$%^&*(),.?":{}|<>]*$).{1,100}$/,
+        "Title must contain at least one letter."
+      )
+      .required("Title is required."),
     author: Yup.string().required("Author name is required"),
     description: Yup.string()
-      .max(650, "Description must be 650 characters or less")
-      .required("Book description is required"),
+      .min(1, "Description must be 1 character or more")
+      .max(500, "Description must be 500 characters or less")
+      .required("Book description is required")
+      .matches(
+        /^(?=.*[a-zA-Z])[a-zA-Z0-9\s'-:,.!?]{1,100}$/,
+        "Input must not be only numbers or only special characters."
+      ),
     category: Yup.string().required("Category is required"),
     tags: Yup.string().required("Tags are required"),
     condition: Yup.string().required("Book condition is required"),
@@ -69,7 +98,7 @@ const validationSchema = (isEditing: boolean) =>
       is: "rent",
       then: (schema) =>
         schema
-          .required("Rent price is required")
+          .required("Original price is required")
           .min(0, "Price must be positive"),
       otherwise: (schema) => schema.notRequired(),
     }),
@@ -77,7 +106,7 @@ const validationSchema = (isEditing: boolean) =>
       is: "sell",
       then: (schema) =>
         schema
-          .required("Sell price is required")
+          .required("Original price is required")
           .min(0, "Price must be positive"),
       otherwise: (schema) => schema.notRequired(),
     }),
@@ -88,7 +117,7 @@ const validationSchema = (isEditing: boolean) =>
           .min(0, "Price must be positive")
           .max(
             Yup.ref("sellPrice"),
-            "Discounted price must be less than sell price"
+            "Listing price must be less than original price"
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
@@ -99,7 +128,7 @@ const validationSchema = (isEditing: boolean) =>
           .min(0, "Price must be positive")
           .max(
             Yup.ref("rentPrice"),
-            "Discounted price must be less than rent price"
+            "Listing price must be less than original price"
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
@@ -128,24 +157,39 @@ export function BookCreateForm({
   const [tags, setTags] = useState<TagsTypes[]>([]);
   const [loading, setLoading] = useState(false);
   const [languages, setLanguages] = useState<LanguagesTypes[]>([]);
+  const [conditions, setConditions] = useState<BookConditionTypes[]>([]);
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  const [initialValues, setInitialValues] = useState<BooCreateEditFormTypes>({
-    coverImage: null,
-    title: "",
-    author: "",
-    description: "",
-    category: "",
-    tags: "",
-    condition: "",
-    age: "",
-    availabilityType: "rent",
-    rentPrice: "",
-    sellPrice: "",
-    discountedRentPrice: "",
-    discountedSellPrice: "",
+  const initialValues = {
+    coverImage:
+      (isEditing &&
+        existingBookDetails &&
+        existingBookDetails.images &&
+        existingBookDetails?.images[0]?.image_path) ||
+      null,
+    title: (isEditing && existingBookDetails?.name) || "",
+    author: (isEditing && existingBookDetails?.author) || "",
+    description: (isEditing && existingBookDetails?.description) || "",
+    category:
+      (isEditing && existingBookDetails?.category?.id?.toString()) || "",
+    tags: (isEditing && existingBookDetails?.tags[0].id.toString()) || "",
+    condition: (isEditing && existingBookDetails?.condition) || "",
+    age: (isEditing && existingBookDetails?.age_group) || "",
+    availabilityType:
+      (isEditing &&
+        (existingBookDetails?.availability?.toLowerCase() as
+          | "sell"
+          | "rent"
+          | "free")) ||
+      "rent",
+    rentPrice: (isEditing && existingBookDetails?.price?.toString()) || "",
+    sellPrice: (isEditing && existingBookDetails?.price?.toString()) || "",
+    discountedRentPrice:
+      (isEditing && existingBookDetails?.discounted_price) || "",
+    discountedSellPrice:
+      (isEditing && existingBookDetails?.discounted_price) || "",
     editingReason: "",
     languages: [],
-  });
+  };
 
   const formikRef = useRef<FormikProps<BooCreateEditFormTypes>>(null);
 
@@ -194,7 +238,12 @@ export function BookCreateForm({
     formData.append("tag_id", values.tags);
     formData.append("condition", values.condition);
     formData.append("age", values.age);
-    formData.append("availability_type", values.availabilityType);
+    formData.append(
+      "availability_type",
+      values.availabilityType === "free" || values.availabilityType === "sell"
+        ? "Sell"
+        : "Lease"
+    );
     formData.append("is_free", values.availabilityType === "free" ? "1" : "0");
     if (values.availabilityType !== "free") {
       formData.append(
@@ -267,6 +316,7 @@ export function BookCreateForm({
     }
   };
 
+  // Categories List
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -280,6 +330,7 @@ export function BookCreateForm({
     };
     fetchCategories();
   }, []);
+  // Tags List
   useEffect(() => {
     const fetchTags = async () => {
       try {
@@ -293,6 +344,22 @@ export function BookCreateForm({
     };
     fetchTags();
   }, []);
+  // Conditions List
+  useEffect(() => {
+    const fetchConditions = async () => {
+      try {
+        const response = await axiosInstance.get("/book-condition");
+        if (response.status === 200)
+          setConditions(response.data.book_condition);
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log("categories fetch error", error);
+      }
+    };
+    fetchConditions();
+  }, []);
+  // Languages List
   useEffect(() => {
     const fetchLanguages = async () => {
       try {
@@ -366,11 +433,15 @@ export function BookCreateForm({
                   className="border-2 border-dashed rounded-lg min-h-28 p-8 text-center cursor-pointer hover:border-primary"
                 >
                   <input {...getInputProps()} />
-                  {values.coverImage ? (
+                  {values.coverImage || isEditing ? (
                     <div className="relative flex items-center justify-center">
                       <div className="max-w-2xl max-h-72">
                         <Image
-                          src={URL.createObjectURL(values.coverImage)}
+                          src={
+                            values.coverImage instanceof File
+                              ? URL.createObjectURL(values.coverImage)
+                              : values.coverImage || "/default-image-path.jpg"
+                          }
                           alt="Preview"
                           width={100}
                           height={100}
@@ -465,7 +536,7 @@ export function BookCreateForm({
                   as={Textarea}
                   id="description"
                   name="description"
-                  placeholder="Add some description of the book ( maximum 650 characters )"
+                  placeholder="Add some description of the book ( maximum 500 characters )"
                   className="placeholder:text-[#6B7280] font-normal"
                 />
                 <ErrorMessage
@@ -595,10 +666,20 @@ export function BookCreateForm({
                           />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="New">New</SelectItem>
-                          <SelectItem value="Like New">Like New</SelectItem>
-                          <SelectItem value="Good">Good</SelectItem>
-                          <SelectItem value="Fair">Fair</SelectItem>
+                          {conditions && conditions.length > 0 ? (
+                            conditions.map((condition: BookConditionTypes) => (
+                              <SelectItem
+                                key={condition.value}
+                                value={condition.value}
+                              >
+                                {condition.label}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="text-gray-500 text-center">
+                              No conditions found
+                            </div>
+                          )}
                         </SelectContent>
                       </UiSelect>
                     )}
@@ -738,8 +819,7 @@ export function BookCreateForm({
                       htmlFor="rentPrice"
                       className="text-base font-normal text-[#202124]"
                     >
-                      {values.availabilityType === "rent" ? "Rent" : "Sell"}{" "}
-                      Price&nbsp;
+                      Original price &nbsp;
                       <span className="text-red-500">*</span>
                     </Label>
                     <Field
@@ -755,7 +835,11 @@ export function BookCreateForm({
                           : "sellPrice"
                       }
                       type="number"
-                      placeholder="Enter amount per day"
+                      placeholder={
+                        values.availabilityType === "rent"
+                          ? "Enter rent amount"
+                          : "Enter the amount"
+                      }
                       className="placeholder:text-[#6B7280] font-normal"
                     />
                     <ErrorMessage
@@ -774,7 +858,7 @@ export function BookCreateForm({
                       htmlFor="discountedRentPrice"
                       className="text-base font-normal text-[#202124]"
                     >
-                      Discounted Rent Price
+                      Listing Price
                     </Label>
                     <Field
                       as={Input}
@@ -789,7 +873,11 @@ export function BookCreateForm({
                           : "discountedSellPrice"
                       }
                       type="number"
-                      placeholder="Enter discounted amount per day"
+                      placeholder={
+                        values.availabilityType === "rent"
+                          ? "Enter listing amount"
+                          : "Enter discount amount"
+                      }
                       className="placeholder:text-[#6B7280] font-normal"
                     />
                     <ErrorMessage

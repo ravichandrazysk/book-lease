@@ -1,33 +1,28 @@
-"use client";
-import * as React from "react";
-import Autoplay from "embla-carousel-autoplay";
-import { useState, useEffect } from "react";
-
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+/* eslint-disable no-extra-parens */
+/* eslint-disable multiline-ternary */
+import React, { useEffect, useState } from "react";
+import Slider from "react-slick";
 import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
-const DEFAULT_IMAGE = "/pngs/image-not-available.png";
+const DEFAULT_IMAGE = "/path/to/default-image.jpg";
 
-export function CarouselSlider({
+interface CarousalSliderProps {
+  sliderData: string[];
+  width: number;
+  height: number;
+  isTopBanner: boolean;
+}
+
+export default function CarousalSlider({
   sliderData,
   width,
   height,
-}: {
-  sliderData: string[];
-  width?: number;
-  height?: number;
-}) {
+  isTopBanner,
+}: CarousalSliderProps) {
   const [imgArr, setImgArr] = useState<string[]>(sliderData);
-  const plugin = React.useRef(
-    Autoplay({ delay: 3500, stopOnInteraction: true })
-  );
 
   const handleImageError = (index: number) => {
     setImgArr((prev) => {
@@ -41,56 +36,50 @@ export function CarouselSlider({
     setImgArr(sliderData);
   }, [sliderData]);
 
-  const renderCarouselItems = () => {
-    if (imgArr.length === 0)
-      return (
-        <CarouselItem>
-          <div>
-            <Card>
-              <CardContent className="p-0">
-                <Image
-                  src={DEFAULT_IMAGE}
-                  alt="default-banner"
-                  width={width}
-                  height={height}
-                  className=" rounded-lg object-cover aspect-[2/3]"
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </CarouselItem>
-      );
+  const settings = {
+    dots: true,
+    infinite: imgArr.length > 1,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3500,
+  };
 
-    return imgArr.map((item, index) => (
-      <CarouselItem key={index}>
+  return (
+    <Slider {...settings}>
+      {imgArr.length === 0 ? (
         <div>
           <Card>
             <CardContent className="p-0">
               <Image
-                src={item}
-                alt="promotional-banner"
+                src={DEFAULT_IMAGE}
+                alt="default-banner"
                 width={width}
                 height={height}
-                className="w-full  rounded-lg object-cover aspect-[2/3]"
-                onError={() => handleImageError(index)}
+                className={`rounded-lg object-cover w-full ${isTopBanner ? "aspect-[3/1]" : "aspect-[2/3]"}`}
               />
             </CardContent>
           </Card>
         </div>
-      </CarouselItem>
-    ));
-  };
-
-  return (
-    <Carousel
-      plugins={imgArr.length > 1 ? [plugin.current] : []}
-      className="w-full "
-      onMouseEnter={imgArr.length > 1 ? plugin.current.stop : () => {}}
-      onMouseLeave={imgArr.length > 1 ? plugin.current.reset : () => {}}
-    >
-      <CarouselContent>{renderCarouselItems()}</CarouselContent>
-      {imgArr.length > 1 && <CarouselPrevious />}
-      {imgArr.length > 1 && <CarouselNext />}
-    </Carousel>
+      ) : (
+        imgArr.map((img, index) => (
+          <div key={index}>
+            <Card>
+              <CardContent className="p-0">
+                <Image
+                  src={img}
+                  alt={`carousel-image-${index}`}
+                  width={width}
+                  height={height}
+                  onError={() => handleImageError(index)}
+                  className={`rounded-lg object-cover w-full ${isTopBanner ? "aspect-[3/1]" : "aspect-[2/3]"}`}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        ))
+      )}
+    </Slider>
   );
 }

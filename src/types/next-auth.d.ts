@@ -16,6 +16,10 @@ export interface CustomUser extends User {
   id?: number;
   coins?: number;
   profile_photo?: string | null;
+  notification_counts?: {
+    my_requests: number;
+    received_requests: number;
+  };
 }
 export interface CustomSession extends Session {
   accessToken?: string;

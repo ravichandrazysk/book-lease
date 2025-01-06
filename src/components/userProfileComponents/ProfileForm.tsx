@@ -6,7 +6,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
+import {
+  Formik,
+  Form,
+  Field,
+  ErrorMessage,
+  FormikProps,
+  FieldInputProps,
+} from "formik";
 import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,13 +30,21 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import dynamic from "next/dynamic";
-import { ProfileFormValues } from "@/types/common-types";
+import { LocationTypes, ProfileFormValues } from "@/types/common-types";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { CustomSession } from "@/types/next-auth";
 import { isAxiosError } from "axios";
+import { MdLocationSearching } from "react-icons/md";
 
+const FILE_SIZE = 5 * 1024 * 1024;
+const SUPPORTED_FORMATS = [
+  "image/jpg",
+  "image/jpeg",
+  "image/png",
+  "image/jfif",
+];
 // Validation schema
 const ProfileSchema = Yup.object().shape({
   firstName: Yup.string()
@@ -64,7 +79,14 @@ const ProfileSchema = Yup.object().shape({
   phoneNumber: Yup.string()
     .matches(/^\d{10}$/, "Phone number must be 10 digits")
     .required("Phone number is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string()
+    .email("Invalid email")
+    .required("Email is required")
+    .matches(
+      /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+      "Invalid email address"
+    )
+    .max(320, "Email must not exceed 320 characters"),
   age: Yup.number()
     .min(1, "Age must be greater than 0")
     .required("Age is required"),
@@ -72,7 +94,27 @@ const ProfileSchema = Yup.object().shape({
   address: Yup.string().required("Address is required"),
   state: Yup.string().required("State is required"),
   city: Yup.string().required("City is required"),
-  profileImage: Yup.mixed(),
+  profileImage: Yup.mixed()
+    .test(
+      "fileFormat",
+      "Unsupported Format",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (value: any) => {
+        if (value === null) return true;
+        if (typeof value === "string") {
+          const urlPattern = /\.(jpg|jpeg|png|jfif)$/i;
+          return urlPattern.test(value);
+        }
+        return value && SUPPORTED_FORMATS.includes(value?.type);
+      }
+    )
+    .test("fileSize", "File too large", (value: any) => {
+      if (value === null) return true;
+      if (typeof value === "string") return true;
+
+      return value && value?.size <= FILE_SIZE;
+    })
+    .nullable(),
 });
 
 export function ProfileForm() {
@@ -84,6 +126,16 @@ export function ProfileForm() {
   const { data: session } = useSession() as { data: CustomSession };
   const [otpLoader, setOtpLoader] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState<string | null>(null);
+  const [location, setLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [locationValues, setLocationValues] = useState<LocationTypes>({
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
 
   const [initialValues, setInitialValues] = useState<ProfileFormValues>({
     firstName: "",
@@ -120,10 +172,105 @@ export function ProfileForm() {
         place?.address_components?.find((component) =>
           component.types.includes("administrative_area_level_1")
         )?.long_name || "";
+      const postalCodeComponent = place?.address_components?.find((component) =>
+        component.types.includes("postal_code")
+      );
+      const postalCode = postalCodeComponent
+        ? postalCodeComponent.long_name
+        : null;
+      setLocationValues({
+        address: formattedAddress,
+        city: cityName || "",
+        state: state,
+        pincode: postalCode || "",
+      });
       formikRef.current.setFieldValue("address", formattedAddress);
       formikRef.current.setFieldValue("state", state);
       formikRef.current.setFieldValue("city", cityName);
-    }
+      formikRef.current.setFieldError("address", "");
+      // eslint-disable-next-line brace-style
+    } else if (formikRef.current)
+      formikRef.current.setFieldError("address", "Select a valid address");
+  };
+
+  useEffect(() => {
+    if (navigator.geolocation)
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        () => {
+          toast({
+            variant: "destructive",
+            description: "Unable to retrieve your location",
+          });
+        }
+      );
+    else
+      toast({
+        variant: "destructive",
+        description: "Geolocation is not supported by your browser",
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleGetCurrentLocation = async () => {
+    if (location && formikRef.current)
+      try {
+        const geocoder = new google.maps.Geocoder();
+        const latlng = {
+          lat: location.latitude,
+          lng: location.longitude,
+        };
+        geocoder.geocode({ location: latlng }, (results, status) => {
+          if (status === "OK" && results && results[0]) {
+            const result = results[0];
+            const formattedAddress = result.formatted_address;
+            const cityComponent = result.address_components.find(
+              (component) =>
+                component.types.includes("locality") ||
+                component.types.includes("administrative_area_level_2")
+            );
+            const cityName = cityComponent ? cityComponent.long_name : null;
+            const postalCodeComponent = result.address_components.find(
+              (component) => component.types.includes("postal_code")
+            );
+            const postalCode = postalCodeComponent
+              ? postalCodeComponent.long_name
+              : null;
+            const state =
+              result.address_components.find((component) =>
+                component.types.includes("administrative_area_level_1")
+              )?.long_name || "";
+            setLocationValues({
+              address: formattedAddress,
+              city: cityName || "",
+              state: state,
+              pincode: postalCode || "",
+            });
+            if (formikRef.current) {
+              formikRef.current.setFieldValue("address", formattedAddress);
+              formikRef.current.setFieldError("address", "");
+            }
+            // eslint-disable-next-line brace-style
+          } else
+            toast({
+              variant: "destructive",
+              description: "No address found for the given coordinates.",
+            });
+        });
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log("location", error);
+        toast({
+          variant: "destructive",
+          description: "Error fetching address",
+        });
+      }
   };
 
   const handleOtpVerification = async () => {
@@ -193,11 +340,8 @@ export function ProfileForm() {
       formData.append("state", values.state);
     if (values.city !== initialValues.city)
       formData.append("city", values.city);
-    if (
-      values.profileImage !== initialValues.profileImage &&
-      values.profileImage
-    )
-      formData.append("profile_photo", values.profileImage);
+    if (values.profileImage !== initialValues.profileImage)
+      formData.append("profile_photo", values.profileImage || "");
 
     try {
       const response = await axiosInstance.post("/customer/profile", formData);
@@ -292,9 +436,9 @@ export function ProfileForm() {
         {({ setFieldValue, values, dirty }) => (
           <Form className="   p-3  md:p-6 space-y-6">
             <div className="flex flex-col items-center gap-4">
-              <Avatar className="w-24 h-24">
+              <Avatar className="w-24 h-24 border">
                 <AvatarImage
-                  src={profileImageUrl || "/svgs/profile-img.svg"}
+                  src={profileImageUrl || "/pngs/profile-img.png"}
                   alt="Profile"
                 />
                 {!profileImageUrl && <AvatarFallback>JD</AvatarFallback>}
@@ -309,12 +453,13 @@ export function ProfileForm() {
                   type="file"
                   ref={fileInputRef}
                   className="hidden"
-                  accept="image/*"
+                  accept={SUPPORTED_FORMATS.join(",")}
                   onChange={(event) => {
                     const file = event.currentTarget.files?.[0];
                     if (file) {
                       setFieldValue("profileImage", file.name);
                       setProfileImageUrl(URL.createObjectURL(file));
+                      event.currentTarget.value = "";
                     }
                   }}
                 />
@@ -397,6 +542,7 @@ export function ProfileForm() {
                     placeholder="Enter your phone number"
                     className="border border-[#D1D5DB]"
                     value={values.phoneNumber}
+                    disabled
                   />
                   <Button
                     variant="outline"
@@ -521,7 +667,13 @@ export function ProfileForm() {
                 libraries={["places"]}
               >
                 <Field name="address">
-                  {({ field }: any) => (
+                  {({
+                    field,
+                    form,
+                  }: {
+                    field: FieldInputProps<string>;
+                    form: any;
+                  }) => (
                     <Autocomplete
                       onLoad={(autocomplete) =>
                         (autocompleteRef.current = autocomplete)
@@ -535,6 +687,20 @@ export function ProfileForm() {
                         placeholder="Search for area, Street name.."
                         className="border border-[#D1D5DB]"
                         value={values.address}
+                        onBlur={() => {
+                          if (!locationValues.address)
+                            form.setFieldError(
+                              "address",
+                              "Select a valid address"
+                            );
+                        }}
+                        onChange={(e) => {
+                          form.setFieldValue("address", e.target.value);
+                          setLocationValues({
+                            ...locationValues,
+                            address: "",
+                          });
+                        }}
                       />
                     </Autocomplete>
                   )}
@@ -545,6 +711,20 @@ export function ProfileForm() {
                 component="div"
                 className="text-sm text-red-500"
               />
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-2 w-full p-8 shadow-md h-14 flex flex-col items-start"
+                onClick={handleGetCurrentLocation}
+              >
+                <div className="flex items-center">
+                  <MdLocationSearching className="w-4 h-4 mr-2" />
+                  <p className="font-normal text-base text-[#202124]">
+                    Get Current location
+                  </p>
+                </div>
+                <p className="font-normal text-sm text-[#7A7977]">Using GPS</p>
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

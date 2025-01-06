@@ -5,33 +5,30 @@
 /* eslint-disable multiline-ternary */
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { NotificationTypes } from "@/types/common-types";
 import React from "react";
 import NotificationSkeleton from "@/components/common/loaders/NotificationSkeleton";
+
 export function NotificationPanel({
   notifications,
-  onNotificationRead,
   onNotificationClick,
   loader,
-  // eslint-disable-next-line object-curly-newline
 }: {
   notifications: NotificationTypes[];
-  onNotificationRead: React.Dispatch<React.SetStateAction<boolean>>;
-  onNotificationClick: React.Dispatch<React.SetStateAction<NotificationTypes>>;
+  // eslint-disable-next-line no-unused-vars
+  onNotificationClick: (notification: NotificationTypes) => void;
   loader?: boolean;
 }) {
-  const unreadCount = notifications.filter((n) => n.read_at === null).length;
+  // Const unreadCount = notifications.filter((n) => n.read_at === null).length;
 
   return (
     <div className="bg-white rounded-lg">
       <div className="p-4">
-        <h2 className="text-xl font-bold mb-4">Notification</h2>
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="w-full justify-start h-auto p-0 bg-transparent border-b rounded-none">
+        <h2 className="text-xl font-bold mb-4 border-b-2">Notifications</h2>
+        {/* <Tabs defaultValue="all" className="w-full"> */}
+        {/* <TabsList className="w-full justify-start h-auto p-0 bg-transparent border-b rounded-none">
             <TabsTrigger
               value="all"
               className="data-[state=active]:border-b-2 text-xl font-medium data-[state=active]:border-blue-500 rounded-none pb-2 px-4"
@@ -49,69 +46,64 @@ export function NotificationPanel({
                 </Badge>
               )}
             </TabsTrigger>
-          </TabsList>
-          <ScrollArea className="h-[300px] overflow-y-auto">
-            <TabsContent value="all" className="mt-4">
-              <div className="space-y-4">
-                {loader ? (
-                  Array.from({ length: 10 }).map((_, index) => (
-                    <NotificationSkeleton key={index} />
-                  ))
-                ) : notifications && notifications.length > 0 ? (
-                  notifications.map((notification) => (
+          </TabsList> */}
+        <ScrollArea className="h-[300px] overflow-y-auto">
+          {/* <TabsContent value="all" className="mt-4"> */}
+          <div className="space-y-4">
+            {loader ? (
+              Array.from({ length: 10 }).map((_, index) => (
+                <NotificationSkeleton key={index} />
+              ))
+            ) : notifications && notifications.length > 0 ? (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`flex gap-3 items-center cursor-pointer`}
+                  onClick={() => {
+                    onNotificationClick(notification);
+                  }}
+                >
+                  <div className="flex-shrink-0 mt-1">
                     <div
-                      key={notification.id}
-                      className={`flex gap-3 items-center ${notification.read_at ? "" : "cursor-pointer"}`}
-                      onClick={() => {
-                        if (!notification.read_at) {
-                          onNotificationRead(true);
-                          onNotificationClick(notification);
-                        }
-                      }}
+                      className={`w-2 h-2 rounded-full ${
+                        notification.read_at === null
+                          ? "bg-blue-500"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <h3
+                      className={` ${!notification.read_at ? "font-semibold text-gray-900" : "text-gray-500"} `}
                     >
-                      <div className="flex-shrink-0 mt-1">
-                        <div
-                          className={`w-2 h-2 rounded-full ${
-                            notification.read_at === null
-                              ? "bg-blue-500"
-                              : "bg-gray-300"
-                          }`}
-                        />
-                      </div>
-                      <div>
-                        <h3
-                          className={` ${!notification.read_at ? "font-semibold text-gray-900" : "text-gray-500"} `}
-                        >
-                          {notification.title}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {notification.body}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <>
-                    <section
-                      id="no-notification"
-                      className="flex flex-col items-center justify-center"
-                    >
-                      <Image
-                        src="/svgs/no-notifications.svg"
-                        alt="No notifications"
-                        width={300}
-                        height={400}
-                        className="max-w-max"
-                      />
-                      <p className="text-xl font-semibold text-red-500">
-                        No notifications found!
-                      </p>
-                    </section>
-                  </>
-                )}
-              </div>
-            </TabsContent>
-            <TabsContent value="unread" className="mt-4">
+                      {notification.title}
+                    </h3>
+                    <p className="text-sm text-gray-500">{notification.body}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                <section
+                  id="no-notification"
+                  className="flex flex-col items-center justify-center"
+                >
+                  <Image
+                    src="/svgs/no-notifications.svg"
+                    alt="No notifications"
+                    width={300}
+                    height={400}
+                    className="max-w-max"
+                  />
+                  <p className="text-xl font-semibold text-red-500">
+                    No notifications found!
+                  </p>
+                </section>
+              </>
+            )}
+          </div>
+          {/* </TabsContent> */}
+          {/* <TabsContent value="unread" className="mt-4">
               <div className="space-y-4">
                 {loader ? (
                   Array.from({ length: 10 }).map((_, index) => (
@@ -127,10 +119,7 @@ export function NotificationPanel({
                         <div
                           key={notification.id}
                           className="flex gap-3 items-center cursor-pointer"
-                          onClick={() => {
-                            onNotificationRead(true);
-                            onNotificationClick(notification);
-                          }}
+                          onClick={() => onNotificationClick(notification)}
                         >
                           <div className="flex-shrink-0 mt-1">
                             <div className="w-2 h-2 rounded-full bg-blue-500" />
@@ -180,9 +169,9 @@ export function NotificationPanel({
                   </section>
                 )}
               </div>
-            </TabsContent>
-          </ScrollArea>
-        </Tabs>
+            </TabsContent> */}
+        </ScrollArea>
+        {/* </Tabs> */}
       </div>
     </div>
   );

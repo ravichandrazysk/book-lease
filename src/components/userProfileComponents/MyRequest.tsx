@@ -19,7 +19,16 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet";
+
 import { MyRequestTypes, PaginationDataTypes } from "@/types/common-types";
+import { Button } from "../ui/button";
+import ChatBox from "../common/ChatBox";
 
 const MyRequest = () => {
   const [loading, setLoading] = useState(false);
@@ -31,8 +40,15 @@ const MyRequest = () => {
     total: 1,
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isSessionStorage, setIsSessionStorage] = useState(false);
+  const ownerName =
+    typeof window !== "undefined" ? sessionStorage.getItem("ownerName") : null;
+  const ticketNumber =
+    typeof window !== "undefined" ? sessionStorage.getItem("ticketId") : null;
 
   useEffect(() => {
+    setLoading(true);
     const receiveRequests = async () => {
       try {
         const response = await axiosInstance.get(
@@ -63,6 +79,30 @@ const MyRequest = () => {
     };
     receiveRequests();
   }, [currentPage]);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (typeof window !== "undefined") {
+        const ownerName = sessionStorage.getItem("ownerName");
+        const ticketId = sessionStorage.getItem("ticketId");
+        const itemId = sessionStorage.getItem("itemId");
+        setIsSessionStorage(Boolean(ownerName && ticketId && itemId));
+      }
+    };
+    handleStorageChange();
+    if (typeof window !== "undefined")
+      window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isSessionStorage) setIsChatOpen(true);
+  }, [isSessionStorage]);
+
   return (
     <React.Fragment>
       <section
@@ -85,9 +125,12 @@ const MyRequest = () => {
               key={item.id}
               variant="sent"
               title={item.book_name}
+              slug={item.slug}
               imageUrl={item.images[0]}
               status={item.status}
               date={item.requested_at}
+              ticketId={item.ticket_number}
+              author={item.book_owner}
             />
           ))
         ) : (
@@ -100,7 +143,7 @@ const MyRequest = () => {
               className="!w-96 !h-96"
             />
             <p className="text-3xl text-center text-red-500 font-medium">
-              No Books found!
+              No requests found!
             </p>
           </div>
         )}
@@ -149,6 +192,28 @@ const MyRequest = () => {
           </Pagination>
         )}
       </section>
+      <Sheet
+        open={isChatOpen}
+        onOpenChange={(open) => {
+          setIsChatOpen(open);
+          setIsSessionStorage(false);
+          sessionStorage.clear();
+        }}
+      >
+        <SheetTrigger asChild>
+          <Button className="hidden">Open Sheet</Button>
+        </SheetTrigger>
+        <SheetContent className="w-full sm:max-w-lg p-3 sm:p-6">
+          <SheetTitle className="border-gray-300 border-b-2 pb-3">
+            {ownerName}
+          </SheetTitle>
+          <ChatBox
+            owner={ownerName || ""}
+            ticketId={Number(ticketNumber)}
+            isOwner={true}
+          />
+        </SheetContent>
+      </Sheet>
     </React.Fragment>
   );
 };

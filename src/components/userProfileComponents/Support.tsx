@@ -50,7 +50,11 @@ const Support = () => {
     lastName: Yup.string().required("Last name is required"),
     email: Yup.string()
       .email("Invalid email address")
-      .required("Email is required"),
+      .required("Email is required")
+      .matches(
+        /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+        "Invalid email address"
+      ),
     phoneNumber: Yup.string()
       .matches(/^\d+$/, "Only numbers are allowed")
       .required("Phone number is required")
@@ -278,7 +282,7 @@ const Support = () => {
                   name="comments"
                   as="textarea"
                   rows={4}
-                  placeholder="Comment some Additional Details"
+                  placeholder="Comment some additional details"
                   className="w-full border-2 rounded px-2 py-1"
                 />
                 <ErrorMessage
