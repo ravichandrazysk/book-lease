@@ -86,7 +86,7 @@ const validationSchema = (isEditing: boolean) =>
       .max(500, "Description must be 500 characters or less")
       .required("Book description is required")
       .matches(
-        /^(?=.*[a-zA-Z])[a-zA-Z0-9\s'-:,.!?]{1,100}$/,
+        /^(?=.*[a-zA-Z])[a-zA-Z0-9\s'-:;><@()%&^*#${}_",.!?]{1,500}$/,
         "Input must not be only numbers or only special characters."
       ),
     category: Yup.string().required("Category is required"),

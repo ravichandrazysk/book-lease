@@ -126,6 +126,65 @@ export function StockDetailsCard({
             <p className="text-base font-normal text-[#202124]">{author}</p>
           </div>
 
+          {variant === "sent" && status === "Accepted" && (
+            <>
+              <Button
+                className="text-white bg-orange-500 hover:bg-orange-600 ml-0 xl:ml-[340px]"
+                onClick={() => setIsSheetOpen(true)}
+              >
+                Owner Details
+              </Button>
+              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button className="hidden">Open Sheet</Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetTitle>Owner Details</SheetTitle>
+                  <SheetDescription className="hidden"></SheetDescription>
+                  {loading ? (
+                    <OwnerDetailsSkeleton />
+                  ) : (
+                    <>
+                      <section
+                        id="profile-photo"
+                        className="flex flex-col items-center justify-center min-h-40 sm:max-w-full bg-[#f6f6f6] rounded-md"
+                      >
+                        <Avatar className="min-w-24 min-h-24 sm:min-w-20 sm:min-h-20 sm:max-w-24 sm:max-h-24">
+                          <AvatarImage
+                            src="/svgs/profile-img.svg"
+                            alt="owner-profile-photo"
+                          />
+                        </Avatar>
+                        <p className="">
+                          {ownnerDetails.first_name} {ownnerDetails.last_name}
+                        </p>
+                      </section>
+                      <section id="owner-details" className="mt-2">
+                        <p className="text-[#7A7977] text-lg">
+                          Adress:{" "}
+                          <span className="text-black font-medium ">
+                            {ownnerDetails.address}
+                          </span>
+                        </p>
+                        <p className="text-[#7A7977] text-lg">
+                          Phone:{" "}
+                          <span className="text-black font-medium ">
+                            {ownnerDetails.phone}
+                          </span>
+                        </p>
+                        <p className="text-[#7A7977] text-lg">
+                          Email:{" "}
+                          <span className="text-black font-medium break-words whitespace-pre-wrap">
+                            {ownnerDetails.email}
+                          </span>
+                        </p>
+                      </section>
+                    </>
+                  )}
+                </SheetContent>
+              </Sheet>
+            </>
+          )}
           {variant === "books" && (
             <Button variant="ghost" size="icon" onClick={onEdit}>
               <PenSquare className="h-4 w-4" />
@@ -274,7 +333,7 @@ export function StockDetailsCard({
             <>
               <Button
                 variant="ghost"
-                className="text-orange-500 hover:text-orange-600"
+                className="text-white bg-orange-500 hover:bg-orange-600"
                 onClick={() => setIsSheetOpen(true)}
               >
                 Owner Details
@@ -326,7 +385,6 @@ export function StockDetailsCard({
                       </section>
                     </>
                   )}
-                  {/* Add owner details content here */}
                 </SheetContent>
               </Sheet>
             </>

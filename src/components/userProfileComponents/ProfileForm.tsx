@@ -38,7 +38,7 @@ import { CustomSession } from "@/types/next-auth";
 import { isAxiosError } from "axios";
 import { MdLocationSearching } from "react-icons/md";
 
-const FILE_SIZE = 5 * 1024 * 1024;
+const FILE_SIZE = 2 * 1024 * 1024;
 const SUPPORTED_FORMATS = [
   "image/jpg",
   "image/jpeg",
@@ -424,6 +424,33 @@ export function ProfileForm() {
     fetchProfile();
   }, []);
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    if (file) {
+      if (SUPPORTED_FORMATS.includes(file.type))
+        if (file.size <= FILE_SIZE && formikRef.current) {
+          formikRef.current.setFieldValue("profileImage", file.name);
+          setProfileImageUrl(URL.createObjectURL(file));
+          // eslint-disable-next-line brace-style
+        } else
+          toast({
+            title: "Error",
+            variant: "destructive",
+            description:
+              "File too large. Please upload a file smaller than 2MB.",
+          });
+      else
+        toast({
+          title: "Error",
+          variant: "destructive",
+          description:
+            "Unsupported file format. Please upload a JPG, JPEG or PNG file.",
+        });
+
+      event.currentTarget.value = "";
+    }
+  };
+
   return (
     <Card className=" my-5 md:mr-9 mx-auto max-w-3xl">
       <Formik
@@ -454,14 +481,7 @@ export function ProfileForm() {
                   ref={fileInputRef}
                   className="hidden"
                   accept={SUPPORTED_FORMATS.join(",")}
-                  onChange={(event) => {
-                    const file = event.currentTarget.files?.[0];
-                    if (file) {
-                      setFieldValue("profileImage", file.name);
-                      setProfileImageUrl(URL.createObjectURL(file));
-                      event.currentTarget.value = "";
-                    }
-                  }}
+                  onChange={handleFileChange}
                 />
                 <Button
                   variant="outline"

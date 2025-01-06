@@ -122,6 +122,7 @@ const MyRequest = () => {
         ) : myRequests && myRequests.length > 0 ? (
           myRequests.map((item: MyRequestTypes) => (
             <StockDetailsCard
+              bookId={item.id}
               key={item.id}
               variant="sent"
               title={item.book_name}
