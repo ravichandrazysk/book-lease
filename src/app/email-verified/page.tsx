@@ -11,39 +11,39 @@ const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const Page = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get("email") || "";
+  // const searchParams = useSearchParams();
+  // const email = searchParams.get("email") || "";
 
-  useEffect(() => {
-    const verifyEmail = async () => {
-      const fd = new FormData();
-      fd.append("email", email);
-      try {
-        await axiosInstance.post(`/customer/verify-email`, fd);
-        // eslint-disable-next-line brace-style
-      } catch (error) {
-        if (
-          isAxiosError(error) &&
-          error.status &&
-          error?.status >= 400 &&
-          error?.status < 500 &&
-          error?.response
-        )
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: error?.response?.data.message,
-          });
-        else
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Registration failed, internal server error",
-          });
-      }
-    };
-    verifyEmail();
-  }, [email]);
+  // useEffect(() => {
+  //   const verifyEmail = async () => {
+  //     const fd = new FormData();
+  //     fd.append("email", email);
+  //     try {
+  //       await axiosInstance.post(`/customer/verify-email`, fd);
+  //       // eslint-disable-next-line brace-style
+  //     } catch (error) {
+  //       if (
+  //         isAxiosError(error) &&
+  //         error.status &&
+  //         error?.status >= 400 &&
+  //         error?.status < 500 &&
+  //         error?.response
+  //       )
+  //         toast({
+  //           variant: "destructive",
+  //           title: "Error",
+  //           description: error?.response?.data.message,
+  //         });
+  //       else
+  //         toast({
+  //           variant: "destructive",
+  //           title: "Error",
+  //           description: "Registration failed, internal server error",
+  //         });
+  //     }
+  //   };
+  //   verifyEmail();
+  // }, [email]);
 
   return (
     <React.Fragment>
