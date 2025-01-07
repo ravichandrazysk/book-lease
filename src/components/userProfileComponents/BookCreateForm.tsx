@@ -39,7 +39,7 @@ import {
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 const Select = dynamic(() => import("react-select"), { ssr: false });
 
-const FILE_SIZE = 5 * 1024 * 1024;
+const FILE_SIZE = 2 * 1024 * 1024;
 const SUPPORTED_FORMATS = [
   "image/jpg",
   "image/jpeg",
@@ -203,6 +203,7 @@ export function BookCreateForm({
     accept: {
       "image/jpeg": [".jpg", ".jpeg"],
       "image/png": [".png"],
+      "image/jfif": [".jfif"],
     },
     multiple: false,
     maxFiles: 1,
@@ -417,7 +418,7 @@ export function BookCreateForm({
         validationSchema={validationSchema(isEditing)}
         onSubmit={handleSubmit}
       >
-        {({ setFieldValue, values }) => {
+        {({ setFieldValue, values, dirty }) => {
           return (
             <Form className="space-y-6 p-6 ">
               <div className="space-y-2">
@@ -425,15 +426,15 @@ export function BookCreateForm({
                   Cover Image <span className="text-red-500">*</span>
                 </Label>
                 <p className="text-sm font-normal text-[#6B7280]">
-                  Upload your book cover image from here. Dimensions should be
-                  960 x 340 px.
+                  Upload your book cover image from here. (Max file size should
+                  be 2MB).
                 </p>
                 <div
                   {...getRootProps()}
                   className="border-2 border-dashed rounded-lg min-h-28 p-8 text-center cursor-pointer hover:border-primary"
                 >
                   <input {...getInputProps()} />
-                  {values.coverImage || isEditing ? (
+                  {values.coverImage && isEditing ? (
                     <div className="relative flex items-center justify-center">
                       <div className="max-w-2xl max-h-72">
                         <Image
@@ -469,7 +470,7 @@ export function BookCreateForm({
                         or drag and drop
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        (.png, .jpg)
+                        (.png, .jpg, .jpeg)
                       </p>
                     </div>
                   )}
@@ -927,10 +928,11 @@ export function BookCreateForm({
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-orange-500 hover:bg-orange-600 max-w-32 max-sm:w-36"
+                  className="bg-orange-500 hover:bg-orange-600 w-full flex-shrink-0 max-w-32 max-sm:w-36"
+                  disabled={!dirty || loading}
                 >
                   {loading ? (
-                    <div className="flex justify-center items-center  max-h-5">
+                    <div className="flex justify-center w-full items-center ">
                       <Lottie
                         loop
                         path="/lotties/button-loader.json"

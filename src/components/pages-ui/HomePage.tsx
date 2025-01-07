@@ -92,7 +92,7 @@ const HomePage = () => {
             <div className=" ">
               <div className="">
                 <Image
-                  src="/pngs/books-not-found.png"
+                  src="/svgs/books-not-found.svg"
                   alt="books-not-found"
                   width={240}
                   height={800}

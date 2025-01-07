@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { axiosInstance } from "@/utils/AxiosConfig";
-import { AxiosResponse, AxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { signIn } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -30,14 +30,11 @@ export default function LoginPage() {
   const handleLogin = async (values: FormValuesTypes) => {
     setLoader(true);
     try {
-      const response: AxiosResponse = await axiosInstance.post(
-        "/customer/login",
-        {
-          email: values.email,
-          password: values.password,
-        }
-      );
-      if (response?.status === 200) {
+      const response = await axiosInstance.post("/customer/login", {
+        email: values.email,
+        password: values.password,
+      });
+      if (response.status === 200) {
         signIn("credentials", {
           isToken: true,
           data: JSON.stringify(response.data),
@@ -52,9 +49,15 @@ export default function LoginPage() {
       }
       setLoader(false);
       // eslint-disable-next-line brace-style
-    } catch (error: unknown) {
+    } catch (error) {
       setLoader(false);
-      if (error instanceof AxiosError && error.response)
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.response &&
+        error.status >= 400 &&
+        error.status < 500
+      )
         toast({
           variant: "destructive",
           title: "Error!",
@@ -62,7 +65,11 @@ export default function LoginPage() {
         });
       else
         // eslint-disable-next-line no-console
-        console.error(error);
+        toast({
+          variant: "destructive",
+          title: "Error!",
+          description: "Something went wrong",
+        });
     }
   };
   const initialValues = {
@@ -144,7 +151,7 @@ export default function LoginPage() {
                       as={Input}
                       id="password"
                       name="password"
-                      placeholder="Enter Your Password"
+                      placeholder="Enter your password"
                       type={showPassword ? "text" : "password"}
                       className="h-14 mt-2 font-normal text-base border border-[#D1D5DB] pr-10"
                     />

@@ -144,7 +144,7 @@ const Page = () => {
             <>
               <div className="w-full mx-auto my-auto">
                 <Image
-                  src="/pngs/books-not-found.png"
+                  src="/svgs/books-not-found.svg"
                   alt="books-not-found"
                   width={700}
                   height={700}

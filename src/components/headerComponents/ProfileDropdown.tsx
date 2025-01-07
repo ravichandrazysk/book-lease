@@ -34,7 +34,7 @@ export function ProfileDropdown() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 p-0 mt-2" align="end">
         <DropdownMenuLabel
-          className="bg-[#0072E5] text-white p-3 cursor-pointer font-medium text-base rounded-r-sm rounded-l-sm rounded-b-none"
+          className="bg-[#FF851B] text-white p-3 cursor-pointer font-medium text-base rounded-r-sm rounded-l-sm rounded-b-none"
           onClick={() => router.push("/user/profile")}
         >
           Profile
@@ -44,7 +44,7 @@ export function ProfileDropdown() {
             className="py-3 cursor-pointer font-medium text-base"
             onClick={() => router.push("/user/coins")}
           >
-            Coin
+            Coins
           </DropdownMenuItem>
           <DropdownMenuItem
             className="py-3 cursor-pointer font-medium text-base"

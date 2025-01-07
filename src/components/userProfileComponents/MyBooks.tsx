@@ -237,7 +237,7 @@ const MyBooks = () => {
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center">
           <Image
-            src="/pngs/books-not-found.png"
+            src="/svgs/books-not-found.svg"
             alt="books-not-found"
             width={500}
             height={500}

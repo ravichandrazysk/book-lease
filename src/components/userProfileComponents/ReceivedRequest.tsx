@@ -55,6 +55,10 @@ export const ReceivedRequests = () => {
     typeof window !== "undefined" ? sessionStorage.getItem("ticketId") : null;
   const itemId =
     typeof window !== "undefined" ? sessionStorage.getItem("itemId") : null;
+  const bookRequestStatus =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("requestStatus")
+      : null;
 
   const handleRequestConfirmation = async (
     actionStatus: string,
@@ -200,7 +204,7 @@ export const ReceivedRequests = () => {
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center">
             <Image
-              src="/pngs/books-not-found.png"
+              src="/svgs/books-not-found.svg"
               alt="books-not-found"
               width={500}
               height={500}
@@ -271,24 +275,26 @@ export const ReceivedRequests = () => {
           <SheetTitle className="border-gray-300 border-b-2 pb-3">
             <div className="flex items-center justify-between pr-10 sm:pr-8">
               {ownerName}
-              <div className="flex items-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    handleRequestConfirmation("Rejected", Number(itemId))
-                  }
-                >
-                  Reject
-                </Button>
-                <Button
-                  className="bg-[#FF7A09] hover:bg-[#FF7A09]"
-                  onClick={() =>
-                    handleRequestConfirmation("Accepted", Number(itemId))
-                  }
-                >
-                  Accept
-                </Button>
-              </div>
+              {bookRequestStatus && bookRequestStatus === "Pending" && (
+                <div className="flex items-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      handleRequestConfirmation("Rejected", Number(itemId))
+                    }
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    className="bg-[#FF7A09] hover:bg-[#FF7A09]"
+                    onClick={() =>
+                      handleRequestConfirmation("Accepted", Number(itemId))
+                    }
+                  >
+                    Accept
+                  </Button>
+                </div>
+              )}
             </div>
           </SheetTitle>
           <ChatBox

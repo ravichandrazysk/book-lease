@@ -168,7 +168,7 @@ export function BookDetails() {
   useEffect(() => {
     if (bookDetails.description) {
       const lineCount = bookDetails.description.split("\n").length;
-      setIsDescriptionLong(lineCount > 2);
+      setIsDescriptionLong(lineCount > 1);
     }
   }, [bookDetails.description]);
 

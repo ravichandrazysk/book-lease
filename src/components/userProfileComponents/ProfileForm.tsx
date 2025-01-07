@@ -88,7 +88,7 @@ const ProfileSchema = Yup.object().shape({
     )
     .max(320, "Email must not exceed 320 characters"),
   age: Yup.number()
-    .min(1, "Age must be greater than 0")
+    .min(18, "Age must be greater than 18")
     .required("Age is required"),
   gender: Yup.string().required("Gender is required"),
   address: Yup.string().required("Address is required"),
@@ -187,10 +187,9 @@ export function ProfileForm() {
       formikRef.current.setFieldValue("address", formattedAddress);
       formikRef.current.setFieldValue("state", state);
       formikRef.current.setFieldValue("city", cityName);
-      formikRef.current.setFieldError("address", "");
+      // FormikRef.current.setFieldError("address", "");
       // eslint-disable-next-line brace-style
-    } else if (formikRef.current)
-      formikRef.current.setFieldError("address", "Select a valid address");
+    }
   };
 
   useEffect(() => {
@@ -491,17 +490,19 @@ export function ProfileForm() {
                 >
                   🔄 Add or Replace Profile photo
                 </Button>
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="border border-[#D1D5DB] shadow-md"
-                  onClick={() => {
-                    setFieldValue("profileImage", null);
-                    setProfileImageUrl(null);
-                  }}
-                >
-                  Remove
-                </Button>
+                {profileImageUrl && (
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="border border-[#D1D5DB] shadow-md"
+                    onClick={() => {
+                      setFieldValue("profileImage", null);
+                      setProfileImageUrl(null);
+                    }}
+                  >
+                    Remove
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -633,7 +634,7 @@ export function ProfileForm() {
                   as={Input}
                   id="age"
                   name="age"
-                  type="text"
+                  type="number"
                   placeholder="Enter your age"
                   className="border border-[#D1D5DB]"
                   value={values.age}
@@ -707,13 +708,13 @@ export function ProfileForm() {
                         placeholder="Search for area, Street name.."
                         className="border border-[#D1D5DB]"
                         value={values.address}
-                        onBlur={() => {
-                          if (!locationValues.address)
-                            form.setFieldError(
-                              "address",
-                              "Select a valid address"
-                            );
-                        }}
+                        // OnBlur={() => {
+                        //   If (!locationValues.address)
+                        //     Form.setFieldError(
+                        //       "Address",
+                        //       "Select a valid address"
+                        //     );
+                        // }}
                         onChange={(e) => {
                           form.setFieldValue("address", e.target.value);
                           setLocationValues({

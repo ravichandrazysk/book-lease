@@ -41,9 +41,20 @@ import { LocationTypes, RegisterFormValues } from "@/types/common-types";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const validationSchema = Yup.object().shape({
-  firstName: Yup.string().required("First name is required"),
-  lastName: Yup.string().required("Last name is required"),
-  phoneNumber: Yup.string().required("Phone number is required"),
+  firstName: Yup.string()
+    .required("First name is required")
+    .min(2, "First name must be at least 2 characters")
+    .max(50, "First name must be at most 50 characters")
+    .matches(/^[a-zA-Z]+$/, "First name must contain only alphabets"),
+  lastName: Yup.string().matches(
+    /^[a-zA-Z]+$/,
+    "First name must contain only alphabets"
+  ),
+  phoneNumber: Yup.string()
+    .required("Phone number is required")
+    .min(10, "Phone number must be 10 digits")
+    .max(10, "Phone number must be 10 digits")
+    .matches(/^[6-9]\d{9}$/, "Invalid phone number"),
   email: Yup.string()
     .email("Invalid email")
     .required("Email is required")
@@ -63,7 +74,7 @@ const validationSchema = Yup.object().shape({
     .oneOf([Yup.ref("password"), undefined], "Passwords must match")
     .required("Confirm password is required"),
   age: Yup.number()
-    .min(1, "Age must be greater than 0")
+    .min(18, "Age must be greater than 18")
     .required("Age is required"),
   gender: Yup.string().required("Gender is required"),
   address: Yup.string().required("Address is required"),
@@ -128,10 +139,9 @@ export default function SignUpForm() {
           pincode: postalCode || "",
         });
         formikRef.current.setFieldValue("address", formattedAddress);
-        formikRef.current.setFieldError("address", "");
+        // FormikRef.current.setFieldError("address", "");
         // eslint-disable-next-line brace-style
-      } else
-        formikRef.current.setFieldError("address", "Select a valid address");
+      }
     }
   };
 
@@ -451,7 +461,7 @@ export default function SignUpForm() {
                     as={Input}
                     id="age"
                     name="age"
-                    type="text"
+                    type="number"
                     placeholder="Enter your age"
                     className="border border-[#D1D5DB]"
                   />
@@ -512,11 +522,11 @@ export default function SignUpForm() {
                           className="border border-[#D1D5DB] h-12 placeholder:text-[#7A7977] placeholder:font-normal text-[#1F2937] font-normal"
                           placeholder="Search for area, Street name.."
                           onBlur={() => {
-                            if (!locationValues.address)
-                              form.setFieldError(
-                                "address",
-                                "Select a valid address"
-                              );
+                            // If (!locationValues.address)
+                            //   Form.setFieldError(
+                            //     "Address",
+                            //     "Select a valid address"
+                            //   );
                           }}
                           onChange={(e) => {
                             form.setFieldValue("address", e.target.value);
@@ -566,7 +576,7 @@ export default function SignUpForm() {
                     />
                   </div>
                 ) : (
-                  "Continue"
+                  "Verify email and continue"
                 )}
               </Button>
             </Form>

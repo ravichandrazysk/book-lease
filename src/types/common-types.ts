@@ -118,6 +118,8 @@ export interface NotificationTypes {
   active: boolean;
   ticket_number: string;
   owner_name: string;
+  model_id: number;
+  status: string;
 }
 export interface BookGroupProps {
   id: number;

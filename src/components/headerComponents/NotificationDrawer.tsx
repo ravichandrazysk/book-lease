@@ -60,7 +60,8 @@ export function NotificationDropdown() {
       await handleNotificationRead(notification.id);
       sessionStorage.setItem("ticketId", notification.ticket_number);
       sessionStorage.setItem("ownerName", notification.owner_name);
-      sessionStorage.setItem("itemId", notification.id.toString());
+      sessionStorage.setItem("itemId", notification.model_id.toString());
+      sessionStorage.setItem("requestStatus", notification.status);
       window.dispatchEvent(new Event("storage"));
       if (notification.type === "book_request")
         router.push(`/user/received-requests`);
