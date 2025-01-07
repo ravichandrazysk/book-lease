@@ -1,49 +1,15 @@
 "use client";
-import React, { useEffect } from "react";
+import React,  from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { isAxiosError } from "axios";
-import { toast } from "@/hooks/use-toast";
-import { axiosInstance } from "@/utils/AxiosConfig";
+
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const Page = () => {
   const router = useRouter();
-  // const searchParams = useSearchParams();
-  // const email = searchParams.get("email") || "";
-
-  // useEffect(() => {
-  //   const verifyEmail = async () => {
-  //     const fd = new FormData();
-  //     fd.append("email", email);
-  //     try {
-  //       await axiosInstance.post(`/customer/verify-email`, fd);
-  //       // eslint-disable-next-line brace-style
-  //     } catch (error) {
-  //       if (
-  //         isAxiosError(error) &&
-  //         error.status &&
-  //         error?.status >= 400 &&
-  //         error?.status < 500 &&
-  //         error?.response
-  //       )
-  //         toast({
-  //           variant: "destructive",
-  //           title: "Error",
-  //           description: error?.response?.data.message,
-  //         });
-  //       else
-  //         toast({
-  //           variant: "destructive",
-  //           title: "Error",
-  //           description: "Registration failed, internal server error",
-  //         });
-  //     }
-  //   };
-  //   verifyEmail();
-  // }, [email]);
+  
 
   return (
     <React.Fragment>
