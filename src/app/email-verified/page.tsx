@@ -2,7 +2,7 @@
 import React,  from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
