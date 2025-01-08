@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { ChatBoxProps, Message } from "@/types/common-types";
+import { toast } from "@/hooks/use-toast";
 
 const ChatBox = ({ owner, ticketId, isOwner }: ChatBoxProps) => {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -43,11 +44,27 @@ const ChatBox = ({ owner, ticketId, isOwner }: ChatBoxProps) => {
   };
 
   useEffect(() => {
+    if (!ticketId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ticket ID not found",
+      });
+      return;
+    }
     getMessages(ticketId);
   }, [ticketId]);
 
   const sendMessage = async () => {
     if (currentMessage.trim() === "") return;
+    if (!ticketId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ticket ID not found",
+      });
+      return;
+    }
     try {
       const response = await axiosInstance.post(
         `/tickets/${ticketId}/conversations`,

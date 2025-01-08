@@ -152,7 +152,10 @@ export default function SignUpForm() {
     setShowPassword(!showPassword);
   };
 
-  const toggleConfirmPasswordVisibility = () => {
+  const toggleConfirmPasswordVisibility = (
+    e: React.MouseEvent<HTMLSpanElement, MouseEvent>
+  ) => {
+    e.stopPropagation();
     setShowConfirmPassword(!showConfirmPassword);
   };
 

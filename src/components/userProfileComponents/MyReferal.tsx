@@ -140,7 +140,7 @@ const MyReferral = () => {
                   <Field
                     name="email"
                     type="email"
-                    placeholder="Add your friends email id"
+                    placeholder="Add your friend's email id"
                     className="w-full h-full sm:min-w-96 sm:max-w-2xl text-sm font-normal text-black placholder:text-[#6B7280]"
                     as={Input}
                   />

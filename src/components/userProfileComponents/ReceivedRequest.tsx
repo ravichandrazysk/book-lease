@@ -48,6 +48,11 @@ export const ReceivedRequests = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSessionStorage, setIsSessionStorage] = useState(false);
+  const [bookRequestStatus, setBookRequestStatus] = useState<string | null>(
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("requestStatus")
+      : null
+  );
 
   const ownerName =
     typeof window !== "undefined" ? sessionStorage.getItem("ownerName") : null;
@@ -55,10 +60,6 @@ export const ReceivedRequests = () => {
     typeof window !== "undefined" ? sessionStorage.getItem("ticketId") : null;
   const itemId =
     typeof window !== "undefined" ? sessionStorage.getItem("itemId") : null;
-  const bookRequestStatus =
-    typeof window !== "undefined"
-      ? sessionStorage.getItem("requestStatus")
-      : null;
 
   const handleRequestConfirmation = async (
     actionStatus: string,
@@ -77,6 +78,11 @@ export const ReceivedRequests = () => {
           variant: "success",
           title: "Success",
           description: response.data.message,
+        });
+        setBookRequestStatus(() => {
+          if (typeof window !== "undefined")
+            sessionStorage.setItem("requestStatus", actionStatus);
+          return actionStatus;
         });
         setRequestStatus(!requestStatus);
         setLoader(false);
@@ -151,7 +157,9 @@ export const ReceivedRequests = () => {
         const ownerName = sessionStorage.getItem("ownerName");
         const ticketId = sessionStorage.getItem("ticketId");
         const itemId = sessionStorage.getItem("itemId");
+        const requestStatus = sessionStorage.getItem("requestStatus");
         setIsSessionStorage(Boolean(ownerName && ticketId && itemId));
+        setBookRequestStatus(requestStatus);
       }
     };
     handleStorageChange();
@@ -199,6 +207,7 @@ export const ReceivedRequests = () => {
               onCancel={() => handleRequestConfirmation("Rejected", item.id)}
               loader={loader}
               ticketId={item.ticket_number}
+              read_at={item.read_at}
             />
           ))
         ) : (
@@ -264,45 +273,49 @@ export const ReceivedRequests = () => {
         open={isChatOpen}
         onOpenChange={(open) => {
           setIsChatOpen(open);
-          setIsSessionStorage(false);
-          sessionStorage.clear();
+          if (!open) {
+            setIsSessionStorage(false);
+            sessionStorage.clear();
+          }
         }}
       >
         <SheetTrigger asChild>
           <Button className="hidden">Open Sheet</Button>
         </SheetTrigger>
-        <SheetContent className="w-full sm:max-w-lg p-3 sm:p-6">
-          <SheetTitle className="border-gray-300 border-b-2 pb-3">
-            <div className="flex items-center justify-between pr-10 sm:pr-8">
-              {ownerName}
-              {bookRequestStatus && bookRequestStatus === "Pending" && (
-                <div className="flex items-end gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      handleRequestConfirmation("Rejected", Number(itemId))
-                    }
-                  >
-                    Reject
-                  </Button>
-                  <Button
-                    className="bg-[#FF7A09] hover:bg-[#FF7A09]"
-                    onClick={() =>
-                      handleRequestConfirmation("Accepted", Number(itemId))
-                    }
-                  >
-                    Accept
-                  </Button>
-                </div>
-              )}
-            </div>
-          </SheetTitle>
-          <ChatBox
-            owner={ownerName || ""}
-            ticketId={Number(ticketNumber)}
-            isOwner={true}
-          />
-        </SheetContent>
+        {isChatOpen && (
+          <SheetContent className="w-full sm:max-w-lg p-3 sm:p-6">
+            <SheetTitle className="border-gray-300 border-b-2 pb-3">
+              <div className="flex items-center justify-between pr-10 sm:pr-8">
+                {ownerName}
+                {bookRequestStatus && bookRequestStatus === "Pending" && (
+                  <div className="flex items-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        handleRequestConfirmation("Rejected", Number(itemId))
+                      }
+                    >
+                      Reject
+                    </Button>
+                    <Button
+                      className="bg-[#FF7A09] hover:bg-[#FF7A09]"
+                      onClick={() =>
+                        handleRequestConfirmation("Accepted", Number(itemId))
+                      }
+                    >
+                      Accept
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </SheetTitle>
+            <ChatBox
+              owner={ownerName || ""}
+              ticketId={Number(ticketNumber)}
+              isOwner={true}
+            />
+          </SheetContent>
+        )}
       </Sheet>
     </React.Fragment>
   );

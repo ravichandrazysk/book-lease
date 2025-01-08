@@ -10,20 +10,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationPanel } from "@/components/headerComponents/NotificationPanel";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { isAxiosError } from "axios";
 import { NotificationTypes } from "@/types/common-types";
 import { toast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import GlobalContext from "@/contexts/GlobalContext";
 
 export function NotificationDropdown() {
+  const { setChangeProfile } = useContext(GlobalContext);
   const [notifications, setNotifications] = useState<NotificationTypes[]>([]);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [notificationReadStatus, setNoticationReadStatus] =
     useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleNotificationRead = async (notificationId: number) => {
     try {
@@ -32,6 +35,7 @@ export function NotificationDropdown() {
       );
       if (response.status === 200)
         setNoticationReadStatus(!notificationReadStatus);
+      setChangeProfile((prev) => !prev);
       // eslint-disable-next-line brace-style
     } catch (error) {
       if (
@@ -62,7 +66,17 @@ export function NotificationDropdown() {
       sessionStorage.setItem("ownerName", notification.owner_name);
       sessionStorage.setItem("itemId", notification.model_id.toString());
       sessionStorage.setItem("requestStatus", notification.status);
-      window.dispatchEvent(new Event("storage"));
+      if (
+        notification.type === "book_request" &&
+        pathname === "/user/received-requests"
+      )
+        window.dispatchEvent(new Event("storage"));
+      else if (
+        notification.type === "book_request_response" &&
+        pathname === "/user/my-requests"
+      )
+        window.dispatchEvent(new Event("storage"));
+
       if (notification.type === "book_request")
         router.push(`/user/received-requests`);
       else router.push(`/user/my-requests`);

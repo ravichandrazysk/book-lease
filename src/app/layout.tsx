@@ -8,6 +8,7 @@ import SessionProviderWrapper from "@/utils/SessionProviderWrapper";
 import AxiosConfig from "@/utils/AxiosConfig";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
+import ContextProvider from "@/contexts/ContextProvider";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -34,7 +35,7 @@ export default function RootLayout({
           <SessionProviderWrapper>
             <AxiosConfig />
             <Toaster />
-            {children}
+            <ContextProvider>{children}</ContextProvider>
           </SessionProviderWrapper>
         </Suspense>
       </body>

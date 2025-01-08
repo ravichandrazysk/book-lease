@@ -47,6 +47,7 @@ export function StockDetailsCard({
   onCancel,
   loader,
   ticketId,
+  read_at,
 }: StockCardProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -102,7 +103,9 @@ export function StockDetailsCard({
     if (isSheetOpen) getOwnerDetails();
   }, [bookId, isSheetOpen]);
   return (
-    <Card className="flex p-4 items-center gap-4 w-full  mt-4">
+    <Card
+      className={`flex p-4 items-center gap-4 w-full  mt-4 ${(variant === "received" || variant === "sent") && !read_at && "border-[#FF851B] border-2"}`}
+    >
       <section id="book-image" className="flex-shrink-0 border rounded-md">
         <Image
           src={imageUrl}
@@ -126,90 +129,93 @@ export function StockDetailsCard({
             <p className="text-base font-normal text-[#202124]">{author}</p>
           </div>
 
-          {variant === "sent" && status === "Accepted" && (
-            <>
-              <Button
-                className="text-white bg-orange-500 hover:bg-orange-600 ml-0 xl:ml-[340px]"
-                onClick={() => setIsSheetOpen(true)}
-              >
-                Owner Details
-              </Button>
-              <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button className="hidden">Open Sheet</Button>
-                </SheetTrigger>
-                <SheetContent>
-                  <SheetTitle>Owner Details</SheetTitle>
-                  <SheetDescription className="hidden"></SheetDescription>
-                  {loading ? (
-                    <OwnerDetailsSkeleton />
-                  ) : (
-                    <>
-                      <section
-                        id="profile-photo"
-                        className="flex flex-col items-center justify-center min-h-40 sm:max-w-full bg-[#f6f6f6] rounded-md"
-                      >
-                        <Avatar className="min-w-24 min-h-24 sm:min-w-20 sm:min-h-20 sm:max-w-24 sm:max-h-24">
-                          <AvatarImage
-                            src="/svgs/profile-img.svg"
-                            alt="owner-profile-photo"
-                          />
-                        </Avatar>
-                        <p className="">
-                          {ownnerDetails.first_name} {ownnerDetails.last_name}
-                        </p>
-                      </section>
-                      <section id="owner-details" className="mt-2">
-                        <p className="text-[#7A7977] text-lg">
-                          Adress:{" "}
-                          <span className="text-black font-medium ">
-                            {ownnerDetails.address}
-                          </span>
-                        </p>
-                        <p className="text-[#7A7977] text-lg">
-                          Phone:{" "}
-                          <span className="text-black font-medium ">
-                            {ownnerDetails.phone}
-                          </span>
-                        </p>
-                        <p className="text-[#7A7977] text-lg">
-                          Email:{" "}
-                          <span className="text-black font-medium break-words whitespace-pre-wrap">
-                            {ownnerDetails.email}
-                          </span>
-                        </p>
-                      </section>
-                    </>
-                  )}
-                </SheetContent>
-              </Sheet>
-            </>
-          )}
           {variant === "books" && (
             <Button variant="ghost" size="icon" onClick={onEdit}>
               <PenSquare className="h-4 w-4" />
             </Button>
           )}
-          {(variant === "received" || variant === "sent") && (
-            <>
-              <div className="">
-                <Badge
-                  variant="secondary"
-                  className="bg-green-100 text-sm font-medium text-green-700 sm:hidden"
+          <div className="flex flex-col gap-2 items-end">
+            {(variant === "received" || variant === "sent") && (
+              <>
+                <div className="">
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-sm font-medium text-green-700 sm:hidden"
+                  >
+                    {status}
+                  </Badge>
+                  <p className="text-base mt-1 text-[#7A7977] hidden">
+                    {status === "Rejected"
+                      ? "Rejected on"
+                      : status === "Accepted"
+                        ? "Accepted on"
+                        : "Requested on"}
+                    : <span className="font-medium text-black">{date}</span>
+                  </p>
+                </div>
+              </>
+            )}
+
+            {variant === "sent" && status === "Accepted" && (
+              <>
+                <Button
+                  className="text-white bg-orange-500 hover:bg-orange-600 ml-0 xl:ml-[340px]"
+                  onClick={() => setIsSheetOpen(true)}
                 >
-                  {status}
-                </Badge>
-                <p className="text-base mt-1 text-[#7A7977] hidden">
-                  {status === "Rejected"
-                    ? "Rejected on"
-                    : status === "Accepted"
-                      ? "Accepted on"
-                      : "Requested on"}
-                  : <span className="font-medium text-black">{date}</span>
-                </p>
-              </div>
-            </>
-          )}
+                  Owner Details
+                </Button>
+                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                  <SheetTrigger asChild>
+                    <Button className="hidden">Open Sheet</Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetTitle>Owner Details</SheetTitle>
+                    <SheetDescription className="hidden"></SheetDescription>
+                    {loading ? (
+                      <OwnerDetailsSkeleton />
+                    ) : (
+                      <>
+                        <section
+                          id="profile-photo"
+                          className="flex flex-col items-center justify-center min-h-40 sm:max-w-full bg-[#f6f6f6] rounded-md"
+                        >
+                          <Avatar className="min-w-24 min-h-24 sm:min-w-20 sm:min-h-20 sm:max-w-24 sm:max-h-24">
+                            <AvatarImage
+                              src="/svgs/profile-img.svg"
+                              alt="owner-profile-photo"
+                            />
+                          </Avatar>
+                          <p className="">
+                            {ownnerDetails.first_name} {ownnerDetails.last_name}
+                          </p>
+                        </section>
+                        <section id="owner-details" className="mt-2">
+                          <p className="text-[#7A7977] text-lg">
+                            Adress:{" "}
+                            <span className="text-black font-medium ">
+                              {ownnerDetails.address}
+                            </span>
+                          </p>
+                          <p className="text-[#7A7977] text-lg">
+                            Phone:{" "}
+                            <span className="text-black font-medium ">
+                              {ownnerDetails.phone}
+                            </span>
+                          </p>
+                          <p className="text-[#7A7977] text-lg">
+                            Email:{" "}
+                            <span className="text-black font-medium break-words whitespace-pre-wrap">
+                              {ownnerDetails.email}
+                            </span>
+                          </p>
+                        </section>
+                      </>
+                    )}
+                  </SheetContent>
+                </Sheet>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-between mt-4 mb-1 items-center gap-4">

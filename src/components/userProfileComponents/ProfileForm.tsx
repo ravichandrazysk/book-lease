@@ -353,8 +353,7 @@ export function ProfileForm() {
         setLoader(false);
         const profileData = response.data.data;
         setPhoneVerified(profileData.phone_verified_at);
-        setInitialValues((prev) => ({
-          ...prev,
+        setInitialValues({
           firstName: profileData?.first_name || "",
           lastName: profileData?.last_name || "",
           phoneNumber: profileData?.phone || "",
@@ -365,7 +364,7 @@ export function ProfileForm() {
           state: profileData?.state || "",
           city: profileData?.city || "",
           profileImage: profileData.profile_photo,
-        }));
+        });
         if (profileData.profile_photo)
           setProfileImageUrl(profileData.profile_photo);
       }
@@ -400,8 +399,7 @@ export function ProfileForm() {
         if (response.status === 200) {
           const profileData = response.data.data;
           setPhoneVerified(profileData.phone_verified_at);
-          setInitialValues((prev) => ({
-            ...prev,
+          setInitialValues({
             firstName: profileData?.first_name || "",
             lastName: profileData?.last_name || "",
             phoneNumber: profileData?.phone || "",
@@ -412,7 +410,7 @@ export function ProfileForm() {
             state: profileData?.state || "",
             city: profileData?.city || "",
             profileImage: profileData.profile_photo,
-          }));
+          });
         }
         // eslint-disable-next-line brace-style
       } catch (error) {
@@ -634,7 +632,7 @@ export function ProfileForm() {
                   as={Input}
                   id="age"
                   name="age"
-                  type="number"
+                  type="text"
                   placeholder="Enter your age"
                   className="border border-[#D1D5DB]"
                   value={values.age}

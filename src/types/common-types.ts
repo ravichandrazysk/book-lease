@@ -98,6 +98,7 @@ export interface StockCardProps {
   onCancel?: () => void;
   loader?: boolean;
   ticketId?: string;
+  read_at?: string | null;
 }
 
 export interface OwnerDetailsTypes {
@@ -240,6 +241,16 @@ export interface MyRequestTypes {
   images: string[];
   book_owner: string;
   ticket_number: string;
+  read_at: string | null;
+}
+
+export interface ContextTypes {
+  refreshNotifications: boolean;
+  setRefreshNotifications: React.Dispatch<React.SetStateAction<boolean>>;
+  changeProfile: boolean;
+  setChangeProfile: React.Dispatch<React.SetStateAction<boolean>>;
+  profileDetails: ProfileDetails;
+  setProfileDetails: React.Dispatch<React.SetStateAction<ProfileDetails>>;
 }
 
 export interface ProfileFormValues {
@@ -254,6 +265,27 @@ export interface ProfileFormValues {
   city: string;
   profileImage: string | null;
 }
+export interface ProfileDetails {
+  address_line_1: string | null;
+  age: number | null;
+  city: string | null;
+  coins: number | null;
+  email: string | null;
+  email_verified: boolean;
+  first_name: string | null;
+  gender: string | null;
+  id: number;
+  last_name: string | null;
+  notification_counts: {
+    my_requests: number | null;
+    received_requests: number | null;
+  };
+  phone: string | null;
+  phone_verified_at: string | null;
+  pincode: number | null;
+  profile_photo: string | null;
+  state: string | null;
+}
 export interface ReceivedRequestTypes {
   id: 4;
   book_name: string;
@@ -264,6 +296,7 @@ export interface ReceivedRequestTypes {
   type: string;
   images: string[];
   ticket_number: string;
+  read_at: string | null;
 }
 
 export interface RentalBookProps {

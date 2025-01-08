@@ -132,6 +132,7 @@ const MyRequest = () => {
               date={item.requested_at}
               ticketId={item.ticket_number}
               author={item.book_owner}
+              read_at={item.read_at}
             />
           ))
         ) : (
@@ -197,23 +198,27 @@ const MyRequest = () => {
         open={isChatOpen}
         onOpenChange={(open) => {
           setIsChatOpen(open);
-          setIsSessionStorage(false);
-          sessionStorage.clear();
+          if (!open) {
+            setIsSessionStorage(false);
+            sessionStorage.clear();
+          }
         }}
       >
         <SheetTrigger asChild>
           <Button className="hidden">Open Sheet</Button>
         </SheetTrigger>
-        <SheetContent className="w-full sm:max-w-lg p-3 sm:p-6">
-          <SheetTitle className="border-gray-300 border-b-2 pb-3">
-            {ownerName}
-          </SheetTitle>
-          <ChatBox
-            owner={ownerName || ""}
-            ticketId={Number(ticketNumber)}
-            isOwner={true}
-          />
-        </SheetContent>
+        {isChatOpen && (
+          <SheetContent className="w-full sm:max-w-lg p-3 sm:p-6">
+            <SheetTitle className="border-gray-300 border-b-2 pb-3">
+              {ownerName}
+            </SheetTitle>
+            <ChatBox
+              owner={ownerName || ""}
+              ticketId={Number(ticketNumber)}
+              isOwner={false}
+            />
+          </SheetContent>
+        )}
       </Sheet>
     </React.Fragment>
   );

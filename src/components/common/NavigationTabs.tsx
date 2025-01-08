@@ -2,11 +2,12 @@
 /* eslint-disable no-nested-ternary */
 "use client";
 
+import GlobalContext from "@/contexts/GlobalContext";
 import { cn } from "@/lib/utils";
-import { CustomSession } from "@/types/next-auth";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useContext } from "react";
 
 const navigationTabs: { title: string; href: string }[] = [
   { title: "Profile", href: "/user/profile" },
@@ -22,7 +23,7 @@ const navigationTabs: { title: string; href: string }[] = [
 
 export function NavigationTabs() {
   const pathname = usePathname();
-  const { data: session } = useSession() as { data: CustomSession };
+  const { profileDetails } = useContext(GlobalContext);
 
   return (
     <nav className="max-w-sm w-full mx-auto bg-white border rounded-xl my-4 shadow-md py-5">
@@ -48,13 +49,13 @@ export function NavigationTabs() {
                 className={`absolute ${item.title === "My Requests" ? "top-2 left-36" : "top-2 left-48"} h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center`}
               >
                 {item.title === "My Requests"
-                  ? (session?.user?.notification_counts?.my_requests ?? 0) > 99
+                  ? (profileDetails?.notification_counts?.my_requests ?? 0) > 99
                     ? "99+"
-                    : (session?.user?.notification_counts?.my_requests ?? 0)
-                  : (session?.user?.notification_counts?.received_requests ??
+                    : (profileDetails?.notification_counts?.my_requests ?? 0)
+                  : (profileDetails?.notification_counts?.received_requests ??
                         0) > 99
                     ? "99+"
-                    : (session?.user?.notification_counts?.received_requests ??
+                    : (profileDetails?.notification_counts?.received_requests ??
                       0)}
               </span>
             )}

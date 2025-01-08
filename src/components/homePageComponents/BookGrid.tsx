@@ -13,7 +13,7 @@ export default function BookGrid({ books, name }: BookGroupProps) {
   };
   const sliderSettings = {
     dots: true,
-    infinite: true,
+    infinite: books.length > 1,
     speed: 400,
     slidesToShow: 2,
     slidesToScroll: 1,
