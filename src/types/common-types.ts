@@ -99,6 +99,8 @@ export interface StockCardProps {
   loader?: boolean;
   ticketId?: string;
   read_at?: string | null;
+  notification_id?: number | null;
+  requestStatusToggle?: () => void;
 }
 
 export interface OwnerDetailsTypes {
@@ -168,6 +170,7 @@ export interface BookDetailsType {
   can_extend_lease: boolean;
   images: { image_path: string }[];
   ticket_number: string;
+  owner_id: number | null;
 }
 
 export interface BooCreateEditFormTypes {
@@ -242,6 +245,7 @@ export interface MyRequestTypes {
   book_owner: string;
   ticket_number: string;
   read_at: string | null;
+  notification_id: number | null;
 }
 
 export interface ContextTypes {
@@ -297,6 +301,7 @@ export interface ReceivedRequestTypes {
   images: string[];
   ticket_number: string;
   read_at: string | null;
+  notification_id: number | null;
 }
 
 export interface RentalBookProps {

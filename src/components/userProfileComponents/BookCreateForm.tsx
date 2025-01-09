@@ -434,7 +434,7 @@ export function BookCreateForm({
                   className="border-2 border-dashed rounded-lg min-h-28 p-8 text-center cursor-pointer hover:border-primary"
                 >
                   <input {...getInputProps()} />
-                  {values.coverImage && isEditing ? (
+                  {values.coverImage || (values.coverImage && isEditing) ? (
                     <div className="relative flex items-center justify-center">
                       <div className="max-w-2xl max-h-72">
                         <Image
@@ -836,11 +836,7 @@ export function BookCreateForm({
                           : "sellPrice"
                       }
                       type="number"
-                      placeholder={
-                        values.availabilityType === "rent"
-                          ? "Enter rent amount"
-                          : "Enter the amount"
-                      }
+                      placeholder="Enter the amount"
                       className="placeholder:text-[#6B7280] font-normal"
                     />
                     <ErrorMessage
@@ -874,11 +870,7 @@ export function BookCreateForm({
                           : "discountedSellPrice"
                       }
                       type="number"
-                      placeholder={
-                        values.availabilityType === "rent"
-                          ? "Enter listing amount"
-                          : "Enter discount amount"
-                      }
+                      placeholder="Enter listing amount"
                       className="placeholder:text-[#6B7280] font-normal"
                     />
                     <ErrorMessage

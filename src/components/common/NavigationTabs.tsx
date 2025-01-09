@@ -12,7 +12,7 @@ import { useContext } from "react";
 const navigationTabs: { title: string; href: string }[] = [
   { title: "Profile", href: "/user/profile" },
   { title: "My Books", href: "/user/my-books" },
-  { title: "My Requests", href: "/user/my-requests" },
+  { title: "My Sent Requests", href: "/user/my-requests" },
   { title: "Received Requests", href: "/user/received-requests" },
   { title: "My Rentals", href: "/user/rentals" },
   { title: "Sold Books", href: "/user/sold-books" },
@@ -37,18 +37,18 @@ export function NavigationTabs() {
               pathname === item.href
                 ? "text-blue-600 border-y-0 border-r-0 border border-l-4 border-l-[#0070C4] "
                 : " hover:bg-gray-100",
-              (item.title === "My Requests" ||
+              (item.title === "My Sent Requests" ||
                 item.title === "Received Requests") &&
                 "relative"
             )}
           >
             {item.title}
-            {(item.title === "My Requests" ||
+            {(item.title === "My Sent Requests" ||
               item.title === "Received Requests") && (
               <span
-                className={`absolute ${item.title === "My Requests" ? "top-2 left-36" : "top-2 left-48"} h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center`}
+                className={`absolute ${item.title === "My Sent Requests" ? "top-3 left-[185px]" : "top-2 left-48"} h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center`}
               >
-                {item.title === "My Requests"
+                {item.title === "My Sent Requests"
                   ? (profileDetails?.notification_counts?.my_requests ?? 0) > 99
                     ? "99+"
                     : (profileDetails?.notification_counts?.my_requests ?? 0)

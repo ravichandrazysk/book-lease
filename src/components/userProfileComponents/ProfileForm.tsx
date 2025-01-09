@@ -126,6 +126,10 @@ export function ProfileForm() {
   const { data: session } = useSession() as { data: CustomSession };
   const [otpLoader, setOtpLoader] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState<string | null>(null);
+  const [states, setStates] = useState<{ id: number; name: string }[]>([]);
+  const [cities, setCities] = useState<
+    { id: number; name: string; state: string }[]
+  >([]);
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -214,6 +218,34 @@ export function ProfileForm() {
         description: "Geolocation is not supported by your browser",
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await axiosInstance.get("/states");
+        if (response.status === 200) setStates(response.data.data);
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error, "error in fetching states");
+      }
+    };
+    fetchStates();
+  }, []);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await axiosInstance.get("/cities");
+        if (response.status === 200) setCities(response.data.data);
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error, "error in fetching states");
+      }
+    };
+    fetchCities();
   }, []);
 
   const handleGetCurrentLocation = async () => {
@@ -575,7 +607,7 @@ export function ProfileForm() {
                           values.phoneNumber.length !== 10 ||
                           values.phoneNumber === "")
                     }
-                    className="bg-orange-500 text-white font-medium hover:text-white hover:bg-orange-600"
+                    className="bg-orange-500 text-white font-medium w-24 hover:text-white hover:bg-orange-600"
                     onClick={handleOtpVerification}
                   >
                     {otpLoader ? (
@@ -752,7 +784,7 @@ export function ProfileForm() {
                   State&nbsp;
                   <span className="text-red-500">*</span>
                 </label>
-                <Field
+                {/* <Field
                   as={Input}
                   id="state"
                   name="state"
@@ -760,7 +792,34 @@ export function ProfileForm() {
                   placeholder="Enter your state"
                   className="border border-[#D1D5DB]"
                   value={values.state}
-                />
+                /> */}
+                <Field name="state">
+                  {({ field, form }: any) => (
+                    <Select
+                      onValueChange={(value) =>
+                        form.setFieldValue("state", value)
+                      }
+                      value={field.value}
+                    >
+                      <SelectTrigger className="border border-[#D1D5DB]">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {states && states.length > 0 ? (
+                          states.map((state: { id: number; name: string }) => (
+                            <SelectItem key={state.id} value={state.name}>
+                              {state.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <div className="text-gray-500 text-center">
+                            No age ranges found
+                          </div>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </Field>
                 <ErrorMessage
                   name="state"
                   component="div"
@@ -773,7 +832,7 @@ export function ProfileForm() {
                   City&nbsp;
                   <span className="text-red-500">*</span>
                 </label>
-                <Field
+                {/* <Field
                   as={Input}
                   id="city"
                   name="city"
@@ -781,7 +840,40 @@ export function ProfileForm() {
                   placeholder="Enter your city"
                   className="border border-[#D1D5DB]"
                   value={values.city}
-                />
+                /> */}
+                <Field name="city">
+                  {({ field, form }: any) => (
+                    <Select
+                      onValueChange={(value) =>
+                        form.setFieldValue("city", value)
+                      }
+                      value={field.value}
+                    >
+                      <SelectTrigger className="border border-[#D1D5DB]">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cities && cities.length > 0 ? (
+                          cities.map(
+                            (city: {
+                              id: number;
+                              name: string;
+                              state: string;
+                            }) => (
+                              <SelectItem key={city.id} value={city.name}>
+                                {city.name}
+                              </SelectItem>
+                            )
+                          )
+                        ) : (
+                          <div className="text-gray-500 text-center">
+                            No age ranges found
+                          </div>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </Field>
                 <ErrorMessage
                   name="city"
                   component="div"

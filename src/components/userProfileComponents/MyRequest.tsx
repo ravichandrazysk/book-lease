@@ -110,7 +110,7 @@ const MyRequest = () => {
         className=" sm:w-11/12 md:mr-9 mx-auto max-w-3xl my-5"
       >
         <header>
-          <SectionHeader title={"My Requests"} />
+          <SectionHeader title={"My Sent Requests"} />
         </header>
 
         {loading ? (

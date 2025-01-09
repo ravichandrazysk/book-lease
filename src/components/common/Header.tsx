@@ -1,3 +1,6 @@
+/* eslint-disable no-extra-parens */
+/* eslint-disable indent */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable multiline-ternary */
 "use client";
 import {
@@ -21,7 +24,7 @@ import { MdOutlineAttachEmail } from "react-icons/md";
 import Image from "next/image";
 import { ProfileDropdown } from "@/components/headerComponents/ProfileDropdown";
 import { NotificationDropdown } from "@/components/headerComponents/NotificationDrawer";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { SearchHeader } from "../homePageComponents/SearchHeader";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -40,8 +43,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CustomSession } from "@/types/next-auth";
+import GlobalContext from "@/contexts/GlobalContext";
 
 export function Header() {
+  const { profileDetails } = useContext(GlobalContext);
   const { data: session } = useSession() as { data: CustomSession };
   const router = useRouter();
   const [isSearching, setIsSearching] = useState(false);
@@ -52,7 +57,7 @@ export function Header() {
     { label: "Coins", icon: Coins, path: "/user/coins" },
     { label: "All Books", icon: LibraryBig, path: "/filtered-books" },
     { label: "My Books", icon: BookUser, path: "/user/my-books" },
-    { label: "My Requests", icon: BookUp, path: "/user/my-requests" },
+    { label: "My Sent Requests", icon: BookUp, path: "/user/my-requests" },
     {
       label: "Recieved Requests",
       icon: BookDown,
@@ -207,13 +212,31 @@ export function Header() {
                         <Button
                           key={item.label}
                           variant="ghost"
-                          className={`p-3 w-auto h-auto flex justify-start ${
+                          className={`p-3 w-auto h-auto flex justify-start relative ${
                             pathname === item.path ? "text-[#FF7A09]" : ""
                           }`}
                           onClick={() => router.push(item.path)}
                         >
                           <item.icon className="!h-5 !w-5 mr-2" />
-                          {item.label}
+                          {item.label}{" "}
+                          {(item.label === "My Sent Requests" ||
+                            item.label === "Recieved Requests") && (
+                            <span
+                              className={`absolute ${item.label === "My Sent Requests" ? "top-2 left-[165px]" : "top-2 left-[170px]"} h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center`}
+                            >
+                              {item.label === "My Sent Requests"
+                                ? (profileDetails?.notification_counts
+                                    ?.my_requests ?? 0) > 99
+                                  ? "99+"
+                                  : (profileDetails?.notification_counts
+                                      ?.my_requests ?? 0)
+                                : (profileDetails?.notification_counts
+                                      ?.received_requests ?? 0) > 99
+                                  ? "99+"
+                                  : (profileDetails?.notification_counts
+                                      ?.received_requests ?? 0)}
+                            </span>
+                          )}
                         </Button>
                       ))}
                       <Button

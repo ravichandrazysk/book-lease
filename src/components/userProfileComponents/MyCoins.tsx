@@ -51,7 +51,7 @@ const Coins = () => {
           <div className="pt-4">
             <p className="text-xl font-medium mb-6">How it works?</p>
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 ">
-              {Array.from({ length: 6 }, (_, index) => (
+              {Array.from({ length: 3 }, (_, index) => (
                 <Card key={index} className="flex p-6 ">
                   <Avatar className="w-8 h-8">
                     <AvatarImage src={`/pngs/success.png`} />

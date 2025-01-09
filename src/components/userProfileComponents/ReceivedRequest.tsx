@@ -208,6 +208,8 @@ export const ReceivedRequests = () => {
               loader={loader}
               ticketId={item.ticket_number}
               read_at={item.read_at}
+              notification_id={item.notification_id}
+              requestStatusToggle={() => setRequestStatus(!requestStatus)}
             />
           ))
         ) : (
@@ -274,6 +276,7 @@ export const ReceivedRequests = () => {
         onOpenChange={(open) => {
           setIsChatOpen(open);
           if (!open) {
+            setRequestStatus(!requestStatus);
             setIsSessionStorage(false);
             sessionStorage.clear();
           }
@@ -291,6 +294,7 @@ export const ReceivedRequests = () => {
                   <div className="flex items-end gap-2">
                     <Button
                       variant="outline"
+                      className="bg-red-500 hover:bg-red-600"
                       onClick={() =>
                         handleRequestConfirmation("Rejected", Number(itemId))
                       }
@@ -298,7 +302,7 @@ export const ReceivedRequests = () => {
                       Reject
                     </Button>
                     <Button
-                      className="bg-[#FF7A09] hover:bg-[#FF7A09]"
+                      className="bg-green-500 hover:bg-green-600"
                       onClick={() =>
                         handleRequestConfirmation("Accepted", Number(itemId))
                       }

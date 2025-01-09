@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { CustomToast } from "@/components/common/CustomToast";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ExtendRentalDialog } from "@/components/modals/ExtendRentalDialog";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import CarouselSlider from "@/components/common/CarousalSlider";
@@ -27,14 +27,24 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import ChatBox from "@/components/common/ChatBox";
+import GlobalContext from "@/contexts/GlobalContext";
 
 export function BookDetails() {
   const { bookId } = useParams();
   const { data: session } = useSession();
+  const { profileDetails } = useContext(GlobalContext);
   const { toast } = useToast();
   const router = useRouter();
   const [showExtendModal, setShowExtendModal] = useState(false);
   const [bookImages, setBookImages] = useState<string[]>([]);
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [isDescriptionLong, setIsDescriptionLong] = useState(false);
+  const [isRequested, setIsRequested] = useState(false);
+  const [extendsionDuration, setExtensionDuration] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [ticketId, setTicketId] = useState<number>(0);
   const [bookDetails, setBookDetails] = useState<BookDetailsType>({
     id: 0,
     owner: "",
@@ -59,15 +69,8 @@ export function BookDetails() {
     images: [],
     can_extend_lease: false,
     ticket_number: "",
+    owner_id: null,
   });
-  const [showFullDescription, setShowFullDescription] = useState(false);
-  const [isDescriptionLong, setIsDescriptionLong] = useState(false);
-  const [isRequested, setIsRequested] = useState(false);
-  const [extendsionDuration, setExtensionDuration] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-  const [buttonLoading, setButtonLoading] = useState(false);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [ticketId, setTicketId] = useState<number>(0);
 
   const handleGetBookDetails = async () => {
     setLoading(true);
@@ -260,70 +263,72 @@ export function BookDetails() {
             </div>
           )}
 
-          <Button
-            className="w-full sm:max-w-sm text-xl bg-orange-500 hover:bg-orange-600 sm:min-h-14"
-            onClick={() => {
-              if (!bookDetails.is_requested && !bookDetails.is_leased) {
-                handleRequest();
-                return;
+          {profileDetails.id !== bookDetails.owner_id && (
+            <Button
+              className="w-full  text-base sm:max-w-sm sm:text-xl bg-orange-500 hover:bg-orange-600 sm:min-h-14"
+              onClick={() => {
+                if (!bookDetails.is_requested && !bookDetails.is_leased) {
+                  handleRequest();
+                  return;
+                }
+                if (
+                  (!bookDetails.is_requested && !bookDetails.is_leased) ||
+                  isRequested
+                ) {
+                  setIsSheetOpen(true);
+                  return;
+                }
+                if (bookDetails.is_leased && !bookDetails.is_requested) {
+                  setShowExtendModal(true);
+                  return;
+                }
+              }}
+              disabled={
+                // eslint-disable-next-line no-extra-parens
+                (bookDetails.is_requested && bookDetails.is_leased) ||
+                // eslint-disable-next-line no-extra-parens
+                (!bookDetails.can_extend_lease &&
+                  !bookDetails.is_requested &&
+                  bookDetails.is_leased) ||
+                bookDetails.is_buy ||
+                bookDetails.status === "Sold"
               }
-              if (
-                (!bookDetails.is_requested && !bookDetails.is_leased) ||
-                isRequested
-              ) {
-                setIsSheetOpen(true);
-                return;
-              }
-              if (bookDetails.is_leased && !bookDetails.is_requested) {
-                setShowExtendModal(true);
-                return;
-              }
-            }}
-            disabled={
-              // eslint-disable-next-line no-extra-parens
-              (bookDetails.is_requested && bookDetails.is_leased) ||
-              // eslint-disable-next-line no-extra-parens
-              (!bookDetails.can_extend_lease &&
+            >
+              {buttonLoading ? (
+                <div className="flex justify-center items-center w-full max-h-5">
+                  <Lottie
+                    loop
+                    path="/lotties/button-loader.json"
+                    play
+                    style={{ width: "50%" }}
+                  />
+                </div>
+              ) : !session ? (
+                "Login to Talk to the Owner"
+              ) : bookDetails.availability === "Sell" && bookDetails.is_buy ? (
+                "Sold out"
+              ) : !bookDetails.can_extend_lease &&
                 !bookDetails.is_requested &&
-                bookDetails.is_leased) ||
-              bookDetails.is_buy ||
-              bookDetails.status === "Sold"
-            }
-          >
-            {buttonLoading ? (
-              <div className="flex justify-center items-center w-full max-h-5">
-                <Lottie
-                  loop
-                  path="/lotties/button-loader.json"
-                  play
-                  style={{ width: "50%" }}
-                />
-              </div>
-            ) : !session ? (
-              "Login to Talk to the Owner"
-            ) : bookDetails.availability === "Sell" && bookDetails.is_buy ? (
-              "Sold out"
-            ) : !bookDetails.can_extend_lease &&
-              !bookDetails.is_requested &&
-              bookDetails.is_leased ? (
-              "Leased"
-            ) : bookDetails.availability !== "Sell" &&
-              bookDetails.is_leased &&
-              !bookDetails.is_requested &&
-              bookDetails.can_extend_lease ? (
-              "Extend Request"
-            ) : // eslint-disable-next-line no-extra-parens, indent
-            (bookDetails.is_requested && !bookDetails.is_leased) ||
-              // eslint-disable-next-line no-extra-parens
-              isRequested ? (
-              "View Conversation"
-            ) : (
-              !bookDetails.is_requested &&
-              !bookDetails.is_leased &&
-              !bookDetails.is_buy &&
-              "Talk to the Owner"
-            )}
-          </Button>
+                bookDetails.is_leased ? (
+                "Leased"
+              ) : bookDetails.availability !== "Sell" &&
+                bookDetails.is_leased &&
+                !bookDetails.is_requested &&
+                bookDetails.can_extend_lease ? (
+                "Extend Request"
+              ) : // eslint-disable-next-line no-extra-parens, indent
+              (bookDetails.is_requested && !bookDetails.is_leased) ||
+                // eslint-disable-next-line no-extra-parens
+                isRequested ? (
+                "View Conversation"
+              ) : (
+                !bookDetails.is_requested &&
+                !bookDetails.is_leased &&
+                !bookDetails.is_buy &&
+                "Talk to the Owner"
+              )}
+            </Button>
+          )}
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button className="hidden">Open Sheet</Button>

@@ -156,14 +156,14 @@ const ChatBox = ({ owner, ticketId, isOwner }: ChatBoxProps) => {
       <div className="flex items-center justify-between gap-2">
         <ChatInput
           className="border-gray-300 border-2 rounded-2xl"
-          placeholder="Type a message"
+          placeholder="Type a message (Minimum 250 characters)"
           value={currentMessage}
           onChange={(e) => setCurrentMessage(e.target.value)}
         />
         <Button
           type="submit"
           size="icon"
-          disabled={currentMessage.trim() === ""}
+          disabled={currentMessage.trim() === "" || currentMessage.length < 250}
           className="bg-[#FF7A09] hover:bg-[#FF7A09]"
           onClick={sendMessage}
         >

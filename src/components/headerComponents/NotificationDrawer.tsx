@@ -148,7 +148,7 @@ export function NotificationDropdown() {
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-screen md:w-[500px] mt-2" align="end">
+        <DropdownMenuContent className="max-w-xs md:max-w-sm mt-2" align="end">
           <NotificationPanel
             notifications={notifications}
             onNotificationClick={handleNotificationClick}

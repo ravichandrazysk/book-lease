@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { PenSquare } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Sheet,
   SheetTrigger,
@@ -28,6 +28,7 @@ import { OwnerDetailsTypes, StockCardProps } from "@/types/common-types";
 import dynamic from "next/dynamic";
 import ChatBox from "@/components/common/ChatBox";
 import { useRouter } from "next/navigation";
+import GlobalContext from "@/contexts/GlobalContext";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 export function StockDetailsCard({
@@ -48,7 +49,10 @@ export function StockDetailsCard({
   loader,
   ticketId,
   read_at,
+  notification_id,
+  requestStatusToggle,
 }: StockCardProps) {
+  const { setChangeProfile } = useContext(GlobalContext);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [ownnerDetails, setOwnerDetails] = useState<OwnerDetailsTypes>({
@@ -62,6 +66,38 @@ export function StockDetailsCard({
   const [loading, setLoading] = useState(true);
   const [availabilityToggle, setAvailabilityToggle] = useState(isAvailable);
   const router = useRouter();
+
+  const handleNotificationRead = async () => {
+    try {
+      const response = await axiosInstance.patch(
+        `/notifications/${notification_id}`
+      );
+      if (response.status === 200) {
+        setChangeProfile((prev) => !prev);
+        if (requestStatusToggle) requestStatusToggle();
+      }
+      // eslint-disable-next-line brace-style
+    } catch (error) {
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.response
+      )
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response.data.message,
+        });
+      else
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Something went wrong",
+        });
+    }
+  };
 
   useEffect(() => {
     const getOwnerDetails = async () => {
@@ -159,7 +195,9 @@ export function StockDetailsCard({
             {variant === "sent" && status === "Accepted" && (
               <>
                 <Button
-                  className="text-white bg-orange-500 hover:bg-orange-600 ml-0 xl:ml-[340px]"
+                  variant="ghost"
+                  // ClassName="text-white bg-orange-500 hover:bg-orange-600 ml-0 xl:ml-[340px]"
+                  className="text-orange-500 hover:text-orange-600 bg-accent"
                   onClick={() => setIsSheetOpen(true)}
                 >
                   Owner Details
@@ -252,14 +290,16 @@ export function StockDetailsCard({
                 >
                   {status}
                 </Badge>
-                <p className="text-base mt-1 text-[#7A7977]">
-                  {status === "Rejected"
-                    ? "Rejected on"
-                    : status === "Accepted"
-                      ? "Accepted on"
-                      : "Requested on"}
-                  : <span className="font-medium text-black">{date}</span>
-                </p>
+                <div className=" gap-2 sm:flex sm:items-end">
+                  <p className="text-base mt-1 text-[#7A7977]">
+                    {status === "Rejected"
+                      ? "Rejected on :"
+                      : status === "Accepted"
+                        ? "Accepted on :"
+                        : "Requested on :"}
+                  </p>
+                  <p className="font-medium text-base text-black">{date}</p>
+                </div>
               </div>
 
               {(variant === "received" || variant === "sent") &&
@@ -273,11 +313,13 @@ export function StockDetailsCard({
                     />
                   </div>
                 ) : (
-                  <div className="flex items-end gap-2 max-sm:hidden">
+                  <div className="flex items-end gap-2 ">
                     <Button
                       className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
                       onClick={() => {
                         setIsChatOpen(true);
+                        if (!read_at && notification_id)
+                          handleNotificationRead();
                       }}
                     >
                       View Chat
@@ -297,11 +339,15 @@ export function StockDetailsCard({
                   {author}
                   {variant === "received" && status && status === "Pending" && (
                     <div className="flex items-end gap-2">
-                      <Button variant="outline" onClick={onCancel}>
+                      <Button
+                        variant="outline"
+                        className="bg-red-500 hover:bg-red-600"
+                        onClick={onCancel}
+                      >
                         Reject
                       </Button>
                       <Button
-                        className="bg-[#FF7A09] hover:bg-[#FF7A09]"
+                        className="bg-green-500 hover:bg-green-600"
                         onClick={onAccept}
                       >
                         Accept
@@ -339,7 +385,7 @@ export function StockDetailsCard({
             <>
               <Button
                 variant="ghost"
-                className="text-white bg-orange-500 hover:bg-orange-600"
+                className="text-orange-500 hover:text-orange-600 bg-accent"
                 onClick={() => setIsSheetOpen(true)}
               >
                 Owner Details
@@ -415,7 +461,7 @@ export function StockDetailsCard({
               </p>
             </div>
 
-            {(variant === "received" || variant === "sent") &&
+            {/* {(variant === "received" || variant === "sent") &&
               (loader ? (
                 <div className="flex justify-center items-center max-w-28 sm:hidden">
                   <Lottie
@@ -431,12 +477,13 @@ export function StockDetailsCard({
                     className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
                     onClick={() => {
                       setIsChatOpen(true);
+                      if (!read_at && notification_id) handleNotificationRead();
                     }}
                   >
                     View Chat
                   </Button>
                 </div>
-              ))}
+              ))} */}
           </>
         )}
       </section>
