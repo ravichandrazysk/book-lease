@@ -52,7 +52,8 @@ export function StockDetailsCard({
   notification_id,
   requestStatusToggle,
 }: StockCardProps) {
-  const { setChangeProfile } = useContext(GlobalContext);
+  const { setChangeProfile, setRefreshNotifications } =
+    useContext(GlobalContext);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [ownnerDetails, setOwnerDetails] = useState<OwnerDetailsTypes>({
@@ -72,10 +73,8 @@ export function StockDetailsCard({
       const response = await axiosInstance.patch(
         `/notifications/${notification_id}`
       );
-      if (response.status === 200) {
-        setChangeProfile((prev) => !prev);
-        if (requestStatusToggle) requestStatusToggle();
-      }
+      if (response.status === 200) setChangeProfile((prev) => !prev);
+
       // eslint-disable-next-line brace-style
     } catch (error) {
       if (
@@ -140,7 +139,7 @@ export function StockDetailsCard({
   }, [bookId, isSheetOpen]);
   return (
     <Card
-      className={`flex p-4 items-center gap-4 w-full  mt-4 ${(variant === "received" || variant === "sent") && !read_at && "border-[#FF851B] border-2"}`}
+      className={`flex p-4 items-center gap-4 w-full  mt-4 ${(variant === "received" || variant === "sent") && !read_at && notification_id && "border-[#FF851B] border-2"}`}
     >
       <section id="book-image" className="flex-shrink-0 border rounded-md">
         <Image
@@ -170,90 +169,85 @@ export function StockDetailsCard({
               <PenSquare className="h-4 w-4" />
             </Button>
           )}
-          <div className="flex flex-col gap-2 items-end">
-            {(variant === "received" || variant === "sent") && (
-              <>
-                <div className="">
-                  <Badge
-                    variant="secondary"
-                    className="bg-green-100 text-sm font-medium text-green-700 sm:hidden"
-                  >
-                    {status}
-                  </Badge>
-                  <p className="text-base mt-1 text-[#7A7977] hidden">
-                    {status === "Rejected"
-                      ? "Rejected on"
-                      : status === "Accepted"
-                        ? "Accepted on"
-                        : "Requested on"}
-                    : <span className="font-medium text-black">{date}</span>
-                  </p>
-                </div>
-              </>
-            )}
+          {(variant === "received" || variant === "sent") && (
+            <div className="flex flex-col gap-2 items-end">
+              {(variant === "received" || variant === "sent") && (
+                <>
+                  <div className="">
+                    <Badge
+                      variant="secondary"
+                      className="bg-green-100 text-sm font-medium text-green-700 sm:hidden"
+                    >
+                      {status}
+                    </Badge>
+                  </div>
+                </>
+              )}
 
-            {variant === "sent" && status === "Accepted" && (
-              <>
-                <Button
-                  variant="ghost"
-                  // ClassName="text-white bg-orange-500 hover:bg-orange-600 ml-0 xl:ml-[340px]"
-                  className="text-orange-500 hover:text-orange-600 bg-accent"
-                  onClick={() => setIsSheetOpen(true)}
-                >
-                  Owner Details
-                </Button>
-                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                  <SheetTrigger asChild>
-                    <Button className="hidden">Open Sheet</Button>
-                  </SheetTrigger>
-                  <SheetContent>
-                    <SheetTitle>Owner Details</SheetTitle>
-                    <SheetDescription className="hidden"></SheetDescription>
-                    {loading ? (
-                      <OwnerDetailsSkeleton />
-                    ) : (
-                      <>
-                        <section
-                          id="profile-photo"
-                          className="flex flex-col items-center justify-center min-h-40 sm:max-w-full bg-[#f6f6f6] rounded-md"
-                        >
-                          <Avatar className="min-w-24 min-h-24 sm:min-w-20 sm:min-h-20 sm:max-w-24 sm:max-h-24">
-                            <AvatarImage
-                              src="/svgs/profile-img.svg"
-                              alt="owner-profile-photo"
-                            />
-                          </Avatar>
-                          <p className="">
-                            {ownnerDetails.first_name} {ownnerDetails.last_name}
-                          </p>
-                        </section>
-                        <section id="owner-details" className="mt-2">
-                          <p className="text-[#7A7977] text-lg">
-                            Adress:{" "}
-                            <span className="text-black font-medium ">
-                              {ownnerDetails.address}
-                            </span>
-                          </p>
-                          <p className="text-[#7A7977] text-lg">
-                            Phone:{" "}
-                            <span className="text-black font-medium ">
-                              {ownnerDetails.phone}
-                            </span>
-                          </p>
-                          <p className="text-[#7A7977] text-lg">
-                            Email:{" "}
-                            <span className="text-black font-medium break-words whitespace-pre-wrap">
-                              {ownnerDetails.email}
-                            </span>
-                          </p>
-                        </section>
-                      </>
-                    )}
-                  </SheetContent>
-                </Sheet>
-              </>
-            )}
-          </div>
+              {variant === "sent" && status === "Accepted" && (
+                <>
+                  <Button
+                    variant="ghost"
+                    // ClassName="text-white bg-orange-500 hover:bg-orange-600 ml-0 xl:ml-[340px]"
+                    className="text-orange-500 hover:text-orange-600 bg-accent"
+                    onClick={() => setIsSheetOpen(true)}
+                  >
+                    Owner Details
+                  </Button>
+                  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                    <SheetTrigger asChild>
+                      <Button className="hidden">Open Sheet</Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                      <SheetTitle>Owner Details</SheetTitle>
+                      <SheetDescription className="hidden"></SheetDescription>
+                      {loading ? (
+                        <OwnerDetailsSkeleton />
+                      ) : (
+                        <>
+                          <section
+                            id="profile-photo"
+                            className="flex flex-col items-center justify-center min-h-40 sm:max-w-full bg-[#f6f6f6] rounded-md"
+                          >
+                            <Avatar className="min-w-24 min-h-24 sm:min-w-20 sm:min-h-20 sm:max-w-24 sm:max-h-24">
+                              <AvatarImage
+                                src="/svgs/profile-img.svg"
+                                alt="owner-profile-photo"
+                              />
+                            </Avatar>
+                            <p className="">
+                              {ownnerDetails.first_name}{" "}
+                              {ownnerDetails.last_name}
+                            </p>
+                          </section>
+                          <section id="owner-details" className="mt-2">
+                            <p className="text-[#7A7977] text-lg">
+                              Adress:{" "}
+                              <span className="text-black font-medium ">
+                                {ownnerDetails.address}
+                              </span>
+                            </p>
+                            <p className="text-[#7A7977] text-lg">
+                              Phone:{" "}
+                              <span className="text-black font-medium ">
+                                {ownnerDetails.phone}
+                              </span>
+                            </p>
+                            <p className="text-[#7A7977] text-lg">
+                              Email:{" "}
+                              <span className="text-black font-medium break-words whitespace-pre-wrap">
+                                {ownnerDetails.email}
+                              </span>
+                            </p>
+                          </section>
+                        </>
+                      )}
+                    </SheetContent>
+                  </Sheet>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex justify-between mt-4 mb-1 items-center gap-4">
@@ -329,7 +323,16 @@ export function StockDetailsCard({
             </>
           )}
 
-          <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
+          <Sheet
+            open={isChatOpen}
+            onOpenChange={(open) => {
+              setIsChatOpen(open);
+              if (!open) {
+                if (requestStatusToggle) requestStatusToggle();
+                setRefreshNotifications((prev) => !prev);
+              }
+            }}
+          >
             <SheetTrigger asChild>
               <Button className="hidden">Open Sheet</Button>
             </SheetTrigger>

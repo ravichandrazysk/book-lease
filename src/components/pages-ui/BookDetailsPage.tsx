@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/sheet";
 import ChatBox from "@/components/common/ChatBox";
 import GlobalContext from "@/contexts/GlobalContext";
+import { isAxiosError } from "axios";
 
 export function BookDetails() {
   const { bookId } = useParams();
@@ -70,6 +71,7 @@ export function BookDetails() {
     can_extend_lease: false,
     ticket_number: "",
     owner_id: null,
+    is_expired: false,
   });
 
   const handleGetBookDetails = async () => {
@@ -102,28 +104,46 @@ export function BookDetails() {
       router.push("/login");
       return;
     }
-    if (
-      !bookDetails.is_leased &&
-      !bookDetails.is_requested &&
-      !bookDetails.is_buy
-    ) {
-      const formData = new FormData();
+    try {
+      if (
+        !bookDetails.is_leased &&
+        !bookDetails.is_requested &&
+        !bookDetails.is_buy
+      ) {
+        const formData = new FormData();
 
-      formData.append(
-        "type",
-        bookDetails.availability === "Sell" ? "Buy" : "Lease"
-      );
-      const response = await axiosInstance.post(
-        `/request-book/${bookId}`,
-        formData
-      );
-      if (response.status === 201) {
-        setButtonLoading(false);
-        setIsRequested(true);
-        setTicketId(response.data.ticket_number);
-        setIsSheetOpen(true);
+        formData.append(
+          "type",
+          bookDetails.availability === "Sell" ? "Buy" : "Lease"
+        );
+        const response = await axiosInstance.post(
+          `/request-book/${bookId}`,
+          formData
+        );
+        if (response.status === 201) {
+          setButtonLoading(false);
+          setIsRequested(true);
+          setTicketId(response.data.ticket_number);
+          setIsSheetOpen(true);
+        }
+        // eslint-disable-next-line prettier/prettier, brace-style
       }
-      // eslint-disable-next-line prettier/prettier, brace-style
+      // eslint-disable-next-line brace-style
+    } catch (error) {
+      setButtonLoading(false);
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.response
+      )
+        toast({
+          variant: "destructive",
+          description: error.response.data.message,
+        });
+      else
+        toast({ variant: "destructive", description: "Something went wrong" });
     }
   };
 
@@ -141,22 +161,36 @@ export function BookDetails() {
         `/lease-date-extension`,
         formData
       );
-
-      toast({
-        duration: 5000,
-        className: "p-0 bg-transparent border-none",
-        action: (
-          <CustomToast
-            title={response.data.message}
-            description="You'll receive a notification once your request is accepted."
-          />
-        ),
-      });
+      if (response.status === 200) {
+        toast({
+          duration: 5000,
+          className: "p-0 bg-transparent border-none",
+          action: (
+            <CustomToast
+              title={response.data.message}
+              description="You'll receive a notification once your request is accepted."
+            />
+          ),
+        });
+        setIsRequested(true);
+        setIsSheetOpen(true);
+      }
       // eslint-disable-next-line brace-style
     } catch (error) {
-      toast({ variant: "destructive", description: "Something went wrong" });
-      // eslint-disable-next-line no-console
-      console.log("Something went wrong", error);
+      setButtonLoading(false);
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.response
+      )
+        toast({
+          variant: "destructive",
+          description: error.response.data.message,
+        });
+      else
+        toast({ variant: "destructive", description: "Something went wrong" });
     }
   };
   const handleToggleDescription = () => {
@@ -196,22 +230,18 @@ export function BookDetails() {
           />
         </div>
         <div className="space-y-5">
-          <Badge
-            variant="secondary"
-            className={`${
-              bookDetails.availability === "Sell"
-                ? categoryColors["For Sale"]
-                : bookDetails.is_free
-                  ? categoryColors["For Free"]
+          {bookDetails.availability !== "" && (
+            <Badge
+              variant="secondary"
+              className={`${
+                bookDetails.availability === "Sell"
+                  ? categoryColors["For Sale"]
                   : categoryColors["For Rent"]
-            }min-h-7 text-sm font-medium`}
-          >
-            {bookDetails.availability === "Sell"
-              ? "For Sale"
-              : bookDetails.is_free
-                ? "For Free"
-                : "For Rent"}
-          </Badge>
+              }min-h-7 text-sm font-medium`}
+            >
+              {bookDetails.availability === "Sell" ? "For Sale" : "For Rent"}
+            </Badge>
+          )}
 
           <div className="space-y-2">
             <h1 className="text-2xl font-bold sm:text-3xl">
@@ -226,15 +256,27 @@ export function BookDetails() {
           </div>
 
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-orange-500">
-              {" "}
-              {bookDetails.discounted_price
-                ? `₹${bookDetails.discounted_price}`
-                : "price not available"}
-            </span>
-            <span className="text-lg text-muted-foreground line-through">
-              {bookDetails.price && `₹${bookDetails.price}`}
-            </span>
+            {!bookDetails.is_free ? (
+              <>
+                <span className="text-3xl font-bold text-orange-500">
+                  {" "}
+                  {bookDetails.discounted_price
+                    ? `₹${bookDetails.discounted_price}`
+                    : !bookDetails.discounted_price && bookDetails.price
+                      ? `₹${bookDetails.price}`
+                      : "price not available"}
+                </span>
+                <span className="text-lg text-muted-foreground line-through">
+                  {bookDetails.price &&
+                    bookDetails.discounted_price &&
+                    `₹${bookDetails.price}`}
+                </span>
+              </>
+            ) : (
+              <span className="text-3xl font-bold text-orange-500">
+                For free
+              </span>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -273,26 +315,19 @@ export function BookDetails() {
                 }
                 if (
                   (!bookDetails.is_requested && !bookDetails.is_leased) ||
+                  ((bookDetails.is_requested || bookDetails.is_leased) &&
+                    !bookDetails.is_expired) ||
                   isRequested
                 ) {
                   setIsSheetOpen(true);
                   return;
                 }
-                if (bookDetails.is_leased && !bookDetails.is_requested) {
+                if (bookDetails.is_leased && bookDetails.is_expired) {
                   setShowExtendModal(true);
                   return;
                 }
               }}
-              disabled={
-                // eslint-disable-next-line no-extra-parens
-                (bookDetails.is_requested && bookDetails.is_leased) ||
-                // eslint-disable-next-line no-extra-parens
-                (!bookDetails.can_extend_lease &&
-                  !bookDetails.is_requested &&
-                  bookDetails.is_leased) ||
-                bookDetails.is_buy ||
-                bookDetails.status === "Sold"
-              }
+              disabled={bookDetails.is_buy && bookDetails.status === "Sold"}
             >
               {buttonLoading ? (
                 <div className="flex justify-center items-center w-full max-h-5">
@@ -305,21 +340,17 @@ export function BookDetails() {
                 </div>
               ) : !session ? (
                 "Login to Talk to the Owner"
-              ) : bookDetails.availability === "Sell" && bookDetails.is_buy ? (
-                "Sold out"
-              ) : !bookDetails.can_extend_lease &&
-                !bookDetails.is_requested &&
-                bookDetails.is_leased ? (
-                "Leased"
+              ) : bookDetails.is_buy && bookDetails.status === "Sold" ? (
+                "Sold"
               ) : bookDetails.availability !== "Sell" &&
                 bookDetails.is_leased &&
                 !bookDetails.is_requested &&
-                bookDetails.can_extend_lease ? (
+                bookDetails.can_extend_lease &&
+                bookDetails.is_expired ? (
                 "Extend Request"
               ) : // eslint-disable-next-line no-extra-parens, indent
-              (bookDetails.is_requested && !bookDetails.is_leased) ||
-                // eslint-disable-next-line no-extra-parens
-                isRequested ? (
+              (bookDetails.is_requested || bookDetails.is_leased) &&
+                !bookDetails.is_expired ? (
                 "View Conversation"
               ) : (
                 !bookDetails.is_requested &&
@@ -340,7 +371,8 @@ export function BookDetails() {
               <ChatBox
                 owner={bookDetails.owner}
                 ticketId={
-                  bookDetails.is_requested && !bookDetails.is_leased
+                  (bookDetails.is_requested && !bookDetails.is_leased) ||
+                  (bookDetails.is_leased && !bookDetails.is_expired)
                     ? Number(bookDetails.ticket_number)
                     : ticketId
                 }

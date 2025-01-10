@@ -74,7 +74,7 @@ const validationSchema = Yup.object().shape({
     .oneOf([Yup.ref("password"), undefined], "Passwords must match")
     .required("Confirm password is required"),
   age: Yup.number()
-    .min(18, "Age must be greater than 18")
+    .min(5, "Age must be greater than 5")
     .required("Age is required"),
   gender: Yup.string().required("Gender is required"),
   address: Yup.string().required("Address is required"),

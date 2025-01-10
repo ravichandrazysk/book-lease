@@ -19,7 +19,7 @@ import { usePathname, useRouter } from "next/navigation";
 import GlobalContext from "@/contexts/GlobalContext";
 
 export function NotificationDropdown() {
-  const { setChangeProfile } = useContext(GlobalContext);
+  const { setChangeProfile, refreshNotifications } = useContext(GlobalContext);
   const [notifications, setNotifications] = useState<NotificationTypes[]>([]);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [notificationReadStatus, setNoticationReadStatus] =
@@ -133,7 +133,7 @@ export function NotificationDropdown() {
       }
     };
     fetchNotifications();
-  }, [notificationReadStatus]);
+  }, [notificationReadStatus, refreshNotifications]);
   return (
     <>
       <DropdownMenu>

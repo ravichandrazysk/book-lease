@@ -114,7 +114,7 @@ export function Header() {
                     height={100}
                     className=" !max-h-8 !max-w-8 min-h-full "
                   />
-                  <p className="flex shrink-0">{session?.user?.coins}</p>
+                  <p className="flex shrink-0">{profileDetails?.coins}</p>
                 </Badge>
               )}
               <div className="flex items-center gap-6 max-sm:gap-3">

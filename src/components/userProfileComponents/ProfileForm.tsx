@@ -88,7 +88,7 @@ const ProfileSchema = Yup.object().shape({
     )
     .max(320, "Email must not exceed 320 characters"),
   age: Yup.number()
-    .min(18, "Age must be greater than 18")
+    .min(5, "Age must be greater than 5")
     .required("Age is required"),
   gender: Yup.string().required("Gender is required"),
   address: Yup.string().required("Address is required"),
@@ -126,10 +126,7 @@ export function ProfileForm() {
   const { data: session } = useSession() as { data: CustomSession };
   const [otpLoader, setOtpLoader] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState<string | null>(null);
-  const [states, setStates] = useState<{ id: number; name: string }[]>([]);
-  const [cities, setCities] = useState<
-    { id: number; name: string; state: string }[]
-  >([]);
+
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -218,34 +215,6 @@ export function ProfileForm() {
         description: "Geolocation is not supported by your browser",
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const fetchStates = async () => {
-      try {
-        const response = await axiosInstance.get("/states");
-        if (response.status === 200) setStates(response.data.data);
-        // eslint-disable-next-line brace-style
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error, "error in fetching states");
-      }
-    };
-    fetchStates();
-  }, []);
-
-  useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const response = await axiosInstance.get("/cities");
-        if (response.status === 200) setCities(response.data.data);
-        // eslint-disable-next-line brace-style
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error, "error in fetching states");
-      }
-    };
-    fetchCities();
   }, []);
 
   const handleGetCurrentLocation = async () => {
@@ -647,6 +616,7 @@ export function ProfileForm() {
                   placeholder="Enter your email"
                   className="border border-[#D1D5DB]"
                   value={values.email}
+                  disabled
                 />
                 <ErrorMessage
                   name="email"
@@ -784,7 +754,7 @@ export function ProfileForm() {
                   State&nbsp;
                   <span className="text-red-500">*</span>
                 </label>
-                {/* <Field
+                <Field
                   as={Input}
                   id="state"
                   name="state"
@@ -792,8 +762,9 @@ export function ProfileForm() {
                   placeholder="Enter your state"
                   className="border border-[#D1D5DB]"
                   value={values.state}
-                /> */}
-                <Field name="state">
+                  disabled
+                />
+                {/* <Field name="state">
                   {({ field, form }: any) => (
                     <Select
                       onValueChange={(value) =>
@@ -819,7 +790,7 @@ export function ProfileForm() {
                       </SelectContent>
                     </Select>
                   )}
-                </Field>
+                </Field> */}
                 <ErrorMessage
                   name="state"
                   component="div"
@@ -832,7 +803,7 @@ export function ProfileForm() {
                   City&nbsp;
                   <span className="text-red-500">*</span>
                 </label>
-                {/* <Field
+                <Field
                   as={Input}
                   id="city"
                   name="city"
@@ -840,8 +811,9 @@ export function ProfileForm() {
                   placeholder="Enter your city"
                   className="border border-[#D1D5DB]"
                   value={values.city}
-                /> */}
-                <Field name="city">
+                  disabled
+                />
+                {/* <Field name="city">
                   {({ field, form }: any) => (
                     <Select
                       onValueChange={(value) =>
@@ -873,7 +845,7 @@ export function ProfileForm() {
                       </SelectContent>
                     </Select>
                   )}
-                </Field>
+                </Field> */}
                 <ErrorMessage
                   name="city"
                   component="div"

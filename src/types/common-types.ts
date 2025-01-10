@@ -171,6 +171,7 @@ export interface BookDetailsType {
   images: { image_path: string }[];
   ticket_number: string;
   owner_id: number | null;
+  is_expired: boolean;
 }
 
 export interface BooCreateEditFormTypes {
@@ -232,6 +233,7 @@ export interface MyBookTypes {
   is_free: boolean;
   active: boolean;
   slug: string;
+  status: string;
   images: { image_path: string }[];
 }
 

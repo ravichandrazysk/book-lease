@@ -1,3 +1,5 @@
+/* eslint-disable no-extra-parens */
+/* eslint-disable multiline-ternary */
 "use client";
 
 import Image from "next/image";
@@ -7,6 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { axiosInstance } from "@/utils/AxiosConfig";
+import { toast } from "@/hooks/use-toast";
+import { isAxiosError } from "axios";
+import { useState } from "react";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -20,15 +28,45 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function ForgotPasswordPage() {
-  const handleSubmit = (
-    values: { email: string },
-    // eslint-disable-next-line no-unused-vars
-    { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void }
-  ) => {
+  const [loader, setLoader] = useState(false);
+  const handleSubmit = async (values: { email: string }) => {
+    const fd = new FormData();
+    fd.append("email", values.email);
+    try {
+      setLoader(true);
+      const response = await axiosInstance.post("customer/forgot-password", fd);
+      if (response.status === 200) {
+        setLoader(false);
+        toast({
+          variant: "success",
+          title: "Success",
+          description: response.data.message,
+        });
+      }
+      // eslint-disable-next-line brace-style
+    } catch (error) {
+      setLoader(false);
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.response
+      )
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response.data.message,
+        });
+      else
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Something went wrong",
+        });
+    }
     // Handle password reset logic here
     // eslint-disable-next-line no-console
-    console.log("Password reset requested for:", values.email);
-    setSubmitting(false);
   };
 
   return (
@@ -85,7 +123,18 @@ export default function ForgotPasswordPage() {
                   className="w-full font-semibold text-base bg-[#ff851b] hover:bg-[#ff851b]/90 !mt-8 h-12"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Processing..." : "Continue"}
+                  {loader ? (
+                    <div className="flex justify-center items-center w-full max-h-5">
+                      <Lottie
+                        loop
+                        path="/lotties/button-loader.json"
+                        play
+                        style={{ width: "50%" }}
+                      />
+                    </div>
+                  ) : (
+                    "Continue"
+                  )}
                 </Button>
               </Form>
             )}

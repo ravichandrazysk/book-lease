@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useContext } from "react";
 import {
   Card,
   CardContent,
@@ -10,11 +10,11 @@ import {
 import Image from "next/image";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
-import { useSession } from "next-auth/react";
-import { CustomSession } from "@/types/next-auth";
+
+import GlobalContext from "@/contexts/GlobalContext";
 
 const Coins = () => {
-  const { data: session } = useSession() as { data: CustomSession };
+  const { profileDetails } = useContext(GlobalContext);
   return (
     <section
       id="coins"
@@ -43,7 +43,7 @@ const Coins = () => {
               <p className="text-[#7A7977] sm:text-xl font-normal">
                 Your Available Reward Coins :{" "}
                 <span className="text-3xl font-semibold text-[#FF851B]">
-                  {session?.user?.coins}
+                  {profileDetails?.coins}
                 </span>
               </p>
             </div>

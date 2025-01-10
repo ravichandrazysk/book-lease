@@ -171,7 +171,7 @@ export function BookCreateForm({
     description: (isEditing && existingBookDetails?.description) || "",
     category:
       (isEditing && existingBookDetails?.category?.id?.toString()) || "",
-    tags: (isEditing && existingBookDetails?.tags[0].id.toString()) || "",
+    tags: (isEditing && existingBookDetails?.tags[0]?.id.toString()) || "",
     condition: (isEditing && existingBookDetails?.condition) || "",
     age: (isEditing && existingBookDetails?.age_group) || "",
     availabilityType:
@@ -180,7 +180,7 @@ export function BookCreateForm({
           | "sell"
           | "rent"
           | "free")) ||
-      "rent",
+      "sell",
     rentPrice: (isEditing && existingBookDetails?.price?.toString()) || "",
     sellPrice: (isEditing && existingBookDetails?.price?.toString()) || "",
     discountedRentPrice:
@@ -240,7 +240,7 @@ export function BookCreateForm({
     formData.append("condition", values.condition);
     formData.append("age", values.age);
     formData.append(
-      "availability_type",
+      "availability",
       values.availabilityType === "free" || values.availabilityType === "sell"
         ? "Sell"
         : "Lease"

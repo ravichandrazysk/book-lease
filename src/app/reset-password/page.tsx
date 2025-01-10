@@ -1,3 +1,4 @@
+/* eslint-disable no-extra-parens */
 /* eslint-disable multiline-ternary */
 "use client";
 
@@ -10,6 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { axiosInstance } from "@/utils/AxiosConfig";
+import { useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+import { toast } from "@/hooks/use-toast";
+import { isAxiosError } from "axios";
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const validationSchema = Yup.object().shape({
   password: Yup.string()
@@ -25,6 +32,10 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function CreatePasswordPage() {
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
+  const router = useRouter();
+  const [loader, setLoader] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -33,16 +44,40 @@ export default function CreatePasswordPage() {
     confirmPassword: string;
   }) => {
     try {
-      // Handle password creation logic here
+      const fd = new FormData();
+      fd.append("email", email);
+      fd.append("password", values.password);
+      const response = await axiosInstance.post("/customer/reset-password", fd);
+      if (response.status === 200) {
+        setLoader(false);
+        toast({
+          variant: "success",
+          title: "Success",
+          description: response.data.message,
+        });
+        router.push("/login");
+      }
       // eslint-disable-next-line brace-style
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(
-        "Error creating password:",
-        error,
-        values.password,
-        values.confirmPassword
-      );
+      setLoader(false);
+      if (
+        isAxiosError(error) &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.response
+      )
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response.data.message,
+        });
+      else
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Something went wrong",
+        });
     }
   };
 
@@ -163,7 +198,18 @@ export default function CreatePasswordPage() {
                   type="submit"
                   className="w-full bg-[#ff851b] mt-8 h-12 hover:bg-[#ff851b]/90 text-white"
                 >
-                  Continue
+                  {loader ? (
+                    <div className="flex justify-center items-center w-full max-h-5">
+                      <Lottie
+                        loop
+                        path="/lotties/button-loader.json"
+                        play
+                        style={{ width: "50%" }}
+                      />
+                    </div>
+                  ) : (
+                    "Continue"
+                  )}
                 </Button>
               </Form>
             )}

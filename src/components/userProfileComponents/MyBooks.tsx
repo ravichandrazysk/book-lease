@@ -49,6 +49,7 @@ const MyBooks = () => {
     active: false,
     category: { id: 0, name: "" },
     age_group: "",
+    status: "",
     tags: [
       {
         id: 0,
@@ -114,7 +115,7 @@ const MyBooks = () => {
   ) => {
     try {
       const response = await axiosInstance.patch(
-        `/update-book-available-status/${bookSlug}?is_active=${availability ? 1 : 0}`
+        `/update-book-available-status/${bookSlug}?available_status=${availability ? 1 : 0}`
       );
       if (response.status === 200) {
         toast({
@@ -214,13 +215,18 @@ const MyBooks = () => {
                   ? item.images[0]?.image_path
                   : "/pngs/Image-not-available.png"
               }
-              isAvailable={item.active}
+              isAvailable={item.status === "Available" ? true : false}
               status={item.availability === "Sell" ? "For Sale" : "For Rent"}
               onEdit={() => {
                 setEditBook(true);
                 setEditBookDetails(item);
               }}
-              onToggle={() => handleToggleConfirmation(!item.active, item.slug)}
+              onToggle={() =>
+                handleToggleConfirmation(
+                  item.status === "Available" ? false : true,
+                  item.slug
+                )
+              }
             />
           ))}
           {showModal && (

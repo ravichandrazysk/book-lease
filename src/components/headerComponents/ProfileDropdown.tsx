@@ -10,12 +10,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { CustomSession } from "@/types/next-auth";
+import GlobalContext from "@/contexts/GlobalContext";
+import { useContext } from "react";
 
 export function ProfileDropdown() {
-  const { data: session } = useSession() as { data: CustomSession };
+  const { profileDetails } = useContext(GlobalContext);
   const router = useRouter();
   return (
     <DropdownMenu>
@@ -23,8 +24,8 @@ export function ProfileDropdown() {
         <Avatar className="h-8 w-8 md:h-10 md:w-10 cursor-pointer border-2">
           <AvatarImage
             src={
-              session?.user?.profile_photo
-                ? session.user.profile_photo
+              profileDetails?.profile_photo
+                ? profileDetails.profile_photo
                 : "/svgs/profile-img.svg"
             }
             alt="User"

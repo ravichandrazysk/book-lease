@@ -41,6 +41,7 @@ const MyRequest = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<boolean>(false);
   const [isSessionStorage, setIsSessionStorage] = useState(false);
   const ownerName =
     typeof window !== "undefined" ? sessionStorage.getItem("ownerName") : null;
@@ -78,7 +79,7 @@ const MyRequest = () => {
       }
     };
     receiveRequests();
-  }, [currentPage]);
+  }, [requestStatus, currentPage]);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -133,6 +134,8 @@ const MyRequest = () => {
               ticketId={item.ticket_number}
               author={item.book_owner}
               read_at={item.read_at}
+              notification_id={item.notification_id}
+              requestStatusToggle={() => setRequestStatus(!requestStatus)}
             />
           ))
         ) : (

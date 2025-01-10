@@ -1,3 +1,4 @@
+/* eslint-disable multiline-ternary */
 /* eslint-disable no-nested-ternary */
 "use client";
 import Image from "next/image";
@@ -41,28 +42,22 @@ export function BookCard(props: ComicCardProps) {
         />
       </div>
       <CardContent className="py-4 px-0 flex gap-2">
+        {props.availability !== "" && (
+          <Badge
+            className={`${
+              props.availability === "Sell"
+                ? categoryColors["For Sale"]
+                : categoryColors["For Rent"]
+            } rounded-[8px] font-medium px-3 py-1 text-xs sm:text-sm `}
+          >
+            {props.availability === "Sell" ? "For Sale" : "For Rent"}
+          </Badge>
+        )}
         <Badge
           className={`${
             props.availability === "Sell"
               ? categoryColors["For Sale"]
-              : props.is_free
-                ? categoryColors["For Free"]
-                : categoryColors["For Rent"]
-          } rounded-[8px] font-medium px-3 py-1 text-xs sm:text-sm `}
-        >
-          {props.availability === "Sell"
-            ? "For Sale"
-            : props.is_free
-              ? "For Free"
-              : "For Rent"}
-        </Badge>
-        <Badge
-          className={`${
-            props.availability === "Sell"
-              ? categoryColors["For Sale"]
-              : props.is_free
-                ? categoryColors["For Free"]
-                : categoryColors["For Rent"]
+              : categoryColors["For Rent"]
           } rounded-[8px] font-medium px-3 py-1 text-xs sm:text-sm `}
         >
           {typeof props.category === "string"
@@ -74,14 +69,22 @@ export function BookCard(props: ComicCardProps) {
         <p className="font-medium sm:text-lg">{props.name}</p>
         <div className="text-sm text-gray-400">By {props.author}</div>
         <div className="flex items-center gap-2">
-          <span className="text-xl font-medium text-[#FF851B]">
-            {props.discounted_price
-              ? `₹${props.discounted_price}`
-              : "price not available"}
-          </span>
-          <span className="text-base font-normal text-[#D0CCCB] line-through">
-            {props.price && `₹${props.price}`}
-          </span>
+          {!props.is_free ? (
+            <>
+              <span className="text-xl font-medium text-[#FF851B]">
+                {props.discounted_price
+                  ? `₹${props.discounted_price}`
+                  : !props.discounted_price && props.price
+                    ? `₹${props.price}`
+                    : "price not available"}
+              </span>
+              <span className="text-base font-normal text-[#D0CCCB] line-through">
+                {props.price && props.discounted_price && `₹${props.price}`}
+              </span>
+            </>
+          ) : (
+            <span className="text-xl font-medium text-[#FF851B]">For Free</span>
+          )}
         </div>
       </CardFooter>
     </Card>

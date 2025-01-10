@@ -2,6 +2,7 @@
 import axios from "axios";
 import { Session } from "next-auth";
 import { getSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 interface CustomSession extends Session {
@@ -16,6 +17,7 @@ export const axiosInstance = axios.create({
   },
 });
 const AxiosConfig = () => {
+  const pathname = usePathname();
   useEffect(() => {
     axiosInstance.interceptors.request.use(
       async (request) => {
@@ -36,11 +38,12 @@ const AxiosConfig = () => {
         return response;
       },
       (error) => {
-        if (error.response.status === 401) signOut({ callbackUrl: "/login" });
+        if (error.response.status === 401 && pathname !== "/login")
+          signOut({ callbackUrl: "/login" });
         return Promise.reject(error);
       }
     );
-  }, []);
+  }, [pathname]);
 
   return "";
 };
