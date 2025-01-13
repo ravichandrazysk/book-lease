@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            {({ isSubmitting }) => (
+            {({ dirty }) => (
               <Form className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="font-medium text-base">
@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   className="w-full font-semibold text-base bg-[#ff851b] hover:bg-[#ff851b]/90 !mt-8 h-12"
-                  disabled={isSubmitting}
+                  disabled={!dirty}
                 >
                   {loader ? (
                     <div className="flex justify-center items-center w-full max-h-5">

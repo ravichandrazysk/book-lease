@@ -217,6 +217,7 @@ const MyBooks = () => {
               }
               isAvailable={item.status === "Available" ? true : false}
               status={item.availability === "Sell" ? "For Sale" : "For Rent"}
+              approved={item.active}
               onEdit={() => {
                 setEditBook(true);
                 setEditBookDetails(item);

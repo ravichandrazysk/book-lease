@@ -99,6 +99,7 @@ export interface StockCardProps {
   loader?: boolean;
   ticketId?: string;
   read_at?: string | null;
+  approved?: boolean;
   notification_id?: number | null;
   requestStatusToggle?: () => void;
 }

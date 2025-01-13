@@ -48,6 +48,7 @@ export function StockDetailsCard({
   onCancel,
   loader,
   ticketId,
+  approved,
   read_at,
   notification_id,
   requestStatusToggle,
@@ -163,12 +164,14 @@ export function StockDetailsCard({
             </h3>
             <p className="text-base font-normal text-[#202124]">{author}</p>
           </div>
-
+          {/* Books card pen icon */}
           {variant === "books" && (
             <Button variant="ghost" size="icon" onClick={onEdit}>
               <PenSquare className="h-4 w-4" />
             </Button>
           )}
+
+          {/* My request or received request status badge */}
           {(variant === "received" || variant === "sent") && (
             <div className="flex flex-col gap-2 items-end">
               {(variant === "received" || variant === "sent") && (
@@ -184,6 +187,7 @@ export function StockDetailsCard({
                 </>
               )}
 
+              {/* My sent requests card owner details button*/}
               {variant === "sent" && status === "Accepted" && (
                 <>
                   <Button
@@ -249,7 +253,19 @@ export function StockDetailsCard({
             </div>
           )}
         </div>
-
+        {variant === "books" && (
+          <Badge
+            variant="secondary"
+            className={
+              approved
+                ? `bg-green-100 text-green-700`
+                : `bg-red-100 text-red-700`
+            }
+          >
+            {approved ? "Approved" : "Not Approved"}
+          </Badge>
+        )}
+        {/* My books status badge and availability toggle */}
         <div className="flex justify-between mt-4 mb-1 items-center gap-4">
           {variant === "books" && (
             <>
@@ -261,6 +277,7 @@ export function StockDetailsCard({
                   {status}
                 </Badge>
               )}
+
               <div className="flex items-center gap-2">
                 <span className="text-sm text-blue-500">Available</span>
                 <Switch
@@ -275,6 +292,7 @@ export function StockDetailsCard({
             </>
           )}
 
+          {/* My request and sent request status and badge in for PC  */}
           {(variant === "received" || variant === "sent") && (
             <>
               <div className="">
@@ -296,6 +314,7 @@ export function StockDetailsCard({
                 </div>
               </div>
 
+              {/* My request and sent request loader and view chat */}
               {(variant === "received" || variant === "sent") &&
                 (loader ? (
                   <div className="flex justify-center items-center max-w-28 max-sm:hidden">
@@ -366,7 +385,7 @@ export function StockDetailsCard({
               />
             </SheetContent>
           </Sheet>
-
+          {/* Rental card */}
           {variant === "rental" && (
             <p className="text-sm font-normal text-[#7A7977] mt-1">
               Due Date:{" "}
@@ -375,7 +394,7 @@ export function StockDetailsCard({
               </span>
             </p>
           )}
-
+          {/* Sold card */}
           {variant === "sold" && (
             <p className="text-sm font-normal text-[#7A7977] mt-1">
               Sold on:{" "}
@@ -445,6 +464,8 @@ export function StockDetailsCard({
             </>
           )}
         </div>
+
+        {/* My request and sent request status and badge in for Mobile  */}
         {(variant === "received" || variant === "sent") && (
           <>
             <div className="">
@@ -463,30 +484,6 @@ export function StockDetailsCard({
                 : <span className="font-medium text-black">{date}</span>
               </p>
             </div>
-
-            {/* {(variant === "received" || variant === "sent") &&
-              (loader ? (
-                <div className="flex justify-center items-center max-w-28 sm:hidden">
-                  <Lottie
-                    loop
-                    path="/lotties/loader.json"
-                    play
-                    style={{ width: "100%" }}
-                  />
-                </div>
-              ) : (
-                <div className="flex items-end justify-end gap-2 sm:hidden">
-                  <Button
-                    className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
-                    onClick={() => {
-                      setIsChatOpen(true);
-                      if (!read_at && notification_id) handleNotificationRead();
-                    }}
-                  >
-                    View Chat
-                  </Button>
-                </div>
-              ))} */}
           </>
         )}
       </section>
