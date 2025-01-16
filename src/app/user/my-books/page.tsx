@@ -8,11 +8,11 @@ const Page = () => {
   return (
     <React.Fragment>
       <HeaderFooterLayout footerShow={false}>
-        <div className="sm:max-w-full mx-auto">
+        <section id="my-books" className="sm:max-w-full mx-auto bg-specific-bg">
           <ProfileLayout>
             <MyBooks />
           </ProfileLayout>
-        </div>
+        </section>
       </HeaderFooterLayout>
     </React.Fragment>
   );

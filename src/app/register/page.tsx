@@ -15,7 +15,6 @@ import {
   FieldInputProps,
   FormikHelpers,
 } from "formik";
-import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,47 +37,8 @@ import {
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { LocationTypes, RegisterFormValues } from "@/types/common-types";
+import { registerValidationSchema } from "@/utils/validations";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
-
-const validationSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .required("First name is required")
-    .min(2, "First name must be at least 2 characters")
-    .max(50, "First name must be at most 50 characters")
-    .matches(/^[a-zA-Z]+$/, "First name must contain only alphabets"),
-  lastName: Yup.string().matches(
-    /^[a-zA-Z]+$/,
-    "First name must contain only alphabets"
-  ),
-  phoneNumber: Yup.string()
-    .required("Phone number is required")
-    .min(10, "Phone number must be 10 digits")
-    .max(10, "Phone number must be 10 digits")
-    .matches(/^[6-9]\d{9}$/, "Invalid phone number"),
-  email: Yup.string()
-    .email("Invalid email")
-    .required("Email is required")
-    .matches(
-      /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
-      "Invalid email address"
-    ),
-  password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .matches(/[0-9]/, "Password must contain at least one number")
-    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
-    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .matches(/[^\w]/, "Password must contain at least one special character")
-    .required("Password is required"),
-  confirmPassword: Yup.string()
-    // eslint-disable-next-line no-undefined
-    .oneOf([Yup.ref("password"), undefined], "Passwords must match")
-    .required("Confirm password is required"),
-  age: Yup.number()
-    .min(5, "Age must be greater than 5")
-    .required("Age is required"),
-  gender: Yup.string().required("Gender is required"),
-  address: Yup.string().required("Address is required"),
-});
 
 export default function SignUpForm() {
   const [location, setLocation] = useState<{
@@ -294,8 +254,8 @@ export default function SignUpForm() {
   };
 
   return (
-    <>
-      <Card className="w-full max-w-[340px] sm:max-w-md mx-auto mt-10 mb-10">
+    <section id="register-page" className="bg-specific-bg py-10">
+      <Card className="w-full max-w-[340px] sm:max-w-md mx-auto">
         <CardHeader>
           <div className="flex justify-center mb-6">
             <Image
@@ -324,7 +284,7 @@ export default function SignUpForm() {
               gender: "",
               address: "",
             }}
-            validationSchema={validationSchema}
+            validationSchema={registerValidationSchema}
             onSubmit={onSubmit}
           >
             <Form className="space-y-4">
@@ -551,7 +511,7 @@ export default function SignUpForm() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="mt-2 w-full p-8 shadow-md h-14 flex flex-col items-start"
+                  className="mt-2 w-full p-8  h-14 flex flex-col items-start"
                   onClick={handleGetCurrentLocation}
                 >
                   <div className="flex items-center">
@@ -565,23 +525,42 @@ export default function SignUpForm() {
                   </p>
                 </Button>
               </div>
-              <Button
-                type="submit"
-                className="w-full font-semibold text-base bg-[#ff851b] hover:bg-[#ff851b]/90 !mt-8 h-12"
-              >
-                {loader ? (
-                  <div className="flex justify-center items-center w-full max-h-5">
-                    <Lottie
-                      loop
-                      path="/lotties/button-loader.json"
-                      play
-                      style={{ width: "50%" }}
-                    />
-                  </div>
-                ) : (
-                  "Verify email and continue"
-                )}
-              </Button>
+              <section id="register-buttons">
+                <Button
+                  type="submit"
+                  className="w-full font-semibold text-base bg-[#ff851b] hover:bg-[#ff851b]/90 !mt-8 h-12"
+                >
+                  {loader ? (
+                    <div className="flex justify-center items-center w-full max-h-5">
+                      <Lottie
+                        loop
+                        path="/lotties/button-loader.json"
+                        play
+                        style={{ width: "50%" }}
+                      />
+                    </div>
+                  ) : (
+                    "Verify email and continue"
+                  )}
+                </Button>
+                <p className="text-lg font-medium text-center space-y-5">or</p>
+                <Button
+                  type="button"
+                  className="transition hover:scale-[1.03] hover:bg-white duration-300 ease-linear w-full h-12
+               flex item-center justify-center gap-3 font-semibold text-base bg-white text-black shadow-lg border-[#ff851b] border-2"
+                  // OnClick={() => signIn("google", { callbackUrl: "/" })}
+                  onClick={() => router.push("/")}
+                >
+                  <Image
+                    src="/svgs/google-icon.svg"
+                    alt="Google"
+                    width={100}
+                    height={100}
+                    className="w-fit h-fit"
+                  />
+                  Continue with Google
+                </Button>
+              </section>
             </Form>
           </Formik>
           <p className="text-center mt-4 font-normal">
@@ -603,6 +582,6 @@ export default function SignUpForm() {
           </div>
         </CardContent>
       </Card>
-    </>
+    </section>
   );
 }

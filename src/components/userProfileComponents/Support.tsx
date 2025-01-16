@@ -14,7 +14,6 @@ import {
   FieldProps,
   FormikProps,
 } from "formik";
-import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,6 +26,7 @@ import {
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
 import { isAxiosError } from "axios";
+import { CustomerSupportValidationSchema } from "@/utils/validations";
 import dynamic from "next/dynamic";
 import { SupportFormValues } from "@/types/common-types";
 const Lottie = dynamic(() => import("react-lottie-player"));
@@ -44,26 +44,6 @@ const Support = () => {
     requestType: "",
     comments: "",
   };
-
-  const validationSchema = Yup.object({
-    firstName: Yup.string().required("First name is required"),
-    lastName: Yup.string().required("Last name is required"),
-    email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required")
-      .matches(
-        /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
-        "Invalid email address"
-      ),
-    phoneNumber: Yup.string()
-      .matches(/^\d+$/, "Only numbers are allowed")
-      .required("Phone number is required")
-      .matches(/^[6-9]\d{9}$/, "Invalid phone number")
-      .min(10, "Phone number must be 10 digits")
-      .max(10, "Phone number must be 10 digits"),
-    requestType: Yup.string().required("Request type is required"),
-    comments: Yup.string().required("Comments are required"),
-  });
 
   const handleSubmit = async (
     values: SupportFormValues,
@@ -155,7 +135,7 @@ const Support = () => {
       <Card className="sm:max-w-3xl p-8 sm:p-[52px] mb-4">
         <Formik
           initialValues={initialValues}
-          validationSchema={validationSchema}
+          validationSchema={CustomerSupportValidationSchema}
           onSubmit={handleSubmit}
         >
           {() => (

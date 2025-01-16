@@ -14,7 +14,6 @@ import {
   FormikProps,
   FieldInputProps,
 } from "formik";
-import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,85 +36,9 @@ import { useSession } from "next-auth/react";
 import { CustomSession } from "@/types/next-auth";
 import { isAxiosError } from "axios";
 import { MdLocationSearching } from "react-icons/md";
-
-const FILE_SIZE = 2 * 1024 * 1024;
-const SUPPORTED_FORMATS = [
-  "image/jpg",
-  "image/jpeg",
-  "image/png",
-  "image/jfif",
-];
-// Validation schema
-const ProfileSchema = Yup.object().shape({
-  firstName: Yup.string()
-    .required("First name is required")
-    .min(2, "Too short")
-    .max(50, "Too long")
-    .matches(
-      /^[a-zA-Z\s.]+$/,
-      "First name can only contain letters, spaces, and dots"
-    )
-    .test(
-      "no-only-spaces",
-      "First Name cannot be only spaces",
-      (value) => value.trim().length > 0
-    )
-    .trim("First Name cannot contain leading or trailing spaces"),
-  lastName: Yup.string()
-    .required("Last name is required")
-    .min(2, "Too short")
-    .max(50, "Too long")
-    .matches(
-      /^[a-zA-Z\s.]+$/,
-      "Last name can only contain letters, spaces, and dots"
-    )
-
-    .test(
-      "no-only-spaces",
-      "Last First Name cannot be only spaces",
-      (value) => value.trim().length > 0
-    )
-    .trim("Last First Name cannot contain leading or trailing spaces"),
-  phoneNumber: Yup.string()
-    .matches(/^\d{10}$/, "Phone number must be 10 digits")
-    .required("Phone number is required"),
-  email: Yup.string()
-    .email("Invalid email")
-    .required("Email is required")
-    .matches(
-      /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
-      "Invalid email address"
-    )
-    .max(320, "Email must not exceed 320 characters"),
-  age: Yup.number()
-    .min(5, "Age must be greater than 5")
-    .required("Age is required"),
-  gender: Yup.string().required("Gender is required"),
-  address: Yup.string().required("Address is required"),
-  state: Yup.string().required("State is required"),
-  city: Yup.string().required("City is required"),
-  profileImage: Yup.mixed()
-    .test(
-      "fileFormat",
-      "Unsupported Format",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (value: any) => {
-        if (value === null) return true;
-        if (typeof value === "string") {
-          const urlPattern = /\.(jpg|jpeg|png|jfif)$/i;
-          return urlPattern.test(value);
-        }
-        return value && SUPPORTED_FORMATS.includes(value?.type);
-      }
-    )
-    .test("fileSize", "File too large", (value: any) => {
-      if (value === null) return true;
-      if (typeof value === "string") return true;
-
-      return value && value?.size <= FILE_SIZE;
-    })
-    .nullable(),
-});
+import { FILE_SIZE } from "@/utils/validations";
+import { SUPPORTED_FORMATS } from "@/utils/validations";
+import { ProfileSchema } from "@/utils/validations";
 
 export function ProfileForm() {
   const [loader, setLoader] = useState<boolean>(false);
@@ -253,6 +176,8 @@ export function ProfileForm() {
             });
             if (formikRef.current) {
               formikRef.current.setFieldValue("address", formattedAddress);
+              formikRef.current.setFieldValue("state", state);
+              formikRef.current.setFieldValue("city", cityName);
               formikRef.current.setFieldError("address", "");
             }
             // eslint-disable-next-line brace-style
@@ -735,7 +660,7 @@ export function ProfileForm() {
               <Button
                 type="button"
                 variant="outline"
-                className="mt-2 w-full p-8 shadow-md h-14 flex flex-col items-start"
+                className="mt-2 w-full p-8  h-14 flex flex-col items-start"
                 onClick={handleGetCurrentLocation}
               >
                 <div className="flex items-center">

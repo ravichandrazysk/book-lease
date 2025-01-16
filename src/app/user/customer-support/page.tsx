@@ -8,9 +8,11 @@ const Page = () => {
   return (
     <React.Fragment>
       <HeaderFooterLayout footerShow={false}>
-        <ProfileLayout>
-          <Support />
-        </ProfileLayout>
+        <section id="my-support" className="bg-specific-bg">
+          <ProfileLayout>
+            <Support />
+          </ProfileLayout>
+        </section>
       </HeaderFooterLayout>
     </React.Fragment>
   );

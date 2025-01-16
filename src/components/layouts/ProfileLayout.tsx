@@ -9,7 +9,7 @@ export default function ProfileLayout({
 }) {
   return (
     <React.Fragment>
-      <div className="flex max-w-7xl mx-auto">
+      <div className="flex max-w-7xl mx-auto ">
         <section
           id="navigation-panel"
           className="sm:min-w-[450px] flex-shrink-0 hidden md:block"

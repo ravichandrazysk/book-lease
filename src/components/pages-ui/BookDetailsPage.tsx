@@ -29,6 +29,7 @@ import {
 import ChatBox from "@/components/common/ChatBox";
 import GlobalContext from "@/contexts/GlobalContext";
 import { isAxiosError } from "axios";
+import TextClamper from "@/components/common/TextClamper";
 
 export function BookDetails() {
   const { bookId } = useParams();
@@ -38,14 +39,13 @@ export function BookDetails() {
   const router = useRouter();
   const [showExtendModal, setShowExtendModal] = useState(false);
   const [bookImages, setBookImages] = useState<string[]>([]);
-  const [showFullDescription, setShowFullDescription] = useState(false);
-  const [isDescriptionLong, setIsDescriptionLong] = useState(false);
   const [isRequested, setIsRequested] = useState(false);
   const [extendsionDuration, setExtensionDuration] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [ticketId, setTicketId] = useState<number>(0);
+
   const [bookDetails, setBookDetails] = useState<BookDetailsType>({
     id: 0,
     owner: "",
@@ -74,6 +74,7 @@ export function BookDetails() {
     is_expired: false,
   });
 
+  // Function to fetch book details
   const handleGetBookDetails = async () => {
     setLoading(true);
     try {
@@ -97,6 +98,7 @@ export function BookDetails() {
     setLoading(false);
   };
 
+  // Function to handle fresh request to book
   const handleRequest = async () => {
     setButtonLoading(true);
     if (!session) {
@@ -147,6 +149,7 @@ export function BookDetails() {
     }
   };
 
+  // Function to handle lease extension request
   const handleExtendRequest = async () => {
     if (!session) {
       router.push("/login");
@@ -193,43 +196,38 @@ export function BookDetails() {
         toast({ variant: "destructive", description: "Something went wrong" });
     }
   };
-  const handleToggleDescription = () => {
-    setShowFullDescription(!showFullDescription);
-  };
 
+  // Fetch book details on component mount
   useEffect(() => {
     handleGetBookDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRequested]);
 
-  useEffect(() => {
-    if (bookDetails.description) {
-      const lineCount = bookDetails.description.split("\n").length;
-      setIsDescriptionLong(lineCount > 1);
-    }
-  }, [bookDetails.description]);
-
+  // Book category colors
   const categoryColors = {
     "For Sale": "bg-[#e0efff] text-[#007aff] hover:bg-[#e0efff]",
     "For Rent": "bg-[#f1e4ed] text-[#8A226F] hover:bg-[#f1e4ed]",
     "For Free": "bg-[#e6f8eb] text-[#34C759] hover:bg-[#e6f8eb]",
   };
+
   return loading ? (
     <div className="container mx-auto px-4 py-6">
       <BookDetailSkeleton />
     </div>
   ) : (
-    <div className="container mx-auto px-4 py-6">
-      <div className="grid gap-5 md:grid-cols-2">
-        <div className="max-w-xs w-full mx-auto">
+    <section id="book-details" className="container mx-auto px-4 py-6">
+      <section id="book-card-details" className="grid gap-5 md:grid-cols-2">
+        <section id="book-photo" className="max-w-xs w-full mx-auto">
           <CarouselSlider
             sliderData={bookImages}
             width={300}
             height={450}
             isTopBanner={false}
           />
-        </div>
+        </section>
+
         <div className="space-y-5">
+          {/* Badge to the book */}
           {bookDetails.availability !== "" && (
             <Badge
               variant="secondary"
@@ -243,7 +241,8 @@ export function BookDetails() {
             </Badge>
           )}
 
-          <div className="space-y-2">
+          {/* Book title and author */}
+          <section id="book-title-author" className="space-y-2">
             <h1 className="text-2xl font-bold sm:text-3xl">
               {bookDetails.name}
             </h1>
@@ -253,9 +252,10 @@ export function BookDetails() {
                 {bookDetails.author}
               </span>
             </p>
-          </div>
+          </section>
 
-          <div className="flex items-baseline gap-2">
+          {/* Book price details */}
+          <section id="book-price" className="flex items-baseline gap-2">
             {!bookDetails.is_free ? (
               <>
                 <span className="text-3xl font-bold text-orange-500">
@@ -277,33 +277,20 @@ export function BookDetails() {
                 For free
               </span>
             )}
-          </div>
+          </section>
 
-          <div className="space-y-2">
+          {/* Book category */}
+          <section className="flex items-center gap-2">
             <h3 className="font-medium">Categories:</h3>
             <Badge variant="outline" className="min-h-7">
               {bookDetails.category}
             </Badge>
-          </div>
+          </section>
 
-          {bookDetails.description && (
-            <div className="space-y-3">
-              <p
-                className={`text-muted-foreground ${showFullDescription ? "" : "line-clamp-2"}`}
-              >
-                {bookDetails.description}
-              </p>
-              {isDescriptionLong && (
-                <Button
-                  variant="link"
-                  className="h-auto p-0 text-primary"
-                  onClick={handleToggleDescription}
-                >
-                  {showFullDescription ? "See less" : "See more"}
-                </Button>
-              )}
-            </div>
-          )}
+          <TextClamper
+            text={bookDetails.description}
+            TextContainerClassName="space-y-3"
+          />
 
           {profileDetails.id !== bookDetails.owner_id && (
             <Button
@@ -345,7 +332,6 @@ export function BookDetails() {
               ) : bookDetails.availability !== "Sell" &&
                 bookDetails.is_leased &&
                 !bookDetails.is_requested &&
-                bookDetails.can_extend_lease &&
                 bookDetails.is_expired ? (
                 "Extend Request"
               ) : // eslint-disable-next-line no-extra-parens, indent
@@ -396,13 +382,13 @@ export function BookDetails() {
             </div>
             {bookDetails.is_leased && (
               <div>
-                <h3 className="font-medium">Lease Duration:</h3>
+                <h3 className="font-medium">Max Lease Duration:</h3>
                 <p className="text-muted-foreground">21 days</p>
               </div>
             )}
           </div>
         </div>
-      </div>
+      </section>
 
       <ExtendRentalDialog
         open={showExtendModal}
@@ -417,6 +403,6 @@ export function BookDetails() {
           handleExtendRequest();
         }}
       />
-    </div>
+    </section>
   );
 }

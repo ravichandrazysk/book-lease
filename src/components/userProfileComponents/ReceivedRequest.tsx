@@ -201,8 +201,13 @@ export const ReceivedRequests = () => {
               slug={item.slug}
               author={item.requester}
               imageUrl={item.images[0]}
-              status={item.status}
+              status={item.book_request_status}
+              isExpired={item.is_expired}
+              requestType={item.type}
+              extensionStatus={item.lease_extension_status}
+              isLeased={item.is_leased}
               date={item.requested_at}
+              leaseDueDate={item?.lease_details?.lease_end_date || "NA"}
               onAccept={() => handleRequestConfirmation("Accepted", item.id)}
               onCancel={() => handleRequestConfirmation("Rejected", item.id)}
               loader={loader}

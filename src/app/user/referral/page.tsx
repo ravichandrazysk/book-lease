@@ -8,9 +8,11 @@ const Page = () => {
   return (
     <React.Fragment>
       <HeaderFooterLayout footerShow={false}>
-        <ProfileLayout>
-          <MyReferral />
-        </ProfileLayout>
+        <section id="my-refferal" className="bg-specific-bg">
+          <ProfileLayout>
+            <MyReferral />
+          </ProfileLayout>
+        </section>
       </HeaderFooterLayout>
     </React.Fragment>
   );

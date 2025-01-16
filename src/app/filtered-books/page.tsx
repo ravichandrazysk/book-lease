@@ -19,14 +19,8 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ListFilter } from "lucide-react";
-import { BookArrayProps } from "@/types/common-types";
+import { BookArrayProps, PaginationDataTypes } from "@/types/common-types";
 
-interface BookMetaData {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-}
 const Page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loader, setLoader] = useState(false);
@@ -36,7 +30,7 @@ const Page = () => {
   const [filteredBookData, setFilteredBookData] = useState<BookArrayProps[]>(
     []
   );
-  const [bookMetaData, setBookMetaData] = useState<BookMetaData>({
+  const [bookMetaData, setBookMetaData] = useState<PaginationDataTypes>({
     current_page: 1,
     last_page: 1,
     per_page: 1,
@@ -46,37 +40,28 @@ const Page = () => {
   const handleGetBooks = async () => {
     setLoader(true);
     try {
-      const categoryQuery =
-        checkedCategories && checkedCategories.length > 0
-          ? `&${checkedCategories.map((item) => `categories[]=${item}`).join("&")}`
+      const buildQuery = (items: string[], key: string) =>
+        items.length > 0
+          ? `&${items.map((item) => `${key}[]=${item}`).join("&")}`
           : "";
-      const tagQuery =
-        checkedTags.length > 0 && checkedCategories.length > 0
-          ? `&${checkedTags.map((item) => `tags[]=${item}`).join("&")}`
-          : checkedTags.length > 0
-            ? `&${checkedTags.map((item) => `tags[]=${item}`).join("&")}`
-            : "";
-      const ageQuery =
-        checkedTags.length === 0 &&
-        checkedCategories.length === 0 &&
-        checkedAgeGroups.length > 0
-          ? `&${checkedAgeGroups.map((item) => `age[]=${item}`).join("&")}`
-          : checkedAgeGroups.length > 0
-            ? `&${checkedAgeGroups.map((item) => `age[]=${item}`).join("&")}`
-            : "";
+
+      const categoryQuery = buildQuery(checkedCategories, "categories");
+      const tagQuery = buildQuery(checkedTags, "tags");
+      const ageQuery = buildQuery(checkedAgeGroups, "age");
       const booksData = await axiosInstance.get(
-        `/filtered-books?&paginate=9&page=${currentPage}${categoryQuery}${tagQuery}${ageQuery}`
+        `/filtered-books?paginate=9&page=${currentPage}${categoryQuery}${tagQuery}${ageQuery}`
       );
       if (booksData.status === 200) {
         setFilteredBookData(booksData.data.data || []);
         setBookMetaData(booksData.data.meta);
-        setLoader(false);
       }
       // eslint-disable-next-line brace-style
     } catch (error) {
-      setLoader(false);
       // eslint-disable-next-line no-console
       console.log("Error in getting books", error);
+      // eslint-disable-next-line brace-style
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -88,10 +73,41 @@ const Page = () => {
   return (
     <React.Fragment>
       <HeaderFooterLayout>
-        <div className="flex gap-9 max-sm:min-h-[650px] min-h-screen max-w-sm sm:max-w-7xl px-3 xl:px-0 mx-auto">
-          <>
-            {/* Responsive filter section */}
-            <div className="hidden md:block pt-4">
+        <section
+          id="book-filter"
+          className="flex gap-9 max-sm:min-h-[650px] min-h-screen max-w-sm sm:max-w-7xl px-3 xl:px-0 mx-auto"
+        >
+          {/* Responsive filter section */}
+          <section id="filter-content" className="hidden md:block pt-4">
+            <FilterContent
+              onCategoryChange={setCheckedCategories}
+              onTagChange={setCheckedTags}
+              onAgeGroupChange={setCheckedAgeGroups}
+              checkedCategories={checkedCategories}
+              checkedTags={checkedTags}
+              checkedAgeGroups={checkedAgeGroups}
+            />
+          </section>
+
+          {/* Side bar for mobile screen */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="md:hidden z-50 fixed bottom-10 right-4 w-fit h-fit flex items-center justify-end rounded-full p-3  bg-white !shadow-md"
+              >
+                <ListFilter className="!h-7 !w-7" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="w-[300px] sm:w-[400px] min-h-screen"
+            >
+              <SheetHeader>
+                <SheetTitle className="hidden"></SheetTitle>
+                <SheetDescription className="hidden"></SheetDescription>
+              </SheetHeader>
               <FilterContent
                 onCategoryChange={setCheckedCategories}
                 onTagChange={setCheckedTags}
@@ -100,36 +116,8 @@ const Page = () => {
                 checkedTags={checkedTags}
                 checkedAgeGroups={checkedAgeGroups}
               />
-            </div>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="md:hidden z-50 fixed bottom-10 right-4 w-fit h-fit flex items-center justify-end rounded-full p-3  bg-white !shadow-md"
-                >
-                  <ListFilter className="!h-7 !w-7" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="left"
-                className="w-[300px] sm:w-[400px] min-h-screen"
-              >
-                <SheetHeader>
-                  <SheetTitle className="hidden"></SheetTitle>
-                  <SheetDescription className="hidden"></SheetDescription>
-                </SheetHeader>
-                <FilterContent
-                  onCategoryChange={setCheckedCategories}
-                  onTagChange={setCheckedTags}
-                  onAgeGroupChange={setCheckedAgeGroups}
-                  checkedCategories={checkedCategories}
-                  checkedTags={checkedTags}
-                  checkedAgeGroups={checkedAgeGroups}
-                />
-              </SheetContent>
-            </Sheet>
-          </>
+            </SheetContent>
+          </Sheet>
 
           {/* Filtered Books */}
           {loader ? (
@@ -141,22 +129,20 @@ const Page = () => {
               onPageChange={setCurrentPage}
             />
           ) : (
-            <>
-              <div className="w-full mx-auto my-auto">
-                <Image
-                  src="/svgs/books-not-found.svg"
-                  alt="books-not-found"
-                  width={700}
-                  height={700}
-                  className=" mx-auto max-h-96 "
-                />
-                <p className="text-3xl text-center text-red-500 font-medium">
-                  No books found!
-                </p>
-              </div>
-            </>
+            <div className="w-full mx-auto my-auto">
+              <Image
+                src="/svgs/books-not-found.svg"
+                alt="books-not-found"
+                width={700}
+                height={700}
+                className=" mx-auto max-h-96 "
+              />
+              <p className="text-3xl text-center text-red-500 font-medium">
+                No books found!
+              </p>
+            </div>
           )}
-        </div>
+        </section>
       </HeaderFooterLayout>
     </React.Fragment>
   );

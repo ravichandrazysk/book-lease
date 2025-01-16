@@ -129,8 +129,13 @@ const MyRequest = () => {
               title={item.book_name}
               slug={item.slug}
               imageUrl={item.images[0]}
-              status={item.status}
+              status={item.book_request_status}
+              isExpired={item.is_expired}
+              requestType={item.type}
+              extensionStatus={item.lease_extension_status}
+              isLeased={item.is_leased}
               date={item.requested_at}
+              leaseDueDate={item?.lease_details?.lease_end_date || "NA"}
               ticketId={item.ticket_number}
               author={item.book_owner}
               read_at={item.read_at}
@@ -202,6 +207,7 @@ const MyRequest = () => {
         onOpenChange={(open) => {
           setIsChatOpen(open);
           if (!open) {
+            setRequestStatus(!requestStatus);
             setIsSessionStorage(false);
             sessionStorage.clear();
           }

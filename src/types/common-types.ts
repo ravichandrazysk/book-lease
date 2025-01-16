@@ -87,8 +87,11 @@ export interface StockCardProps {
   slug?: string;
   author?: string;
   date?: string;
+  leaseDueDate?: string;
   imageUrl: string;
   status?: string;
+  extensionStatus?: string;
+  isLeased?: boolean;
   isAvailable?: boolean;
   imageError?: () => void;
   onEdit?: () => void;
@@ -100,6 +103,8 @@ export interface StockCardProps {
   ticketId?: string;
   read_at?: string | null;
   approved?: boolean;
+  requestType?: string;
+  isExpired?: boolean;
   notification_id?: number | null;
   requestStatusToggle?: () => void;
 }
@@ -184,7 +189,7 @@ export interface BooCreateEditFormTypes {
   tags: string;
   condition: string;
   age: string;
-  availabilityType: "sell" | "rent" | "free";
+  availabilityType: string;
   rentPrice?: string;
   sellPrice?: string;
   discountedRentPrice?: string;
@@ -243,11 +248,16 @@ export interface MyRequestTypes {
   book_name: string;
   slug: string;
   requested_at: string;
-  status: string;
   images: string[];
   book_owner: string;
   ticket_number: string;
   read_at: string | null;
+  book_request_status: string;
+  lease_extension_status: string;
+  is_leased: boolean;
+  lease_details?: LeaseDetails;
+  type: string;
+  is_expired: boolean;
   notification_id: number | null;
 }
 
@@ -300,9 +310,14 @@ export interface ReceivedRequestTypes {
   requester: string;
   requested_at: string;
   status: string;
-  type: string;
   images: string[];
   ticket_number: string;
+  book_request_status: string;
+  lease_extension_status: string;
+  is_leased: boolean;
+  lease_details?: LeaseDetails;
+  type: string;
+  is_expired: boolean;
   read_at: string | null;
   notification_id: number | null;
 }
@@ -326,6 +341,7 @@ export interface SoldBookProps {
   price: string;
   discounted_price: string;
   is_free: boolean;
+  sold_at: string;
   category: string;
   images: string[];
 }

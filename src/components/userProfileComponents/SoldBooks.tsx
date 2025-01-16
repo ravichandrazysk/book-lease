@@ -87,7 +87,7 @@ const SoldBooks = () => {
                 slug={item.slug}
                 author={item.author}
                 imageUrl={imgSrc}
-                date="22-10-2024"
+                date={item.sold_at}
                 imageError={() => setImgSrc("/pngs/Image-not-available.png")}
               />
             ))

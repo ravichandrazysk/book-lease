@@ -8,9 +8,11 @@ const Page = () => {
   return (
     <React.Fragment>
       <HeaderFooterLayout footerShow={false}>
-        <ProfileLayout>
-          <SoldBooks />
-        </ProfileLayout>
+        <section id="my-sold-books" className="bg-specific-bg">
+          <ProfileLayout>
+            <SoldBooks />
+          </ProfileLayout>
+        </section>
       </HeaderFooterLayout>
     </React.Fragment>
   );

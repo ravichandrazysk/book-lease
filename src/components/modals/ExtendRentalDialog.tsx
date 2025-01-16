@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { addDays, format, differenceInDays } from "date-fns";
+import { addDays, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,10 +26,6 @@ export function ExtendRentalDialog({
     addDays(currentDueDate || new Date(), 0)
   );
 
-  const daysLeft = React.useMemo(() => {
-    return differenceInDays(currentDueDate || new Date(), new Date());
-  }, [currentDueDate]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -39,15 +35,19 @@ export function ExtendRentalDialog({
         <DialogHeader>
           <DialogTitle className="text-xl">Extend Your Rental</DialogTitle>
         </DialogHeader>
-        <div id="extend-rental-description" className="space-y-6 py-4">
-          <div className="space-y-2">
+
+        {/* Extend rental */}
+        <section id="extend-rental-description" className="space-y-6 py-4">
+          {/* Due date */}
+          <section id="due-date" className="space-y-2">
             <p className="text-sm text-muted-foreground">Current Due Date:</p>
             <p className="font-medium">
               {currentDueDate ? format(currentDueDate, "MMM dd, yyyy") : "N/A"}
             </p>
-          </div>
+          </section>
 
-          <div className="space-y-2">
+          {/* Extension dropdown */}
+          <section id="extend-days" className="space-y-2">
             <p className="text-sm text-muted-foreground">Extend by days</p>
 
             <Select
@@ -66,22 +66,22 @@ export function ExtendRentalDialog({
                 <SelectItem value="21">21</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </section>
 
-          <div className="flex items-center justify-between text-sm">
+          {/* New due date */}
+          <section
+            id="due-date"
+            className="flex items-center justify-between text-sm"
+          >
             <span className="text-muted-foreground">New Due Date:</span>
             <span className="font-medium">
               {date && currentDueDate && date > currentDueDate
                 ? format(date, "MMM dd, yyyy")
                 : "N/A"}
             </span>
-          </div>
+          </section>
+        </section>
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Days Left:</span>
-            <span className="font-medium">{daysLeft} days</span>
-          </div>
-        </div>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button
             variant="outline"

@@ -169,7 +169,7 @@ const MyBooks = () => {
 
   return (
     <section id="my-books" className=" sm:w-11/12  mx-auto max-w-3xl my-5">
-      <header>
+      <section id="book-header">
         <SectionHeader
           title={
             createNewBook
@@ -184,7 +184,7 @@ const MyBooks = () => {
             setEditBook(false);
           }}
         />
-      </header>
+      </section>
       {loading ? (
         <>
           {Array.from({ length: 10 }).map((_, index) => (

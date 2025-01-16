@@ -17,7 +17,7 @@ export function SectionHeader({
 }) {
   const { profileDetails } = useContext(GlobalContext);
   return (
-    <div className="flex items-center sm:justify-between py-4 border shadow-lg rounded-md">
+    <div className="flex items-center sm:justify-between py-4 border shadow-lg rounded-md bg-white">
       <div className="flex items-center border justify-between px-3 w-full border-l-blue-600 border-r-0 border-y-0 border-l-4 border-l-">
         {/* <div className="w-1 h-6 bg-blue-600 rounded-full " /> */}
         <h2 className="text-xl font-medium relative">

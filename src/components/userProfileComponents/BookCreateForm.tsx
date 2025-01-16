@@ -8,7 +8,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Formik, Form, Field, ErrorMessage, FormikProps } from "formik";
 import { useDropzone } from "react-dropzone";
-import * as Yup from "yup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,111 +35,10 @@ import {
   MyBookTypes,
   TagsTypes,
 } from "@/types/common-types";
+import { BookCreateEditValidationSchema } from "@/utils/validations";
+import { FILE_SIZE, SUPPORTED_FORMATS } from "@/utils/validations";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 const Select = dynamic(() => import("react-select"), { ssr: false });
-
-const FILE_SIZE = 2 * 1024 * 1024;
-const SUPPORTED_FORMATS = [
-  "image/jpg",
-  "image/jpeg",
-  "image/png",
-  "image/jfif",
-];
-
-const validationSchema = (isEditing: boolean) =>
-  Yup.object().shape({
-    coverImage: Yup.mixed()
-      .required("Cover image is required")
-      .test(
-        "fileFormat",
-        "Unsupported Format",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (value: any) => {
-          if (typeof value === "string") {
-            const urlPattern = /\.(jpg|jpeg|png|jfif)$/i;
-            return urlPattern.test(value);
-          }
-          return value && SUPPORTED_FORMATS.includes(value?.type);
-        }
-      )
-      .test("fileSize", "File too large", (value: any) => {
-        if (typeof value === "string") return true;
-        return value && value?.size <= FILE_SIZE;
-      }),
-    title: Yup.string()
-      .trim()
-      .min(1, "Title is required.")
-      .max(100, "Max 100 characters allowed.")
-      .matches(
-        /^[a-zA-Z0-9\s'-:,.!?]+$/,
-        "Invalid characters  are not allowed."
-      )
-      .matches(
-        /^(?![0-9]*$)(?![!@#$%^&*(),.?":{}|<>]*$).{1,100}$/,
-        "Title must contain at least one letter."
-      )
-      .required("Title is required."),
-    author: Yup.string().required("Author name is required"),
-    description: Yup.string()
-      .min(1, "Description must be 1 character or more")
-      .max(500, "Description must be 500 characters or less")
-      .required("Book description is required")
-      .matches(
-        /^(?=.*[a-zA-Z])[a-zA-Z0-9\s'-:;><@()%&^*#${}_",.!?]{1,500}$/,
-        "Input must not be only numbers or only special characters."
-      ),
-    category: Yup.string().required("Category is required"),
-    tags: Yup.string().required("Tags are required"),
-    condition: Yup.string().required("Book condition is required"),
-    age: Yup.string().required("Age is required"),
-    availabilityType: Yup.string().required("Please select availability type"),
-    rentPrice: Yup.number().when("availabilityType", {
-      is: "rent",
-      then: (schema) =>
-        schema
-          .required("Original price is required")
-          .min(0, "Price must be positive"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    sellPrice: Yup.number().when("availabilityType", {
-      is: "sell",
-      then: (schema) =>
-        schema
-          .required("Original price is required")
-          .min(0, "Price must be positive"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    discountedSellPrice: Yup.number().when("availabilityType", {
-      is: "sell",
-      then: (schema) =>
-        schema
-          .min(0, "Price must be positive")
-          .max(
-            Yup.ref("sellPrice"),
-            "Listing price must be less than original price"
-          ),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    discountedRentPrice: Yup.number().when("availabilityType", {
-      is: "rent",
-      then: (schema) =>
-        schema
-          .min(0, "Price must be positive")
-          .max(
-            Yup.ref("rentPrice"),
-            "Listing price must be less than original price"
-          ),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    editingReason: Yup.string().when([], {
-      is: () => isEditing,
-      then: (schema) =>
-        schema
-          .max(650, "Editing reason must be 650 characters or less")
-          .required("Editing reason is required"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-  });
 
 export function BookCreateForm({
   onAction,
@@ -176,10 +74,11 @@ export function BookCreateForm({
     age: (isEditing && existingBookDetails?.age_group) || "",
     availabilityType:
       (isEditing &&
-        (existingBookDetails?.availability?.toLowerCase() as
-          | "sell"
-          | "rent"
-          | "free")) ||
+        (existingBookDetails?.availability?.toLowerCase() === "lease"
+          ? "rent"
+          : existingBookDetails?.is_free
+            ? "free"
+            : "sell")) ||
       "sell",
     rentPrice: (isEditing && existingBookDetails?.price?.toString()) || "",
     sellPrice: (isEditing && existingBookDetails?.price?.toString()) || "",
@@ -415,7 +314,7 @@ export function BookCreateForm({
         enableReinitialize
         innerRef={formikRef}
         initialValues={initialValues}
-        validationSchema={validationSchema(isEditing)}
+        validationSchema={BookCreateEditValidationSchema(isEditing)}
         onSubmit={handleSubmit}
       >
         {({ setFieldValue, values, dirty }) => {
@@ -537,7 +436,7 @@ export function BookCreateForm({
                   as={Textarea}
                   id="description"
                   name="description"
-                  placeholder="Add some description of the book ( maximum 500 characters )"
+                  placeholder="Add some description of the book ( maximum 1000 characters )"
                   className="placeholder:text-[#6B7280] font-normal"
                 />
                 <ErrorMessage
@@ -563,6 +462,7 @@ export function BookCreateForm({
                           form.setFieldValue("category", value)
                         }
                         value={field.value}
+                        disabled={isEditing}
                       >
                         <SelectTrigger>
                           <SelectValue
@@ -611,6 +511,7 @@ export function BookCreateForm({
                           form.setFieldValue("tags", value)
                         }
                         value={field.value}
+                        disabled={isEditing}
                       >
                         <SelectTrigger>
                           <SelectValue
@@ -659,6 +560,7 @@ export function BookCreateForm({
                           form.setFieldValue("condition", value)
                         }
                         value={field.value}
+                        disabled={isEditing}
                       >
                         <SelectTrigger>
                           <SelectValue
@@ -707,6 +609,7 @@ export function BookCreateForm({
                           form.setFieldValue("age", value)
                         }
                         value={field.value}
+                        disabled={isEditing}
                       >
                         <SelectTrigger>
                           <SelectValue
@@ -761,6 +664,7 @@ export function BookCreateForm({
                             form.setFieldValue("languages", newValue)
                           }
                           value={field.value}
+                          isDisabled={isEditing}
                         />
                       )}
                     </Field>
@@ -783,6 +687,7 @@ export function BookCreateForm({
                     <RadioGroup
                       defaultValue="rent"
                       value={field.value}
+                      disabled={isEditing}
                       onValueChange={(value) =>
                         form.setFieldValue("availabilityType", value)
                       }
@@ -838,6 +743,7 @@ export function BookCreateForm({
                       type="number"
                       placeholder="Enter the amount"
                       className="placeholder:text-[#6B7280] font-normal"
+                      disabled={isEditing}
                     />
                     <ErrorMessage
                       name={
@@ -872,6 +778,7 @@ export function BookCreateForm({
                       type="number"
                       placeholder="Enter listing amount"
                       className="placeholder:text-[#6B7280] font-normal"
+                      disabled={isEditing}
                     />
                     <ErrorMessage
                       name={

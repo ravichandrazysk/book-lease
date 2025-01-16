@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import Link from "next/link";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
 import { axiosInstance } from "@/utils/AxiosConfig";
 import { isAxiosError } from "axios";
 import { signIn } from "next-auth/react";
@@ -16,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import dynamic from "next/dynamic";
+import { loginValidationSchema } from "@/utils/validations";
+import { useRouter } from "next/navigation";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 interface FormValuesTypes {
@@ -23,6 +24,7 @@ interface FormValuesTypes {
   password: string;
 }
 export default function LoginPage() {
+  const router = useRouter();
   const { toast } = useToast();
   const [loader, setLoader] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -76,28 +78,15 @@ export default function LoginPage() {
     email: "",
     password: "",
   };
-  const loginValidationSchema = Yup.object().shape({
-    email: Yup.string()
-      .email("Invalid email")
-      .required("Email is required")
-      .matches(
-        /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
-        "Invalid email address"
-      ),
-    password: Yup.string()
-      .required("Password is required")
-      .min(8, "Password must be at least 8 characters")
-      .matches(/[0-9]/, "Password must contain at least one number")
-      .matches(/[a-z]/, "Password must contain at least one lowercase letter")
-      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .matches(/[^\w]/, "Password must contain at least one special character"),
-  });
 
   const onSubmit = (values: FormValuesTypes) => {
     handleLogin(values);
   };
   return (
-    <div className="min-h-screen flex items-center justify-center ">
+    <section
+      id="login-card"
+      className="min-h-screen flex items-center justify-center bg-specific-bg py-10"
+    >
       <Card className="w-full sm:max-h-max max-w-md mx-4 border border-[#E5E6E8]">
         <CardHeader className=" text-center">
           <div className="flex justify-center ">
@@ -122,7 +111,7 @@ export default function LoginPage() {
           >
             {() => (
               <Form>
-                <div className="">
+                <section id="email-id">
                   <Label htmlFor="email" className="font-medium">
                     Email or Phone number&nbsp;
                     <span className="text-red-500">*</span>
@@ -140,8 +129,8 @@ export default function LoginPage() {
                     component="div"
                     className="text-red-500 text-sm"
                   />
-                </div>
-                <div className="min-h-16 mt-6">
+                </section>
+                <section id="password" className="min-h-16 mt-6">
                   <Label htmlFor="password" className="font-medium">
                     Password&nbsp;
                     <span className="text-red-500">*</span>
@@ -171,15 +160,18 @@ export default function LoginPage() {
                     component="div"
                     className="text-red-500 text-sm"
                   />
-                  <div className="flex items-center justify-between">
+                  <section
+                    id="forgot-password"
+                    className="flex items-center justify-between"
+                  >
                     <Link
                       href="/forgot-password"
                       className="text-base mt-3 font-medium text-[#ff851b] hover:text-[#ff851b]/90"
                     >
                       Forgot Password ?
                     </Link>
-                  </div>
-                </div>
+                  </section>
+                </section>
                 <Button className="w-full h-12 mt-8 font-semibold text-base bg-[#ff851b] hover:bg-[#ff851b]/90 text-white">
                   {loader ? (
                     <div className="flex justify-center items-center w-full max-h-5">
@@ -193,6 +185,23 @@ export default function LoginPage() {
                   ) : (
                     "Log in"
                   )}
+                </Button>
+                <p className="text-lg font-medium text-center space-y-5">or</p>
+                <Button
+                  type="button"
+                  className="transition hover:scale-[1.03] hover:bg-white duration-300 ease-linear w-full h-12
+ flex item-center justify-center gap-3 font-semibold text-base bg-white text-black  border-[#ff851b] border-2"
+                  // OnClick={() => signIn("google", { callbackUrl: "/" })}
+                  onClick={() => router.push("/")}
+                >
+                  <Image
+                    src="/svgs/google-icon.svg"
+                    alt="Google"
+                    width={100}
+                    height={100}
+                    className="w-fit h-fit"
+                  />
+                  Continue with Google
                 </Button>
                 <div className="text-center font-normal text-sm mt-6">
                   {"Don't have an account? "}
@@ -216,6 +225,6 @@ export default function LoginPage() {
           </Formik>
         </CardContent>
       </Card>
-    </div>
+    </section>
   );
 }

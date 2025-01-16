@@ -104,7 +104,7 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-specific-bg">
       <OTPInput
         length={6}
         onComplete={handleComplete}
