@@ -129,7 +129,7 @@ export interface NotificationTypes {
   owner_name: string;
   model_id: number;
   book_request_status: string;
-  lease_extension_status:string;
+  lease_extension_status: string;
 }
 export interface BookGroupProps {
   id: number;

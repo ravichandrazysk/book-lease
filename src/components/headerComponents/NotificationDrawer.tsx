@@ -65,8 +65,11 @@ export function NotificationDropdown() {
       sessionStorage.setItem("ticketId", notification.ticket_number);
       sessionStorage.setItem("ownerName", notification.owner_name);
       sessionStorage.setItem("itemId", notification.model_id.toString());
-      if(notification.book_request_status==="Pending")
-      sessionStorage.setItem("requestStatus", notification.book_request_status);
+      if (notification.book_request_status === "Pending")
+        sessionStorage.setItem(
+          "requestStatus",
+          notification.book_request_status
+        );
       else if (
         notification.type === "lease_date_extension" &&
         notification.lease_extension_status === "Pending"

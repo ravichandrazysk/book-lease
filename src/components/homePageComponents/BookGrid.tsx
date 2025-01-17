@@ -1,3 +1,4 @@
+/* eslint-disable no-extra-parens */
 "use client";
 import { ChevronRight } from "lucide-react";
 import { BookCard } from "@/components/common/BookCard";

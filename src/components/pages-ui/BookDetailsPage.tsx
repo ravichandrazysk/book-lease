@@ -226,6 +226,9 @@ export function BookDetails() {
         // eslint-disable-next-line brace-style
       } catch (error) {
         setRelatedBookLoading(false);
+        // eslint-disable-next-line no-console
+        console.log(error, "Something went wrong");
+        // eslint-disable-next-line brace-style
       } finally {
         setRelatedBookLoading(false);
       }
@@ -428,7 +431,12 @@ export function BookDetails() {
         ) : (
           relatedBooks.books &&
           relatedBooks.books.length > 0 && (
-            <BookGrid name="Related Books" books={relatedBooks.books}  id={relatedBooks.id} max_books_count={relatedBooks.max_books_count}/>
+            <BookGrid
+              name="Related Books"
+              books={relatedBooks.books}
+              id={relatedBooks.id}
+              max_books_count={relatedBooks.max_books_count}
+            />
           )
         )}
       </section>

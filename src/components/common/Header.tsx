@@ -216,12 +216,6 @@ export function Header() {
                               ? profileDetails?.notification_counts
                                   ?.received_requests
                               : 0;
-                              console.log(
-                                notificationCount,
-                                item.label === "My Sent Requests",
-                                item.label === "Received Requests",
-                                "notificationCount"
-                              );
                         return (
                           <Button
                             key={item.label}
@@ -237,7 +231,9 @@ export function Header() {
                               <span
                                 className={`absolute ${item.label === "My Sent Requests" ? "top-2 left-[165px]" : "top-2 left-[170px]"} h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center`}
                               >
-                                {notificationCount! > 99 ? "99+" : notificationCount}
+                                {notificationCount! > 99
+                                  ? "99+"
+                                  : notificationCount}
                               </span>
                             )}
                           </Button>
