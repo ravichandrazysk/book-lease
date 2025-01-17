@@ -21,6 +21,8 @@ import { axiosInstance } from "@/utils/AxiosConfig";
 import { toast } from "@/hooks/use-toast";
 import { isAxiosError } from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 const MyReferral = () => {
   const [refferrals, setReferrals] = useState<
@@ -35,7 +37,7 @@ const MyReferral = () => {
       .email("Invalid email address")
       .required("Email is required")
       .matches(
-        /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+        /^[a-zA-Z][a-zA-Z0-9.]*@[a-zA-Z]+(?:-[a-zA-Z]+)*\.[a-zA-Z]+$/,
         "Invalid email address"
       ),
   });
@@ -139,7 +141,7 @@ const MyReferral = () => {
                 <div>
                   <Field
                     name="email"
-                    type="email"
+                    type="text"
                     placeholder="Add your friend's email id"
                     className="w-full h-full sm:min-w-96 sm:max-w-2xl text-sm font-normal text-black placholder:text-[#6B7280]"
                     as={Input}
@@ -153,9 +155,20 @@ const MyReferral = () => {
                 <Button
                   type="submit"
                   className="bg-[#FF851B] text-xs font-medium w-[100px] sm:w-[180px] h-[44px] hover:bg-[#FF851B]"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || loader}
                 >
-                  Send Email
+                  {loader ? (
+                    <div className="flex justify-center items-center w-full max-h-5">
+                      <Lottie
+                        loop
+                        path="/lotties/button-loader.json"
+                        play
+                        style={{ width: "50%" }}
+                      />
+                    </div>
+                  ) : (
+                    "Send email"
+                  )}
                 </Button>
               </Form>
             )}

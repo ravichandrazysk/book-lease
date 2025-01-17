@@ -32,7 +32,7 @@ export default function BookGrid({ books, name }: BookGroupProps) {
     <div className="space-y-4 mt-12">
       <div className="flex items-center justify-between">
         <h2 className="text-[28px] font-medium text-black">{name}</h2>
-        {books && books.length > 10 && (
+        {((books && books.length > 10) || name === "Related Books") && (
           <Button
             variant="link"
             className="font-medium text-[#0070C4] hover:text-blue-400"

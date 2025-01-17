@@ -128,7 +128,8 @@ export interface NotificationTypes {
   ticket_number: string;
   owner_name: string;
   model_id: number;
-  status: string;
+  book_request_status: string;
+  lease_extension_status:string;
 }
 export interface BookGroupProps {
   id: number;
@@ -268,6 +269,8 @@ export interface ContextTypes {
   setChangeProfile: React.Dispatch<React.SetStateAction<boolean>>;
   profileDetails: ProfileDetails;
   setProfileDetails: React.Dispatch<React.SetStateAction<ProfileDetails>>;
+  myBooksTabActive: boolean;
+  setMyBooksTabActive: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface ProfileFormValues {

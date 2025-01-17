@@ -31,10 +31,12 @@ import {
 } from "@/types/common-types";
 import { Button } from "@/components/ui/button";
 import ChatBox from "@/components/common/ChatBox";
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 
 export const ReceivedRequests = () => {
   const [loading, setLoading] = useState(false);
-  const [loader, setLoader] = useState(false);
+  const [buttonLoader, setButtonLoader] = useState(false);
   const [receivedRequests, setReceivedRequests] = useState<
     ReceivedRequestTypes[]
   >([]);
@@ -63,51 +65,59 @@ export const ReceivedRequests = () => {
 
   const handleRequestConfirmation = async (
     actionStatus: string,
-    requestId: number
+    requestId: number,
+    requestType: string
   ) => {
-    setLoader(true);
-    try {
-      const formData = new FormData();
-      formData.append("status", actionStatus);
-      const response = await axiosInstance.post(
-        `/update-request-status/${requestId}`,
-        formData
-      );
-      if (response.status === 200) {
-        toast({
-          variant: "success",
-          title: "Success",
-          description: response.data.message,
-        });
-        setBookRequestStatus(() => {
-          if (typeof window !== "undefined")
-            sessionStorage.setItem("requestStatus", actionStatus);
-          return actionStatus;
-        });
-        setRequestStatus(!requestStatus);
-        setLoader(false);
+    setButtonLoader(true);
+    if (requestId)
+      try {
+        const statusEndPoint =
+          requestType === "Book Request"
+            ? "/update-request-status/"
+            : "/update-extension-status/";
+        const formData = new FormData();
+        if (requestType === "Book Request")
+          formData.append("status", actionStatus);
+        else formData.append("lease_extension_status", actionStatus);
+        const response = await axiosInstance.post(
+          `${statusEndPoint}${requestId}`,
+          formData
+        );
+        if (response.status === 200) {
+          toast({
+            variant: "success",
+            title: "Success",
+            description: response.data.message,
+          });
+          setBookRequestStatus(() => {
+            if (typeof window !== "undefined")
+              sessionStorage.setItem("requestStatus", actionStatus);
+            return actionStatus;
+          });
+          setRequestStatus(!requestStatus);
+          setButtonLoader(false);
+        }
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        setButtonLoader(false);
+        if (
+          isAxiosError(error) &&
+          error.status &&
+          error.response &&
+          error.response.data
+        )
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error.response.data.message,
+          });
+        else
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Something went wrong",
+          });
       }
-      // eslint-disable-next-line brace-style
-    } catch (error) {
-      setLoader(false);
-      if (
-        isAxiosError(error) &&
-        error.status &&
-        error.response &&
-        error.response.data
-      )
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.response.data.message,
-        });
-      else
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Something went wrong",
-        });
-    }
   };
 
   useEffect(() => {
@@ -208,9 +218,39 @@ export const ReceivedRequests = () => {
               isLeased={item.is_leased}
               date={item.requested_at}
               leaseDueDate={item?.lease_details?.lease_end_date || "NA"}
-              onAccept={() => handleRequestConfirmation("Accepted", item.id)}
-              onCancel={() => handleRequestConfirmation("Rejected", item.id)}
-              loader={loader}
+              onAccept={() => {
+                if (
+                  item.type === "Lease" &&
+                  item.is_expired &&
+                  item.lease_extension_status === "Pending"
+                )
+                  handleRequestConfirmation(
+                    "Accepted",
+                    item.id,
+                    "Extension Request"
+                  );
+                else
+                  handleRequestConfirmation(
+                    "Accepted",
+                    item.id,
+                    "Book Request"
+                  );
+              }}
+              onCancel={() => {
+                if (item.lease_extension_status === "Pending")
+                  handleRequestConfirmation(
+                    "Rejected",
+                    item.id,
+                    "Extension Request"
+                  );
+                else
+                  handleRequestConfirmation(
+                    "Rejected",
+                    item.id,
+                    "Book Request"
+                  );
+              }}
+              loader={buttonLoader}
               ticketId={item.ticket_number}
               read_at={item.read_at}
               notification_id={item.notification_id}
@@ -295,27 +335,48 @@ export const ReceivedRequests = () => {
             <SheetTitle className="border-gray-300 border-b-2 pb-3">
               <div className="flex items-center justify-between pr-10 sm:pr-8">
                 {ownerName}
-                {bookRequestStatus && bookRequestStatus === "Pending" && (
-                  <div className="flex items-end gap-2">
-                    <Button
-                      variant="outline"
-                      className="bg-red-500 hover:bg-red-600"
-                      onClick={() =>
-                        handleRequestConfirmation("Rejected", Number(itemId))
-                      }
-                    >
-                      Reject
-                    </Button>
-                    <Button
-                      className="bg-green-500 hover:bg-green-600"
-                      onClick={() =>
-                        handleRequestConfirmation("Accepted", Number(itemId))
-                      }
-                    >
-                      Accept
-                    </Button>
-                  </div>
-                )}
+                {bookRequestStatus &&
+                  bookRequestStatus === "Pending" &&
+                  (buttonLoader ? (
+                    <div className="flex justify-center items-center max-w-28 max-sm:hidden">
+                      <Lottie
+                        loop
+                        path="/lotties/loader.json"
+                        play
+                        style={{ width: "100%" }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-end gap-2">
+                      <Button
+                        variant="outline"
+                        className="bg-red-500 hover:bg-red-600"
+                        disabled={buttonLoader}
+                        onClick={() =>
+                          handleRequestConfirmation(
+                            "Rejected",
+                            Number(itemId),
+                            "Book Request"
+                          )
+                        }
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        className="bg-green-500 hover:bg-green-600"
+                        disabled={buttonLoader}
+                        onClick={() =>
+                          handleRequestConfirmation(
+                            "Accepted",
+                            Number(itemId),
+                            "Book Request"
+                          )
+                        }
+                      >
+                        Accept
+                      </Button>
+                    </div>
+                  ))}
               </div>
             </SheetTitle>
             <ChatBox

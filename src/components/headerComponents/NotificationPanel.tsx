@@ -56,7 +56,9 @@ export function NotificationPanel({
                     >
                       {notification.title}
                     </h3>
-                    <p className="text-sm text-gray-500">{notification.body}</p>
+                    <p className="text-sm text-gray-500 max-w-64  text-wrap">
+                      {notification.body}
+                    </p>
                   </div>
                 </div>
               ))

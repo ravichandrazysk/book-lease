@@ -7,6 +7,8 @@ const GlobalContext = createContext<ContextTypes>({
   setRefreshNotifications: () => {},
   changeProfile: false,
   setChangeProfile: () => {},
+  myBooksTabActive: false,
+  setMyBooksTabActive: () => {},
   profileDetails: {
     address_line_1: "",
     age: null,

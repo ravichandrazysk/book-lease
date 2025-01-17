@@ -144,7 +144,7 @@ const ChatBox = ({ owner, ticketId, isOwner }: ChatBoxProps) => {
                   >
                     {message?.message}
                     <div className="text-xs mt-2 text-right">
-                      {message?.created_at.split(" ")[0]}
+                      {message?.created_at}
                     </div>
                   </ChatBubbleMessage>
                 </ChatBubble>

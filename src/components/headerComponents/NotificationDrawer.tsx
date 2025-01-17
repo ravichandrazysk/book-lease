@@ -65,19 +65,33 @@ export function NotificationDropdown() {
       sessionStorage.setItem("ticketId", notification.ticket_number);
       sessionStorage.setItem("ownerName", notification.owner_name);
       sessionStorage.setItem("itemId", notification.model_id.toString());
-      sessionStorage.setItem("requestStatus", notification.status);
+      if(notification.book_request_status==="Pending")
+      sessionStorage.setItem("requestStatus", notification.book_request_status);
+      else if (
+        notification.type === "lease_date_extension" &&
+        notification.lease_extension_status === "Pending"
+      )
+        sessionStorage.setItem(
+          "requestStatus",
+          notification.lease_extension_status
+        );
       if (
-        notification.type === "book_request" &&
+        (notification.type === "book_request" ||
+          notification.type === "lease_date_extension") &&
         pathname === "/user/received-requests"
       )
         window.dispatchEvent(new Event("storage"));
       else if (
-        notification.type === "book_request_response" &&
+        (notification.type === "book_request_response" ||
+          notification.type === "lease_date_extension_response") &&
         pathname === "/user/my-requests"
       )
         window.dispatchEvent(new Event("storage"));
 
-      if (notification.type === "book_request")
+      if (
+        notification.type === "book_request" ||
+        notification.type === "lease_date_extension"
+      )
         router.push(`/user/received-requests`);
       else router.push(`/user/my-requests`);
     } catch (error) {
@@ -143,12 +157,14 @@ export function NotificationDropdown() {
             className="relative p-2 md:p-3 w-auto h-auto border border-[#D0CCCB] rounded-full"
           >
             <Bell className="h-4 w-4 md:h-5 md:w-5" />
-            <span className="absolute -top-1 -right-1 h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center">
-              {notificationCount > 99 ? "99+" : notificationCount}
-            </span>
+            {notificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center">
+                {notificationCount > 99 ? "99+" : notificationCount}
+              </span>
+            )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="max-w-xs md:max-w-sm mt-2" align="end">
+        <DropdownMenuContent className="max-w-xs md:max-w-lg mt-2" align="end">
           <NotificationPanel
             notifications={notifications}
             onNotificationClick={handleNotificationClick}

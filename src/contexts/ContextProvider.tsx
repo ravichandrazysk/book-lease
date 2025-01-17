@@ -12,6 +12,7 @@ const ContextProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session } = useSession();
   const [refreshNotifications, setRefreshNotifications] = useState(false);
   const [changeProfile, setChangeProfile] = useState(false);
+  const [myBooksTabActive, setMyBooksTabActive] = useState(true);
   const [profileDetails, setProfileDetails] = useState<ProfileDetails>({
     address_line_1: "",
     age: null,
@@ -71,6 +72,8 @@ const ContextProvider = ({ children }: { children: React.ReactNode }) => {
         setProfileDetails,
         changeProfile,
         setChangeProfile,
+        myBooksTabActive,
+        setMyBooksTabActive,
       }}
     >
       {children}

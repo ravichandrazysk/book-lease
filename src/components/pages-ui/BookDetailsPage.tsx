@@ -19,7 +19,7 @@ import { convertDate } from "@/utils/Utilities";
 
 import BookDetailSkeleton from "@/components/common/loaders/BookDetailSkeleton";
 import Lottie from "react-lottie-player";
-import { BookDetailsType } from "@/types/common-types";
+import { BookDetailsType, BookGroupProps } from "@/types/common-types";
 import {
   Sheet,
   SheetContent,
@@ -30,6 +30,9 @@ import ChatBox from "@/components/common/ChatBox";
 import GlobalContext from "@/contexts/GlobalContext";
 import { isAxiosError } from "axios";
 import TextClamper from "@/components/common/TextClamper";
+import BookGrid from "../homePageComponents/BookGrid";
+import { BooksGridSkeleton } from "../common/loaders/BooksGridSkeleton";
+import { Skeleton } from "../ui/skeleton";
 
 export function BookDetails() {
   const { bookId } = useParams();
@@ -41,11 +44,17 @@ export function BookDetails() {
   const [bookImages, setBookImages] = useState<string[]>([]);
   const [isRequested, setIsRequested] = useState(false);
   const [extendsionDuration, setExtensionDuration] = useState<string>("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [relatedBookLoading, setRelatedBookLoading] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [ticketId, setTicketId] = useState<number>(0);
-
+  const [relatedBooks, setRelatedBooks] = useState<BookGroupProps>({
+    id: 0,
+    name: "",
+    max_books_count: 0,
+    books: [],
+  });
   const [bookDetails, setBookDetails] = useState<BookDetailsType>({
     id: 0,
     owner: "",
@@ -202,6 +211,27 @@ export function BookDetails() {
     handleGetBookDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRequested]);
+
+  useEffect(() => {
+    const handleGetRelatedBooks = async () => {
+      setRelatedBookLoading(true);
+      try {
+        const response = await axiosInstance.get(
+          `/book-categories?category=${bookDetails.category}`
+        );
+        if (response.status === 200) {
+          setRelatedBooks(response.data.data[0]);
+          setRelatedBookLoading(false);
+        }
+        // eslint-disable-next-line brace-style
+      } catch (error) {
+        setRelatedBookLoading(false);
+      } finally {
+        setRelatedBookLoading(false);
+      }
+    };
+    if (bookDetails.category) handleGetRelatedBooks();
+  }, [bookDetails]);
 
   // Book category colors
   const categoryColors = {
@@ -388,6 +418,19 @@ export function BookDetails() {
             )}
           </div>
         </div>
+      </section>
+      <section id="related-books">
+        {relatedBookLoading ? (
+          <div>
+            <Skeleton className="min-h-5 rounded-lg w-20 " />
+            <BooksGridSkeleton count={5} />
+          </div>
+        ) : (
+          relatedBooks.books &&
+          relatedBooks.books.length > 0 && (
+            <BookGrid name="Related Books" books={relatedBooks.books}  id={relatedBooks.id} max_books_count={relatedBooks.max_books_count}/>
+          )
+        )}
       </section>
 
       <ExtendRentalDialog

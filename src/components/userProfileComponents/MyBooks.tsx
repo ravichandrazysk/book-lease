@@ -2,7 +2,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable multiline-ternary */
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { SectionHeader } from "@/components/common/SectionHeader";
 import { StockDetailsCard } from "@/components/common/StockDetailsCard";
 import { BookCreateForm } from "./BookCreateForm";
@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/pagination";
 import { MyBookTypes, PaginationDataTypes } from "@/types/common-types";
 import ConfirmationModal from "../modals/ConfirmationModel";
+import GlobalContext from "@/contexts/GlobalContext";
 
 const MyBooks = () => {
+  const { myBooksTabActive, setMyBooksTabActive } = useContext(GlobalContext);
   const [createNewBook, setCreateNewBook] = useState(false);
   const [editBook, setEditBook] = useState(false);
   const [myBooks, setMyBooks] = useState<MyBookTypes[]>([]);
@@ -167,6 +169,12 @@ const MyBooks = () => {
     setSelectedBook({ active: false, slug: "" });
   };
 
+  useEffect(() => {
+    if (myBooksTabActive) {
+      setCreateNewBook(false);
+      setEditBook(false);
+    }
+  }, [myBooksTabActive]);
   return (
     <section id="my-books" className=" sm:w-11/12  mx-auto max-w-3xl my-5">
       <section id="book-header">
@@ -180,6 +188,7 @@ const MyBooks = () => {
           }
           showListButton={!createNewBook && !editBook}
           onListClick={() => {
+            setMyBooksTabActive(false);
             setCreateNewBook(true);
             setEditBook(false);
           }}
@@ -219,6 +228,7 @@ const MyBooks = () => {
               status={item.availability === "Sell" ? "For Sale" : "For Rent"}
               approved={item.active}
               onEdit={() => {
+                setMyBooksTabActive(false);
                 setEditBook(true);
                 setEditBookDetails(item);
               }}

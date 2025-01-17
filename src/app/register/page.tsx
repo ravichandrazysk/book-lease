@@ -511,18 +511,15 @@ export default function SignUpForm() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="mt-2 w-full p-8  h-14 flex flex-col items-start"
+                  className="mt-2  p-2  border-[#ff851B] border-2 flex flex-col items-start"
                   onClick={handleGetCurrentLocation}
                 >
                   <div className="flex items-center">
                     <MdLocationSearching className="w-4 h-4 mr-2" />
-                    <p className="font-normal text-base text-[#202124]">
+                    <p className="font-medium text-base text-[#202124]">
                       Get Current location
                     </p>
                   </div>
-                  <p className="font-normal text-sm text-[#7A7977]">
-                    Using GPS
-                  </p>
                 </Button>
               </div>
               <section id="register-buttons">

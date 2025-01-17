@@ -113,7 +113,7 @@ export default function LoginPage() {
               <Form>
                 <section id="email-id">
                   <Label htmlFor="email" className="font-medium">
-                    Email or Phone number&nbsp;
+                    Email&nbsp;
                     <span className="text-red-500">*</span>
                   </Label>
                   <Field

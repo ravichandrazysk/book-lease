@@ -208,37 +208,41 @@ export function Header() {
                       <SheetDescription className="hidden"></SheetDescription>
                     </SheetHeader>
                     <div className="flex flex-col space-y-4 p-4">
-                      {menuItems.map((item) => (
-                        <Button
-                          key={item.label}
-                          variant="ghost"
-                          className={`p-3 w-auto h-auto flex justify-start relative ${
-                            pathname === item.path ? "text-[#FF7A09]" : ""
-                          }`}
-                          onClick={() => router.push(item.path)}
-                        >
-                          <item.icon className="!h-5 !w-5 mr-2" />
-                          {item.label}{" "}
-                          {(item.label === "My Sent Requests" ||
-                            item.label === "Recieved Requests") && (
-                            <span
-                              className={`absolute ${item.label === "My Sent Requests" ? "top-2 left-[165px]" : "top-2 left-[170px]"} h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center`}
-                            >
-                              {item.label === "My Sent Requests"
-                                ? (profileDetails?.notification_counts
-                                    ?.my_requests ?? 0) > 99
-                                  ? "99+"
-                                  : (profileDetails?.notification_counts
-                                      ?.my_requests ?? 0)
-                                : (profileDetails?.notification_counts
-                                      ?.received_requests ?? 0) > 99
-                                  ? "99+"
-                                  : (profileDetails?.notification_counts
-                                      ?.received_requests ?? 0)}
-                            </span>
-                          )}
-                        </Button>
-                      ))}
+                      {menuItems.map((item) => {
+                        const notificationCount =
+                          item.label === "My Sent Requests"
+                            ? profileDetails?.notification_counts?.my_requests
+                            : item.label === "Received Requests"
+                              ? profileDetails?.notification_counts
+                                  ?.received_requests
+                              : 0;
+                              console.log(
+                                notificationCount,
+                                item.label === "My Sent Requests",
+                                item.label === "Received Requests",
+                                "notificationCount"
+                              );
+                        return (
+                          <Button
+                            key={item.label}
+                            variant="ghost"
+                            className={`p-3 w-auto h-auto flex justify-start relative ${
+                              pathname === item.path ? "text-[#FF7A09]" : ""
+                            }`}
+                            onClick={() => router.push(item.path)}
+                          >
+                            <item.icon className="!h-5 !w-5 mr-2" />
+                            {item.label}{" "}
+                            {notificationCount! > 0 && (
+                              <span
+                                className={`absolute ${item.label === "My Sent Requests" ? "top-2 left-[165px]" : "top-2 left-[170px]"} h-3 w-3 md:max-w-max md:max-h-max p-2.5 rounded-full bg-[#FF851B] text-[8px] md:text-[10px] font-medium text-white flex items-center justify-center`}
+                              >
+                                {notificationCount! > 99 ? "99+" : notificationCount}
+                              </span>
+                            )}
+                          </Button>
+                        );
+                      })}
                       <Button
                         key="logout"
                         variant="ghost"

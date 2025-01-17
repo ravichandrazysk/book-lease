@@ -184,18 +184,6 @@ export function StockDetailsCard({
             </Button>
           )}
         </section>
-        {variant === "books" && (
-          <Badge
-            variant="secondary"
-            className={
-              approved
-                ? `bg-green-100 text-green-700 hover:bg-green-100`
-                : `bg-red-100 text-red-700 hover:bg-red-100`
-            }
-          >
-            {approved ? "Approved" : "Not Approved"}
-          </Badge>
-        )}
 
         {/* Book request badge */}
         {(variant === "received" || variant === "sent") && (
@@ -208,7 +196,10 @@ export function StockDetailsCard({
                 </Badge>
               </div>
             )}
+
+            {/* Book request status */}
             <section id="request-status">
+              {/* Normal book request */}
               <div className="flex items-center gap-2">
                 <p className="text-base mt-1 text-[#7A7977]">Book request:</p>
                 <Badge
@@ -218,20 +209,27 @@ export function StockDetailsCard({
                   {status}
                 </Badge>
               </div>
-              {isLeased && requestType === "Lease" && isExpired && (
-                <div className="flex items-center gap-2 ">
-                  <p className="text-base mt-1 text-[#7A7977]">
-                    Extension request:
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className={` text-sm font-medium ${categoryColors[extensionStatus === "Pending" ? "Pending" : extensionStatus === "Accepted" ? "Accepted" : "Rejected"]} `}
-                  >
-                    {extensionStatus}
-                  </Badge>
-                </div>
-              )}
+
+              {/* Extension request status */}
+              {isLeased &&
+                requestType === "Lease" &&
+                isExpired &&
+                status !== "Pending" && (
+                  <div className="flex items-center gap-2 ">
+                    <p className="text-base mt-1 text-[#7A7977]">
+                      Extension request:
+                    </p>
+                    <Badge
+                      variant="secondary"
+                      className={` text-sm font-medium ${categoryColors[extensionStatus === "Pending" ? "Pending" : extensionStatus === "Accepted" ? "Accepted" : "Rejected"]} `}
+                    >
+                      {extensionStatus}
+                    </Badge>
+                  </div>
+                )}
             </section>
+
+            {/* Lease due date */}
             {isLeased && requestType === "Lease" && !isExpired && (
               <div className="gap-2 flex items-end">
                 <p className="text-base mt-1 text-[#7A7977]">
@@ -329,8 +327,21 @@ export function StockDetailsCard({
                   <div className="flex items-center justify-between pr-10 sm:pr-8">
                     {author}
                     {variant === "received" &&
-                      status &&
-                      status === "Pending" && (
+                      (status || extensionStatus) &&
+                      (status === "Pending" ||
+                        (requestType === "Lease" &&
+                          isExpired &&
+                          extensionStatus === "Pending")) &&
+                      (loader ? (
+                        <div className="flex justify-center items-center max-w-28 max-sm:hidden">
+                          <Lottie
+                            loop
+                            path="/lotties/loader.json"
+                            play
+                            style={{ width: "100%" }}
+                          />
+                        </div>
+                      ) : (
                         <div className="flex items-end gap-2">
                           <Button
                             variant="outline"
@@ -346,7 +357,7 @@ export function StockDetailsCard({
                             Accept
                           </Button>
                         </div>
-                      )}
+                      ))}
                   </div>
                 </SheetTitle>
                 <ChatBox
@@ -366,17 +377,34 @@ export function StockDetailsCard({
           variant === "status") && (
           <section
             id="multi-card-handler"
-            className="flex justify-between mt-4 mb-1 items-end gap-4"
+            className="flex justify-between mt-6 mb-1 items-end gap-4"
           >
             {variant === "books" && (
               <>
-                {status && (
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-100 text-blue-700"
+                {(status || approved) && (
+                  <section
+                    id="my-book-badges"
+                    className="flex flex-col sm:flex-row  gap-3"
                   >
-                    {status}
-                  </Badge>
+                    {status && (
+                      <Badge
+                        variant="secondary"
+                        className="bg-blue-100 text-blue-700 max-w-max order-2 sm:order-1"
+                      >
+                        {status}
+                      </Badge>
+                    )}
+                    <Badge
+                      variant="secondary"
+                      className={`${
+                        approved
+                          ? `bg-green-100 text-green-700 hover:bg-green-100 `
+                          : `bg-red-100 text-red-700 hover:bg-red-100`
+                      } order-1 sm:order-2`}
+                    >
+                      {approved ? "Approved" : "Not Approved"}
+                    </Badge>
+                  </section>
                 )}
 
                 <div className="flex items-center gap-2">
@@ -481,37 +509,26 @@ export function StockDetailsCard({
             id="view-chat"
             className="flex w-full gap-3 justify-end mt-2"
           >
-            {loader ? (
-              <div className="flex justify-center items-center max-w-28 max-sm:hidden">
-                <Lottie
-                  loop
-                  path="/lotties/loader.json"
-                  play
-                  style={{ width: "100%" }}
-                />
-              </div>
-            ) : (
-              <>
-                {variant === "sent" && status === "Accepted" && (
-                  <Button
-                    variant="ghost"
-                    className="text-orange-500 hover:text-orange-600 bg-accent"
-                    onClick={() => setIsSheetOpen(true)}
-                  >
-                    Owner Details
-                  </Button>
-                )}
+            <>
+              {variant === "sent" && status === "Accepted" && (
                 <Button
-                  className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
-                  onClick={() => {
-                    setIsChatOpen(true);
-                    if (!read_at && notification_id) handleNotificationRead();
-                  }}
+                  variant="ghost"
+                  className="text-orange-500 hover:text-orange-600 bg-accent"
+                  onClick={() => setIsSheetOpen(true)}
                 >
-                  View Chat
+                  Owner Details
                 </Button>
-              </>
-            )}
+              )}
+              <Button
+                className="bg-[#FF7A09] w-24 hover:bg-[#FF7A09]"
+                onClick={() => {
+                  setIsChatOpen(true);
+                  if (!read_at && notification_id) handleNotificationRead();
+                }}
+              >
+                View Chat
+              </Button>
+            </>
           </section>
         )}
 

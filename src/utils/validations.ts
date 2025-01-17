@@ -29,7 +29,7 @@ export const registerValidationSchema = Yup.object().shape({
     .email("Invalid email")
     .required("Email is required")
     .matches(
-      /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+      /^[a-zA-Z][a-zA-Z0-9.]*@[a-zA-Z]{2,}(?:-[a-zA-Z]+)*\.[a-zA-Z]{2,}$/,
       "Invalid email address"
     ),
   password: Yup.string()
@@ -56,7 +56,8 @@ export const loginValidationSchema = Yup.object().shape({
     .email("Invalid email")
     .required("Email is required")
     .matches(
-      /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+      // /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+      /^[a-zA-Z][a-zA-Z0-9.]*@[a-zA-Z]{2,}(?:-[a-zA-Z]+)*\.[a-zA-Z]{2,}$/,
       "Invalid email address"
     ),
   password: Yup.string()
@@ -84,21 +85,10 @@ export const ProfileSchema = Yup.object().shape({
       (value) => value.trim().length > 0
     )
     .trim("First Name cannot contain leading or trailing spaces"),
-  lastName: Yup.string()
-    .required("Last name is required")
-    .min(2, "Too short")
-    .max(50, "Too long")
-    .matches(
-      /^[a-zA-Z\s.]+$/,
-      "Last name can only contain letters, spaces, and dots"
-    )
-
-    .test(
-      "no-only-spaces",
-      "Last First Name cannot be only spaces",
-      (value) => value.trim().length > 0
-    )
-    .trim("Last First Name cannot contain leading or trailing spaces"),
+  lastName: Yup.string().matches(
+    /^[a-zA-Z]+$/,
+    "First name must contain only alphabets"
+  ),
   phoneNumber: Yup.string()
     .matches(/^\d{10}$/, "Phone number must be 10 digits")
     .required("Phone number is required"),
@@ -148,7 +138,7 @@ export const CustomerSupportValidationSchema = Yup.object({
     .email("Invalid email address")
     .required("Email is required")
     .matches(
-      /^[a-zA-Z0-9]+(?:[._+-][a-zA-Z0-9]+)*@[a-zA-Z]{2,}(?:-[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
+      /^[a-zA-Z][a-zA-Z0-9.]*@[a-zA-Z]{2,}(?:-[a-zA-Z]+)*\.[a-zA-Z]{2,}$/,
       "Invalid email address"
     ),
   phoneNumber: Yup.string()
